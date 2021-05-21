@@ -10,8 +10,10 @@ import mycorda.app.tasks.executionContext.LogFormat
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 import org.spekframework.spek2.Spek
+import org.spekframework.spek2.meta.Ignore
 import org.spekframework.spek2.style.specification.describe
 
+@Ignore
 @RunWith(JUnitPlatform::class)
 object TaskFactorySpec : Spek({
 
