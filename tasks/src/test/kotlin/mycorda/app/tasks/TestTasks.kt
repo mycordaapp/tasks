@@ -5,7 +5,6 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.BaseTask
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.executionContext.LogLevel
-import net.corda.ccl.commons.tasks.*
 import java.io.File
 import java.net.URL
 import java.util.*

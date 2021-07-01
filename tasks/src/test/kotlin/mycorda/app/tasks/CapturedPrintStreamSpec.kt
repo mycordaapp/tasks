@@ -1,14 +1,6 @@
 package mycorda.app.tasks
-import com.natpryce.hamkrest.assertion.assertThat
-import com.natpryce.hamkrest.equalTo
-import mycorda.app.tasks.helpers.random
 
 
-import org.junit.platform.runner.JUnitPlatform
-import org.junit.runner.RunWith
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
-import kotlin.concurrent.thread
 //import kotlin.random.Random
 
 //

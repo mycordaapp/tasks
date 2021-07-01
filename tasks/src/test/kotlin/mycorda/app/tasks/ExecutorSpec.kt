@@ -12,7 +12,6 @@ import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.*
 
 @RunWith(JUnitPlatform::class)
 object ExecutorSpec : Spek({

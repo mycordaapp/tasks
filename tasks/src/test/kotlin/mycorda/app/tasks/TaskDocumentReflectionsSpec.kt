@@ -2,7 +2,6 @@ package mycorda.app.tasks
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-import mycorda.app.tasks.TaskDocumentReflections
 import mycorda.app.tasks.demo.CalcSquareTask
 
 import org.junit.platform.runner.JUnitPlatform

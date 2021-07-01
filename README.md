@@ -25,3 +25,6 @@ As with everything in [myCorda dot App](https://mycorda.app), this library has m
 
 ## Next Steps 
 
+To build a HelloWorld see here 
+
+For a deeper explaination, see here 
