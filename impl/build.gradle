@@ -7,10 +7,8 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.71"
 
-
         // for Spec - http://spekframework.org/docs/latest/
         classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
-
     }
 }
 
@@ -28,10 +26,15 @@ targetCompatibility = 1.8
 
 //
 // Will be published to jitpack by github at:
-// https://jitpack.io/com/github/mycordaapp/tasks/<version>
+// https://jitpack.io/com/github/mycordaapp/tasks/<version>/build.log
 //
 group "com.github.mycordaapp"
-version "0.0.2"
+
+//
+// Note that this is only used locally. jitpack builds will pick their version name from the
+// release tag set in github
+//
+version "0.0.1"
 
 repositories {
     mavenCentral()

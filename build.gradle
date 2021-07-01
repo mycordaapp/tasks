@@ -7,7 +7,6 @@ class InstallPlugin implements Plugin<Project> {
             doLast {
                 println 'install completed'
             }
-
         }
     }
 }
@@ -19,7 +18,6 @@ class CleanPlugin implements Plugin<Project> {
             doLast {
                 println 'clean completed'
             }
-
         }
     }
 }

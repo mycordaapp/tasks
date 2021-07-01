@@ -1,4 +1,5 @@
 rootProject.name = 'tasks'
 
 include "tasks"
+project(":tasks").projectDir = file("impl")
 
