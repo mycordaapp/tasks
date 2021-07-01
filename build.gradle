@@ -1,0 +1,15 @@
+
+
+class InstallPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.task('install') {
+            dependsOn ':tasks:install'
+            doLast {
+                println 'install completed'
+            }
+
+        }
+    }
+}
+
+apply plugin: InstallPlugin
