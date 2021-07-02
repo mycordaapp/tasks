@@ -28,7 +28,7 @@
 // Will be published to jitpack by github at:
 // https://jitpack.io/com/github/mycordaapp/tasks/<version>/build.log
 //
-group "com.github.mycordaapp.tasks"
+//group "com.github.mycordaapp.tasks"
 
 //
 // Note that this is only used locally. jitpack builds will pick their version name from the
@@ -51,11 +51,11 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
     }
 }
 
-jar {
-    // Make JAR checksums hash repeatable
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-}
+//jar {
+//    // Make JAR checksums hash repeatable
+//    preserveFileTimestamps = false
+//    reproducibleFileOrder = true
+//}
 
 
 dependencies {
@@ -82,7 +82,6 @@ dependencies {
     // spek v2
     testCompile("org.spekframework.spek2:spek-dsl-jvm:2.0.0")
     testCompile("org.spekframework.spek2:spek-runner-junit5:2.0.0")
-
 
 }
 

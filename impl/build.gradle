@@ -28,13 +28,13 @@
 // Will be published to jitpack by github at:
 // https://jitpack.io/com/github/mycordaapp/tasks/<version>/build.log
 //
-group "com.github.mycordaapp.tasks"
+//group "com.github.mycordaapp.tasks"
 
 //
 // Note that this is only used locally. jitpack builds will pick their version name from the
 // release tag set in github
 //
-version "0.0.1"
+//version "0.0.1"
 
 repositories {
     mavenCentral()
@@ -51,11 +51,11 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
     }
 }
 
-jar {
-    // Make JAR checksums hash repeatable
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-}
+//jar {
+//    // Make JAR checksums hash repeatable
+//    preserveFileTimestamps = false
+//    reproducibleFileOrder = true
+//}
 
 
 dependencies {
@@ -68,10 +68,7 @@ dependencies {
 
     implementation 'com.github.mycordaapp:registry:0.0.2'
 
-    //testRuntime('org.jetbrains.spek:spek-junit-platform-engine:1.1.5') {
-    //    exclude group: 'org.junit.platform'
-    //    exclude group: 'org.jetbrains.kotlin'
-    //}
+
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile('org.junit.platform:junit-platform-runner:1.0.0')
 
@@ -80,7 +77,5 @@ dependencies {
     // spek v2
     testCompile("org.spekframework.spek2:spek-dsl-jvm:2.0.0")
     testCompile("org.spekframework.spek2:spek-runner-junit5:2.0.0")
-
-
 }
 
