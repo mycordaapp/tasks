@@ -1,26 +1,26 @@
 
 
-class InstallPlugin implements Plugin<Project> {
-    void apply(Project project) {
-        project.task('install') {
-            dependsOn ':tasks:install'
-            doLast {
-                println 'install completed'
-            }
-        }
-    }
-}
-
-class CleanPlugin implements Plugin<Project> {
-    void apply(Project project) {
-        project.task('clean') {
-            dependsOn ':tasks:clean'
-            doLast {
-                println 'clean completed'
-            }
-        }
-    }
-}
-
-apply plugin: InstallPlugin
-apply plugin: CleanPlugin
+//class InstallPlugin implements Plugin<Project> {
+//    void apply(Project project) {
+//        project.task('install') {
+//            dependsOn ':tasks:install'
+//            doLast {
+//                println 'install completed'
+//            }
+//        }
+//    }
+//}
+//
+//class CleanPlugin implements Plugin<Project> {
+//    void apply(Project project) {
+//        project.task('clean') {
+//            dependsOn ':tasks:clean'
+//            doLast {
+//                println 'clean completed'
+//            }
+//        }
+//    }
+//}
+//
+//apply plugin: InstallPlugin
+//apply plugin: CleanPlugin
