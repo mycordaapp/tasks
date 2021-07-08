@@ -1,8 +1,8 @@
 package mycorda.app.tasks
 
 
+import mycorda.app.helpers.random
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.helpers.random
 import java.io.File
 
 
@@ -46,7 +46,7 @@ interface Locations {
 
 
 // for use in test cases
-class TestLocations(private val suffix: String = String.random(length = 6),
+class TestLocations(private val suffix: String = String.random(),
                     private val useGlobalCache: Boolean = true) : Locations {
     init {
         File(cacheDirectory()).mkdirs()

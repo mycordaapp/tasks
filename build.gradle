@@ -27,6 +27,10 @@ allprojects {
         mavenCentral()
         maven { url "https://repo.gradle.org/gradle/libs-releases" }
         maven { url "https://jitpack.io" }
+
+        // uncomment for local testing. Please DONT check in with
+        // this enabled
+        mavenLocal()
     }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {

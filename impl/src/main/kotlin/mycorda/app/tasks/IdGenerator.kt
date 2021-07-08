@@ -1,6 +1,6 @@
 package mycorda.app.tasks
 
-import mycorda.app.tasks.helpers.random
+import mycorda.app.helpers.random
 
 
 /**

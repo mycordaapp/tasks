@@ -14,7 +14,7 @@ import java.util.*
 
 /**
  * Finds the local private IP address using this most reliable method available, starting
- * with the known cloud APIs
+ * with the known cloud APIs or picks up a forced setting
  */
 
 interface DeterminePrivateIpAddressTask : BlockingTask<NotRequired, String>
@@ -113,13 +113,12 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
     }
 
     private fun isForced(): Boolean {
-        return System.getenv().containsKey("CORDA_FORCE_PRIVATE_IP")
+        return System.getenv().containsKey("MYCORDAAPP_FORCE_PRIVATE_IP")
     }
 
     private fun forced(): String {
-        return System.getenv("CORDA_FORCE_PRIVATE_IP")
+        return System.getenv("MYCORDAAPP_FORCE_PRIVATE_IP")
     }
-
 
     data class RequestResult(val result: String, val success: Boolean)
 }

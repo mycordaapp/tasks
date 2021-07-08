@@ -113,11 +113,11 @@ class DeterminePublishedIpAddressTaskImpl : DeterminePublishedIpAddressTask {
     }
 
     private fun isForced(): Boolean {
-        return System.getenv().containsKey("CORDA_FORCE_PUBLISHED_IP")
+        return System.getenv().containsKey("MYCORDAAPP_FORCE_PUBLISHED_IP")
     }
 
     private fun forced(): String {
-        return System.getenv("CORDA_FORCE_PUBLISHED_IP")
+        return System.getenv("MYCORDAAPP_FORCE_PUBLISHED_IP")
     }
 
 
