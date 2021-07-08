@@ -2,6 +2,9 @@ package mycorda.app.tasks.executionContext
 
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.ExecutorFactory
+import mycorda.app.tasks.logging.LogLevel
+import mycorda.app.tasks.logging.LogMessage
+import mycorda.app.tasks.logging.LogMessageSink
 import mycorda.app.tasks.processManager.ProcessManager
 
 
@@ -66,9 +69,8 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
         override fun log(logLevel: LogLevel, msg: String) {
             val logMessage = LogMessage(executionId = executionId,
                     level = logLevel,
-                    message = msg,
+                    body = msg,
                     taskId = taskId,
-                    stepId = stepId,
                     timestamp = System.currentTimeMillis())
 
             sink.accept(logMessage)

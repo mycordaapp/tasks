@@ -1,6 +1,8 @@
 package mycorda.app.tasks.executionContext
 
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.logging.LogLevel
+import mycorda.app.tasks.logging.LogMessageSink
 import mycorda.app.tasks.processManager.ProcessManager
 import java.io.PrintStream
 import java.util.*

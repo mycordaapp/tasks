@@ -4,8 +4,8 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.CalcSquareTask
-import mycorda.app.tasks.executionContext.InMemoryLogMessageSink
-import mycorda.app.tasks.executionContext.LogFormat
+import mycorda.app.tasks.logging.InMemoryLogMessageSink
+import mycorda.app.tasks.logging.LogFormat
 
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith

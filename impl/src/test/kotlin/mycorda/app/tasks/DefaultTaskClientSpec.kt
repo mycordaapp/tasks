@@ -10,7 +10,7 @@ import mycorda.app.tasks.demo.CalcSquareTask
 import mycorda.app.tasks.demo.PrintStreamTask
 import mycorda.app.tasks.demo.UnitTask
 import mycorda.app.tasks.executionContext.DefaultExecutionContextFactory
-import mycorda.app.tasks.executionContext.InMemoryLogMessageSink
+import mycorda.app.tasks.logging.InMemoryLogMessageSink
 import mycorda.app.tasks.processManager.ProcessManager
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
@@ -137,9 +137,6 @@ object DefaultTaskClientSpec : Spek({
             Thread.sleep(10)
             assertThat(client.runningTimeMs(correlationId), equalTo(timeTaken))
         }
-
-
-
 
 
     }

@@ -8,8 +8,8 @@ import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.demo.CalcSquareTask
 import mycorda.app.tasks.demo.ExceptionGeneratingAsyncTask
 import mycorda.app.tasks.executionContext.DefaultExecutionContextFactory
-import mycorda.app.tasks.executionContext.InMemoryLogMessageSink
-import mycorda.app.tasks.executionContext.LogFormat
+import mycorda.app.tasks.logging.InMemoryLogMessageSink
+import mycorda.app.tasks.logging.LogFormat
 import mycorda.app.tasks.processManager.ProcessManager
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith

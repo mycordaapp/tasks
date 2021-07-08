@@ -4,7 +4,7 @@ package mycorda.app.tasks
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.BaseTask
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.executionContext.LogLevel
+import mycorda.app.tasks.logging.LogLevel
 import java.io.File
 import java.net.URL
 import java.util.*

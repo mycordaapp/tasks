@@ -24,9 +24,10 @@ As with everything in [myCorda dot App](https://mycorda.app), this library has m
 * Kotlin 1.2
 * Java 1.8
 * The object [Registry](https://github.com/mycordaapp/registry#readme)
+* The [Helpers](https://github.com/mycordaapp/helpers#readme) module 
 
 ## Next Steps 
 
 To build a HelloWorld see here 
 
-For a deeper explaination, see here 
+For a deeper explanation, see here 

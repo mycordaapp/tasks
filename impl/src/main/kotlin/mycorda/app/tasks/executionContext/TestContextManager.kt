@@ -3,6 +3,7 @@ package mycorda.app.tasks.executionContext
 import mycorda.app.helpers.random
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
+import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -165,7 +166,9 @@ class TestContextManager() {
     fun capturedLogMessages(): String {
         val sb = StringBuilder()
         if (msgSink is InMemoryLogMessageSink) {
-            (msgSink as InMemoryLogMessageSink).messages().forEach { sb.append(it.shortFormat()).append("\n") }
+            val formatter = DefaultStringLogFormatter()
+            (msgSink as InMemoryLogMessageSink).messages()
+                .forEach { sb.append(formatter.toString(it, LogFormat.Full)).append("\n") }
         }
         return sb.toString()
     }

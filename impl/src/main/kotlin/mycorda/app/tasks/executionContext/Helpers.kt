@@ -5,6 +5,7 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.FixedThreadPoolExecutor
 import mycorda.app.tasks.Locations
 import mycorda.app.tasks.TestLocations
+import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -73,7 +74,8 @@ class ContextManager(val registry: Registry) {
 
     fun printCapturedMessages() {
         if (msgSink is InMemoryLogMessageSink) {
-            (msgSink as InMemoryLogMessageSink).messages().forEach { println(it.shortFormat()) }
+            val formatter = DefaultStringLogFormatter()
+            (msgSink as InMemoryLogMessageSink).messages().forEach { println(formatter.toString(it, LogFormat.Full)) }
         }
     }
 

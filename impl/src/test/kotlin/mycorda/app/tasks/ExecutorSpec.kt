@@ -4,9 +4,9 @@ package mycorda.app.tasks
 
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.CalcSquareTask
-import mycorda.app.tasks.executionContext.ConsoleLogMessageSink
-import mycorda.app.tasks.executionContext.InMemoryLogMessageSink
-import mycorda.app.tasks.executionContext.LogFormat
+import mycorda.app.tasks.logging.ConsoleLogMessageSink
+import mycorda.app.tasks.logging.InMemoryLogMessageSink
+import mycorda.app.tasks.logging.LogFormat
 import mycorda.app.tasks.processManager.ProcessManager
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith

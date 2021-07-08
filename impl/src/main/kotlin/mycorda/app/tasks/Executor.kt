@@ -4,8 +4,8 @@ package mycorda.app.tasks
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.executionContext.DefaultExecutionContextFactory
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.executionContext.LogLevel
 import mycorda.app.tasks.executionContext.ProvisioningState
+import mycorda.app.tasks.logging.LogLevel
 import java.lang.RuntimeException
 import java.util.*
 import java.util.concurrent.Future
