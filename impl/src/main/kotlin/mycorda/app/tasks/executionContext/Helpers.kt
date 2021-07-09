@@ -68,7 +68,7 @@ class ContextManager(val registry: Registry) {
             .get()
 
         val provisioningState = raw.provisioningState().withTag(tag)
-        return raw.withProvisioningState(provisioningState)
+        return DefaultExecutionContextModifier(raw).withProvisioningState(provisioningState)
     }
 
 

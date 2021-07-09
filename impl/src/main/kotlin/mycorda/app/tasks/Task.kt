@@ -26,11 +26,11 @@ interface BlockingTask<in I, out O> : Task {
     /**
      * Execute the task.
      */
-    fun exec(executionContext: ExecutionContext = DefaultExecutionContext(), params: I): O
+    fun exec(ctx: ExecutionContext = DefaultExecutionContext(), params: I): O
 }
 
 interface UnitBlockingTask<I> : BlockingTask<I, Unit> {
-    override fun exec(executionContext: ExecutionContext, params: I)
+    override fun exec(ctx: ExecutionContext, params: I)
 }
 
 interface AsyncTask<I, O> : Task {

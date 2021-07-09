@@ -53,21 +53,11 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return stdout
         }
 
-        override fun withStdout(stdout: StdOut): ExecutionContext {
-            return Ctx(executionId = this.executionId, taskId = this.taskId, stepId = stepId,
-                    sink = this.sink, processManager = this.processManager, executorService = this.executorService,
-                    scoped = this.scoped, stdout = stdout.printStream, provisioningState = this.provisioningState,
-                     instanceQualifier = this.instanceQualifier,  loggingContext = this.loggingContext)
-        }
 
         override fun scoped(): Registry {
             return scoped
         }
 
-        override fun withScope(scopedObject: Any): ExecutionContext {
-            scoped = scoped.clone().store(scopedObject)
-            return this
-        }
 
 
         override fun log(logLevel: LogLevel, msg: String) {
@@ -105,33 +95,10 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return instanceQualifier
         }
 
-        override fun withTaskId(taskId: UUID): ExecutionContext {
-            return Ctx(executionId = this.executionId, taskId = taskId, stepId = this.stepId,
-                    sink = this.sink, processManager = this.processManager, executorService = this.executorService,
-                    scoped = this.scoped, stdout = this.stdout, provisioningState = this.provisioningState,
-                    instanceQualifier = this.instanceQualifier, loggingContext = this.loggingContext)
-
-        }
-
 
         override fun provisioningState(): ProvisioningState {
             return provisioningState
         }
 
-        override fun withProvisioningState(state: ProvisioningState): ExecutionContext {
-            return Ctx(executionId = this.executionId, taskId = this.taskId, stepId = stepId,
-                    sink = this.sink, processManager = this.processManager, executorService = this.executorService,
-                    scoped = this.scoped, stdout = this.stdout, provisioningState = state,
-                    instanceQualifier = this.instanceQualifier,  loggingContext = this.loggingContext)
-        }
-
-
-
-        override fun withInstanceQualifier(qualifier: String?): ExecutionContext {
-            return Ctx(executionId = this.executionId, taskId = this.taskId, stepId = stepId,
-                    sink = this.sink, processManager = this.processManager, executorService = this.executorService,
-                    scoped = this.scoped, stdout = this.stdout, provisioningState = this.provisioningState,
-                    instanceQualifier = qualifier,  loggingContext = this.loggingContext)
-        }
     }
 }

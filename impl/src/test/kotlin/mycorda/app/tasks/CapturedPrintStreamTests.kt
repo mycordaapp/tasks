@@ -49,6 +49,7 @@ class CapturedPrintStreamTests {
         Thread.sleep(((iterations * 5) + (threadCount * 5)).toLong())
 
         val captured = capturedPrintStream.captured()
+
         assertThat(captured.removeSuffix("\n").lines().count(), equalTo(threadCount * iterations))
 
         val x = captured.removeSuffix("\n").lines().sorted().joinToString(separator = "\n")

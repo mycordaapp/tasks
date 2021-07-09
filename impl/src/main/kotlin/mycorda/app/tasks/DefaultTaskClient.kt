@@ -1,6 +1,7 @@
 package mycorda.app.tasks
 
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.executionContext.StdOut
 import java.util.*
@@ -22,6 +23,10 @@ class DefaultTaskClient(registry: Registry) : TaskClient {
         val AGENTID = UUID.fromString("F1E06FB7-05EE-4C32-B359-054143410063")
     }
 
+    private fun ctxWithCapturedPrintStream(original: ExecutionContext): ExecutionContext {
+        return DefaultExecutionContextModifier(original).withStdout(StdOut(capturedPrintStream.printStream()))
+    }
+
     override fun defaultTimeoutInSeconds(): Int {
         return 60
     }
@@ -36,7 +41,7 @@ class DefaultTaskClient(registry: Registry) : TaskClient {
         val className = taskClazz.simpleName!!.removeSuffix("Task")
 
         val t = taskFactory.createInstance(className)
-        val executor = SimpleTaskExecutor<I, O>(ctx.withStdout(StdOut(capturedPrintStream.printStream())))
+        val executor = SimpleTaskExecutor<I, O>(ctxWithCapturedPrintStream(ctx))
         return executor.exec(t, input)
     }
 
@@ -49,7 +54,7 @@ class DefaultTaskClient(registry: Registry) : TaskClient {
         // todo - what about the timeout ?
         val className = taskClazz.simpleName!!.removeSuffix("Task")
         val t = taskFactory.createInstance(className)
-        val executor = SimpleTaskExecutor<I, Unit>(ctx.withStdout(StdOut(capturedPrintStream.printStream())))
+        val executor = SimpleTaskExecutor<I, Unit>(ctxWithCapturedPrintStream(ctx))
         return executor.exec(t, input)
     }
 

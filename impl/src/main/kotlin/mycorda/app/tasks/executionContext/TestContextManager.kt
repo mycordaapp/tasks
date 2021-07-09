@@ -146,7 +146,7 @@ class TestContextManager() {
     fun createExecutionContext(): ExecutionContext {
         val raw = registry.get(ExecutionContextFactory::class.java).get()
         val provisioningState = raw.provisioningState().withTag(tag)
-        return raw.withProvisioningState(provisioningState)
+        return DefaultExecutionContextModifier(raw).withProvisioningState(provisioningState)
     }
 
     fun executionContextFactory(): ExecutionContextFactory {

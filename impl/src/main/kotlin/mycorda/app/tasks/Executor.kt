@@ -3,6 +3,7 @@ package mycorda.app.tasks
 
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.executionContext.DefaultExecutionContextFactory
+import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.executionContext.ProvisioningState
 import mycorda.app.tasks.logging.LogLevel
@@ -47,7 +48,8 @@ class DefaultTaskExecutor<I, O>(
         var executionContext = buildExecutionContext(t)
 
         if (provisioningState != null) {
-            executionContext = executionContext.withProvisioningState(provisioningState)
+            executionContext =
+                DefaultExecutionContextModifier(executionContext).withProvisioningState(provisioningState)
         }
         return doExec(executionContext, t, params)
     }
@@ -68,10 +70,11 @@ class DefaultTaskExecutor<I, O>(
  * on creating a correctly wired and valid ExecutionContext is now with the caller.
  *
  */
-class SimpleTaskExecutor<I, O>(private val executionContext: ExecutionContext) : TaskExecutor<I, O>,
+class SimpleTaskExecutor<I, O>(private val ctx: ExecutionContext) : TaskExecutor<I, O>,
     BaseTaskExecutor<I, O>() {
     override fun exec(t: Task, params: I): O {
-        return doExec(executionContext.withTaskId(t.taskID()), t, params)
+        val modifiedCtx = DefaultExecutionContextModifier(ctx).withTaskId(t.taskID())
+        return doExec(modifiedCtx, t, params)
     }
 
 //    fun exec(t: Task, params: I, agentContext: AgentContext?): O {

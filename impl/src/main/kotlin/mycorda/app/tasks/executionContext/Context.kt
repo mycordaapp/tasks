@@ -21,8 +21,6 @@ interface ExecutionContext : LoggingContext {
     fun log(logLevel: LogLevel = LogLevel.INFO, msg: String)
 
 
-    fun withStdout(stdout: StdOut): ExecutionContext
-
     /**
      *  One single place for running and checking the status of processes.
      *
@@ -52,7 +50,6 @@ interface ExecutionContext : LoggingContext {
     fun executionId(): UUID
 
     fun taskId(): UUID?
-    fun withTaskId(taskId: UUID): ExecutionContext
 
     /**
      * Any additional data that is scoped to a specific request and therefore setup when building
@@ -60,17 +57,11 @@ interface ExecutionContext : LoggingContext {
      */
     fun scoped(): Registry
 
-    /**
-     * Make it easy to add objects to the scope
-     */
-    fun withScope(scopedObject: Any): ExecutionContext
 
     /**
      * Provisioning state
      */
     fun provisioningState(): ProvisioningState
-
-    fun withProvisioningState(state: ProvisioningState): ExecutionContext
 
 
     /**
@@ -82,8 +73,105 @@ interface ExecutionContext : LoggingContext {
      * server based deploy is a single service per VM / container.
      */
     fun instanceQualifier(): String?
+}
 
-    fun withInstanceQualifier(qualifier: String?): ExecutionContext
+interface ExecutionContextModifier {
+
+    fun withTaskId(taskId: UUID): ExecutionContext
+
+    fun withStdout(stdout: StdOut): ExecutionContext
+
+    /**
+     * Make it easy to add objects to the scope
+     */
+    fun withScope(scopedObject: Any): ExecutionContext
+
+    fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext
+
+    fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext
+
+}
+
+/**
+ * Makes it easier to mutate an existing ExecutionContext
+ */
+class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionContextModifier {
+    private var working = original
+    override fun withTaskId(taskId: UUID): ExecutionContext {
+        working = DefaultExecutionContext(
+            executionId = working.executionId(),
+            taskId = taskId,
+            executor = working.executorService(),
+            pm = working.processManager(),
+            scoped = working.scoped(),
+            provisioningState = working.provisioningState(),
+            instanceQualifier = working.instanceQualifier(),
+            stdout = working.stdout(),
+            stderr = working.stderr()
+        )
+        return working
+    }
+
+
+    override fun withStdout(stdout: StdOut): ExecutionContext {
+        working = DefaultExecutionContext(
+            executionId = working.executionId(),
+            taskId = working.taskId(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            scoped = working.scoped(),
+            provisioningState = working.provisioningState(),
+            instanceQualifier = working.instanceQualifier(),
+            stdout = stdout.printStream,
+            stderr = working.stderr()
+        )
+        return working
+    }
+
+    override fun withScope(scopedObject: Any): ExecutionContext {
+        working = DefaultExecutionContext(
+            executionId = working.executionId(),
+            taskId = working.taskId(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            scoped = working.scoped().clone().store(scopedObject),
+            provisioningState = working.provisioningState(),
+            instanceQualifier = working.instanceQualifier(),
+            stdout = working.stdout(),
+            stderr = working.stderr()
+        )
+        return working
+    }
+
+    override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
+        working = DefaultExecutionContext(
+            executionId = working.executionId(),
+            taskId = working.taskId(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            scoped = working.scoped(),
+            provisioningState = provisioningState,
+            instanceQualifier = working.instanceQualifier(),
+            stdout = working.stdout(),
+            stderr = working.stderr()
+        )
+        return working
+    }
+
+    override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
+        working = DefaultExecutionContext(
+            executionId = working.executionId(),
+            taskId = working.taskId(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            scoped = working.scoped(),
+            provisioningState = working.provisioningState(),
+            instanceQualifier = instanceQualifier,
+            stdout = working.stdout(),
+            stderr = working.stderr()
+        )
+        return working
+    }
 
 }
 
@@ -99,7 +187,6 @@ class DefaultExecutionContext(
     private val pm: ProcessManager = ProcessManager(),
     private val scoped: Registry = Registry(),
     private val provisioningState: ProvisioningState = DefaultProvisioningState(),
-    //private val distributionService: DistributionService = SharedFileDistributionService(".testing/${provisioningState.tag()}"),
     private val stdout: PrintStream = System.out,
     private val stderr: PrintStream = System.err,
     private val loggingContext: LoggingContext = DefaultLoggingContext(scoped)
@@ -154,97 +241,6 @@ class DefaultExecutionContext(
         return instanceQualifier
     }
 
-
-    override fun withTaskId(taskId: UUID): ExecutionContext {
-        return DefaultExecutionContext(
-            executionId = this.executionId,
-            taskId = taskId,
-            stepId = this.stepId,
-            executor = this.executor,
-            pm = this.pm,
-            scoped = this.scoped,
-            provisioningState = this.provisioningState,
-            //distributionService = this.distributionService,
-            instanceQualifier = this.instanceQualifier,
-            stdout = this.stdout
-        )
-    }
-
-    override fun withScope(scopedObject: Any): ExecutionContext {
-        return DefaultExecutionContext(
-            executionId = this.executionId,
-            taskId = taskId,
-            stepId = this.stepId,
-            executor = this.executor,
-            pm = this.pm,
-            scoped = this.scoped.clone().store(scopedObject),
-            provisioningState = this.provisioningState,
-            //distributionService = this.distributionService,
-            instanceQualifier = this.instanceQualifier,
-            stdout = this.stdout
-        )
-
-    }
-
-    override fun withProvisioningState(state: ProvisioningState): ExecutionContext {
-        return DefaultExecutionContext(
-            executionId = this.executionId,
-            taskId = this.taskId,
-            stepId = stepId,
-            executor = this.executor,
-            pm = this.pm,
-            scoped = this.scoped,
-            provisioningState = state,
-            //distributionService = this.distributionService,
-            instanceQualifier = this.instanceQualifier,
-            stdout = this.stdout
-        )
-
-    }
-
-//    override fun withDistributionService(service: DistributionService): ExecutionContext {
-//        return DefaultExecutionContext(executionId = this.executionId,
-//                taskId = this.taskId,
-//                stepId = stepId,
-//                executor = this.executor,
-//                pm = this.pm,
-//                scoped = this.scoped,
-//                provisioningState = this.provisioningState,
-//                distributionService = service,
-//                instanceQualifier = this.instanceQualifier,
-//                stdout = this.stdout)
-//
-//    }
-
-    override fun withInstanceQualifier(qualifier: String?): ExecutionContext {
-        return DefaultExecutionContext(
-            executionId = this.executionId,
-            taskId = this.taskId,
-            stepId = stepId,
-            executor = this.executor,
-            pm = this.pm,
-            scoped = this.scoped,
-            provisioningState = this.provisioningState,
-            //distributionService = this.distributionService,
-            instanceQualifier = qualifier,
-            stdout = this.stdout
-        )
-    }
-
-    override fun withStdout(stdout: StdOut): ExecutionContext {
-        return DefaultExecutionContext(
-            executionId = this.executionId,
-            taskId = this.taskId,
-            stepId = stepId,
-            executor = this.executor,
-            pm = this.pm,
-            scoped = this.scoped,
-            provisioningState = this.provisioningState,
-            //distributionService = this.distributionService,
-            instanceQualifier = this.instanceQualifier,
-            stdout = stdout.printStream
-        )
-    }
 }
 
 
