@@ -1,8 +1,7 @@
 package mycorda.app.tasks.executionContext
 
 import mycorda.app.registry.Registry
-import mycorda.app.tasks.logging.LogLevel
-import mycorda.app.tasks.logging.LogMessageSink
+import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
 import java.io.PrintStream
 import java.util.*
@@ -15,18 +14,14 @@ import java.util.concurrent.Executors
  * information that are deferred until execution time, as they may
  * change on each run
  */
-interface ExecutionContext {
+interface ExecutionContext : LoggingContext {
     /**
      * A standard way to manage log output.
      */
     fun log(logLevel: LogLevel = LogLevel.INFO, msg: String)
 
-    /**
-     * Write directly to the console if needed
-     */
-    fun stdout(): PrintStream
 
-    fun withStdout(stdout: StdOut) : ExecutionContext
+    fun withStdout(stdout: StdOut): ExecutionContext
 
     /**
      *  One single place for running and checking the status of processes.
@@ -77,12 +72,6 @@ interface ExecutionContext {
 
     fun withProvisioningState(state: ProvisioningState): ExecutionContext
 
-    /**
-     * Distribution Service
-     */
-    //fun distributionService(): DistributionService
-
-    //fun withDistributionService(service: DistributionService): ExecutionContext
 
     /**
      * Instance qualifier - if multiple services are deployed to a server,
@@ -92,9 +81,9 @@ interface ExecutionContext {
      * such as picking different port numbers. By default it is null, as the usual
      * server based deploy is a single service per VM / container.
      */
-     fun instanceQualifier() : String ?
+    fun instanceQualifier(): String?
 
-     fun withInstanceQualifier(qualifier : String? ): ExecutionContext
+    fun withInstanceQualifier(qualifier: String?): ExecutionContext
 
 }
 
@@ -102,16 +91,18 @@ interface ExecutionContext {
  * A simple service, only suitable for basic unit test
  */
 class DefaultExecutionContext(
-        private val executionId: UUID = UUID.randomUUID(),
-        private val taskId: UUID? = null,
-        private val stepId: UUID? = null,
-        private val instanceQualifier: String? = null,
-        private val executor: ExecutorService = Executors.newFixedThreadPool(10),
-        private val pm: ProcessManager = ProcessManager(),
-        private val scoped: Registry = Registry(),
-        private val provisioningState: ProvisioningState = DefaultProvisioningState(),
-        //private val distributionService: DistributionService = SharedFileDistributionService(".testing/${provisioningState.tag()}"),
-        private val stdout: PrintStream = System.out
+    private val executionId: UUID = UUID.randomUUID(),
+    private val taskId: UUID? = null,
+    private val stepId: UUID? = null,
+    private val instanceQualifier: String? = null,
+    private val executor: ExecutorService = Executors.newFixedThreadPool(10),
+    private val pm: ProcessManager = ProcessManager(),
+    private val scoped: Registry = Registry(),
+    private val provisioningState: ProvisioningState = DefaultProvisioningState(),
+    //private val distributionService: DistributionService = SharedFileDistributionService(".testing/${provisioningState.tag()}"),
+    private val stdout: PrintStream = System.out,
+    private val stderr: PrintStream = System.err,
+    private val loggingContext: LoggingContext = DefaultLoggingContext(scoped)
 ) : ExecutionContext {
 
 //    override fun distributionService(): DistributionService {
@@ -123,11 +114,20 @@ class DefaultExecutionContext(
     }
 
     override fun log(logLevel: LogLevel, msg: String) {
-        println("$logLevel - $msg")
+        val message = LogMessage(executionId = executionId, level = logLevel, body = msg)
+        log(message)
+    }
+
+    override fun log(msg: LogMessage): LoggingContext {
+        return loggingContext.log(msg)
     }
 
     override fun stdout(): PrintStream {
         return stdout
+    }
+
+    override fun stderr(): PrintStream {
+        return stderr
     }
 
     override fun processManager(): ProcessManager {
@@ -156,43 +156,49 @@ class DefaultExecutionContext(
 
 
     override fun withTaskId(taskId: UUID): ExecutionContext {
-        return DefaultExecutionContext(executionId = this.executionId,
-                taskId = taskId,
-                stepId = this.stepId,
-                executor = this.executor,
-                pm = this.pm,
-                scoped = this.scoped,
-                provisioningState = this.provisioningState,
-                //distributionService = this.distributionService,
-                instanceQualifier = this.instanceQualifier,
-                stdout = this.stdout)
+        return DefaultExecutionContext(
+            executionId = this.executionId,
+            taskId = taskId,
+            stepId = this.stepId,
+            executor = this.executor,
+            pm = this.pm,
+            scoped = this.scoped,
+            provisioningState = this.provisioningState,
+            //distributionService = this.distributionService,
+            instanceQualifier = this.instanceQualifier,
+            stdout = this.stdout
+        )
     }
 
     override fun withScope(scopedObject: Any): ExecutionContext {
-        return DefaultExecutionContext(executionId = this.executionId,
-                taskId = taskId,
-                stepId = this.stepId,
-                executor = this.executor,
-                pm = this.pm,
-                scoped = this.scoped.clone().store(scopedObject),
-                provisioningState = this.provisioningState,
-                //distributionService = this.distributionService,
-                instanceQualifier = this.instanceQualifier,
-                stdout = this.stdout)
+        return DefaultExecutionContext(
+            executionId = this.executionId,
+            taskId = taskId,
+            stepId = this.stepId,
+            executor = this.executor,
+            pm = this.pm,
+            scoped = this.scoped.clone().store(scopedObject),
+            provisioningState = this.provisioningState,
+            //distributionService = this.distributionService,
+            instanceQualifier = this.instanceQualifier,
+            stdout = this.stdout
+        )
 
     }
 
     override fun withProvisioningState(state: ProvisioningState): ExecutionContext {
-        return DefaultExecutionContext(executionId = this.executionId,
-                taskId = this.taskId,
-                stepId = stepId,
-                executor = this.executor,
-                pm = this.pm,
-                scoped = this.scoped,
-                provisioningState = state,
-                //distributionService = this.distributionService,
-                instanceQualifier = this.instanceQualifier,
-                stdout = this.stdout)
+        return DefaultExecutionContext(
+            executionId = this.executionId,
+            taskId = this.taskId,
+            stepId = stepId,
+            executor = this.executor,
+            pm = this.pm,
+            scoped = this.scoped,
+            provisioningState = state,
+            //distributionService = this.distributionService,
+            instanceQualifier = this.instanceQualifier,
+            stdout = this.stdout
+        )
 
     }
 
@@ -211,29 +217,32 @@ class DefaultExecutionContext(
 //    }
 
     override fun withInstanceQualifier(qualifier: String?): ExecutionContext {
-        return DefaultExecutionContext(executionId = this.executionId,
-                taskId = this.taskId,
-                stepId = stepId,
-                executor = this.executor,
-                pm = this.pm,
-                scoped = this.scoped,
-                provisioningState = this.provisioningState,
-                //distributionService = this.distributionService,
-                instanceQualifier = qualifier,
-                stdout = this.stdout)
+        return DefaultExecutionContext(
+            executionId = this.executionId,
+            taskId = this.taskId,
+            stepId = stepId,
+            executor = this.executor,
+            pm = this.pm,
+            scoped = this.scoped,
+            provisioningState = this.provisioningState,
+            //distributionService = this.distributionService,
+            instanceQualifier = qualifier,
+            stdout = this.stdout
+        )
     }
 
     override fun withStdout(stdout: StdOut): ExecutionContext {
-        return DefaultExecutionContext(executionId = this.executionId,
-                taskId = this.taskId,
-                stepId = stepId,
-                executor = this.executor,
-                pm = this.pm,
-                scoped = this.scoped,
-                provisioningState = this.provisioningState,
-                //distributionService = this.distributionService,
-                instanceQualifier = this.instanceQualifier,
-                stdout = stdout.printStream
+        return DefaultExecutionContext(
+            executionId = this.executionId,
+            taskId = this.taskId,
+            stepId = stepId,
+            executor = this.executor,
+            pm = this.pm,
+            scoped = this.scoped,
+            provisioningState = this.provisioningState,
+            //distributionService = this.distributionService,
+            instanceQualifier = this.instanceQualifier,
+            stdout = stdout.printStream
         )
     }
 }
@@ -246,11 +255,12 @@ interface ExecutionContextFactory {
      * Other values are overridden with the .withXXX methods
      * on the built execution context.
      */
-    fun get(executionId: UUID = UUID.randomUUID(),
-            taskId: UUID? = null,
-            stepId: UUID? = null,
-            scoped: Registry = Registry(),
-            logMessageSink : LogMessageSink? = null
+    fun get(
+        executionId: UUID = UUID.randomUUID(),
+        taskId: UUID? = null,
+        stepId: UUID? = null,
+        scoped: Registry = Registry(),
+        logMessageSink: LogMessageSink? = null
 
     ): ExecutionContext
 }

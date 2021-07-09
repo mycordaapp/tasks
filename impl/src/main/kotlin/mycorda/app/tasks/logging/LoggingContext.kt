@@ -1,6 +1,7 @@
 package mycorda.app.tasks.logging
 
 import mycorda.app.registry.Registry
+import java.io.PrintStream
 import java.util.*
 import java.util.function.Consumer
 
@@ -26,7 +27,8 @@ enum class LogLevel { DEBUG, INFO, WARN, ERROR }
  */
 enum class LogFormat {
     Full, /* All fields in Java style */
-    Test   /* Timestamp excluded and IDs masked, good for use in test cases*/
+    Test,   /* Timestamp excluded and IDs masked, good for use in test cases*/
+    Simple, /* A short format. Useful for test cases */
 }
 
 /**
@@ -42,6 +44,13 @@ interface StringLogFormatter {
 class DefaultStringLogFormatter : StringLogFormatter {
     override fun toString(msg: LogMessage, format: LogFormat): String {
         return when (format) {
+            LogFormat.Simple -> {
+                val buffer = StringBuilder()
+                buffer.append(msg.level)
+                buffer.append(" ")
+                buffer.append(msg.body)
+                return buffer.toString()
+            }
             LogFormat.Test -> {
                 val buffer = StringBuilder()
                 buffer.append("level=${msg.level}, message=${msg.body}")
@@ -80,59 +89,127 @@ data class LogMessage(
     val body: String,
     val timestamp: Long = System.currentTimeMillis(),
     val taskId: UUID? = null
-) {
-//    fun shortFormat(): String {
-//        val sb = StringBuilder()
-//        sb.append(SimpleDateFormat("HH:mm:ss.SSS").format(Date(timestamp)))
-//        sb.append(String.format("%1$5s", level.name))
-//        sb.append(" - ")
-//        sb.append(body)
-//        return sb.toString()
-//    }
-}
+)
 
 
 /**
- * We always write to a sink. There will be
+ * We always write to a sink.
  */
 interface LogMessageSink : Consumer<LogMessage>
 
 /**
- * The very basic default sink that simply writes to the console
+ * The very basic default sink that simply writes to the console. All configuration is
+ * via the registry. If settings are missing, the following defaults are used:
+ *
+ *  - format is LogFormat.Simple
+ *  - formatter is DefaultStringLogFormatter
  */
-class ConsoleLogMessageSink(registry: Registry = Registry(), private val format: LogFormat = LogFormat.Full) :
+class ConsoleLogMessageSink(registry: Registry = Registry()) :
     LogMessageSink {
     private val formatter = registry.geteOrElse(StringLogFormatter::class.java, DefaultStringLogFormatter())
+    private val format = registry.geteOrElse(LogFormat::class.java, LogFormat.Simple)
     override fun accept(msg: LogMessage) {
         println(formatter.toString(msg, format))
     }
 }
 
+
+interface StdoutHolder {
+    fun out() : PrintStream
+}
+
+interface StderrHolder {
+    fun err() : PrintStream
+}
+
+class DefaultStdoutHolder : StdoutHolder {
+    override fun out(): PrintStream = System.out
+}
+
+class DefaultStderrHolder : StderrHolder {
+    override fun err(): PrintStream = System.err
+}
+
+
+
 /**
- * Stores in memory to a StringBuilder. Mainly for unit testing
+ * The standard Logging Context
+ */
+interface LoggingContext {
+    /**
+     * Abstract generating a log message
+     */
+    fun log(msg: LogMessage): LoggingContext
+
+    /**
+     * Abstract writing to the console
+     */
+    fun stdout(): PrintStream
+
+    /**
+     * Abstract writing to the error stream
+     */
+    fun stderr(): PrintStream
+}
+
+// is this useful
+interface LoggingContextBuilder<T> {
+    fun withStdout(out: PrintStream) : T
+    fun withStderr(out: PrintStream) : T
+    fun buildLoggingContext() : T
+}
+
+class DefaultLoggingContextBuilder<T : Any> : LoggingContextBuilder<T> {
+    override fun withStdout(out: PrintStream): T {
+        TODO("Not yet implemented")
+    }
+
+    override fun withStderr(out: PrintStream): T {
+        TODO("Not yet implemented")
+    }
+
+    override fun buildLoggingContext(): T {
+        TODO("Not yet implemented")
+    }
+
+}
+
+class DefaultLoggingContext(registry: Registry = Registry()) : LoggingContext {
+    private val sink = registry.geteOrElse(LogMessageSink::class.java, ConsoleLogMessageSink(registry))
+    private val level = registry.geteOrElse(LogLevel::class.java, LogLevel.INFO)
+    private val out = registry.geteOrElse(StdoutHolder::class.java, DefaultStdoutHolder())
+    private val err = registry.geteOrElse(StderrHolder::class.java, DefaultStderrHolder())
+
+    override fun log(msg: LogMessage): LoggingContext {
+        if (msg.level >= level) {
+            sink.accept(msg)
+        }
+        return this
+    }
+
+    override fun stdout(): PrintStream = out.out()
+
+    override fun stderr(): PrintStream = err.err()
+}
+
+/**
+ * Stores in memory. Mainly for unit testing. All configuration is via
+ * the registry. If not provided, the following defaults are used:
+ *
+ *  - level is LogLevel.INFO
+ *  - format is LogFormat.Simple
+ *  - formatter is DefaultStringLogFormatter
  */
 class InMemoryLogMessageSink(
-    private val format: LogFormat = LogFormat.Full,
-    private val buffer: StringBuilder = StringBuilder()
+    registry: Registry = Registry()
 ) : LogMessageSink {
+    private val format = registry.geteOrElse(LogFormat::class.java, LogFormat.Simple)
+    private val level = registry.geteOrElse(LogLevel::class.java, LogLevel.INFO)
+    private val formatter = registry.geteOrElse(StringLogFormatter::class.java, DefaultStringLogFormatter())
     private val messages = ArrayList<LogMessage>()
-    override fun accept(m: LogMessage) {
-        messages.add(m)
-        if (buffer.isNotEmpty()) buffer.append("\n")
-
-        if (format == LogFormat.Test) {
-            buffer.append("level=${m.level}, message=${m.body}")
-            if (m.taskId != null) {
-                buffer.append(", taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx")
-            }
-
-        }
-        if (format == LogFormat.Full) {
-            buffer.append("level=${m.level}, message=${m.body}, executionId=${m.executionId}")
-            if (m.taskId != null) {
-                buffer.append(", taskId=${m.taskId}")
-            }
-            buffer.append(", timestamp=${m.timestamp}")
+    override fun accept(msg: LogMessage) {
+        if (msg.level >= level) {
+            messages.add(msg)
         }
     }
 
@@ -145,7 +222,10 @@ class InMemoryLogMessageSink(
         return messages
     }
 
+    /**
+     * Dump out all messages in the format provided
+     */
     override fun toString(): String {
-        return buffer.toString()
+        return messages.joinToString(separator = "\n") { formatter.toString(it, format) }
     }
 }

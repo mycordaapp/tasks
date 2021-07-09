@@ -1,5 +1,7 @@
 package mycorda.app.tasks
 
+import mycorda.app.tasks.logging.StderrHolder
+import mycorda.app.tasks.logging.StdoutHolder
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
@@ -20,26 +22,15 @@ interface CapturedPrintStream {
      * Return the entire captured stream as a single string.
      */
     fun captured(): String
+
+    // TODO - a "tail -f"  like streaming api
 }
-//
-///**
-// * A Factory that can be injected if required
-// */
-//interface CapturedPrintStreamFactory {
-//    fun get(): CapturedPrintStream
-//}
-//
-//class DefaultCapturedPrintStreamFactory(private val capturedPrintStream: CapturedPrintStream) : CapturedPrintStreamFactory {
-//    override fun get(): CapturedPrintStream {
-//        return capturedPrintStream
-//    }
-//}
 
 
 /**
  * The simple case, just capture to an in memory byte array
  */
-class InMemoryCapturedPrintStream : CapturedPrintStream {
+open class InMemoryCapturedPrintStream : CapturedPrintStream {
     private val baos = ByteArrayOutputStream()
     private val utf8 = StandardCharsets.UTF_8.name()
     private val ps = PrintStream(baos, true, utf8)
@@ -54,6 +45,21 @@ class InMemoryCapturedPrintStream : CapturedPrintStream {
         }
     }
 }
+
+/* Typesafe to use as an stdout stream */
+class InMemoryStdoutStream : InMemoryCapturedPrintStream() , StdoutHolder {
+    override fun out(): PrintStream {
+        return printStream()
+    }
+}
+
+/* Typesafe to use as an stdee stream */
+class InMemoryStderrStream : InMemoryCapturedPrintStream() , StderrHolder {
+    override fun err(): PrintStream {
+        return printStream()
+    }
+}
+
 
 /**
  * Use a normal file for storage

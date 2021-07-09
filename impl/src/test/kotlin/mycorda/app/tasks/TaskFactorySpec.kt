@@ -17,7 +17,7 @@ import org.spekframework.spek2.style.specification.describe
 @RunWith(JUnitPlatform::class)
 object TaskFactorySpec : Spek({
 
-    val messageSink = InMemoryLogMessageSink(LogFormat.Test)
+    val messageSink = InMemoryLogMessageSink()
 
     beforeEachTest {
         messageSink.clear()

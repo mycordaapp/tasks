@@ -65,7 +65,6 @@ class TestContextManager() {
     /**
      * Initialise with an external registry. In this case services in the external
      * registry are used if available UNLESS the forceOverride flag is set to true.
-     *
      */
     fun initialiseWithRegistry(registry: Registry, tracking: RegistryTrackingOption): TestContextManager {
         if (!registered) {

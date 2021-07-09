@@ -1,7 +1,6 @@
 package mycorda.app.tasks
 
 
-
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.CalcSquareTask
 import mycorda.app.tasks.logging.ConsoleLogMessageSink
@@ -15,8 +14,7 @@ import org.spekframework.spek2.style.specification.describe
 
 @RunWith(JUnitPlatform::class)
 object ExecutorSpec : Spek({
-
-    val messageSink = InMemoryLogMessageSink(LogFormat.Test)
+    val messageSink = InMemoryLogMessageSink(Registry().store(LogFormat.Test))
 
     beforeEachTest {
         messageSink.clear()
@@ -25,8 +23,8 @@ object ExecutorSpec : Spek({
     describe("Running a simple Task") {
 
         val registry = Registry().store(SingleThreadedExecutor())
-                .store(ProcessManager())
-                .store(ConsoleLogMessageSink())
+            .store(ProcessManager())
+            .store(ConsoleLogMessageSink())
 
         val executor = DefaultTaskExecutor<Int, Int>(registry)
 

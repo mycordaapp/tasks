@@ -23,7 +23,7 @@ import java.util.concurrent.Future
 @RunWith(JUnitPlatform::class)
 object TasksSpec : Spek({
 
-    val messageSink = InMemoryLogMessageSink(LogFormat.Test)
+    val messageSink = InMemoryLogMessageSink()
 
     beforeEachTest {
         messageSink.clear()

@@ -2,9 +2,7 @@ package mycorda.app.tasks.executionContext
 
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.ExecutorFactory
-import mycorda.app.tasks.logging.LogLevel
-import mycorda.app.tasks.logging.LogMessage
-import mycorda.app.tasks.logging.LogMessageSink
+import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
 
 
@@ -22,6 +20,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
     private val executor = registry.get(ExecutorFactory::class.java).executorService()
     private val stdout = registry.geteOrElse(StdOut::class.java, StdOut())
     private val provisioningState = DefaultProvisioningState()
+    private val loggingContext = registry.geteOrElse(LoggingContext::class.java, DefaultLoggingContext(registry))
 
     override fun get(executionId: UUID,
                      taskId: UUID?,
@@ -29,7 +28,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
                      scoped: Registry,
                      logMessageSink: LogMessageSink?): ExecutionContext {
         return Ctx(executionId, taskId, stepId, logMessageSink ?: messageSink, pm, executor, scoped,
-                stdout.printStream, provisioningState,  null)
+                stdout.printStream, provisioningState,  null, loggingContext)
     }
 
     class Ctx(private val executionId: UUID,
@@ -41,7 +40,8 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
               private var scoped: Registry,
               private var stdout: PrintStream,
               private val provisioningState: ProvisioningState,
-              private val instanceQualifier: String?) : ExecutionContext {
+              private val instanceQualifier: String?,
+              private val loggingContext : LoggingContext) : ExecutionContext {
 
 
 
@@ -49,11 +49,15 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return stdout
         }
 
+        override fun stderr(): PrintStream {
+            return stdout
+        }
+
         override fun withStdout(stdout: StdOut): ExecutionContext {
             return Ctx(executionId = this.executionId, taskId = this.taskId, stepId = stepId,
                     sink = this.sink, processManager = this.processManager, executorService = this.executorService,
                     scoped = this.scoped, stdout = stdout.printStream, provisioningState = this.provisioningState,
-                     instanceQualifier = this.instanceQualifier)
+                     instanceQualifier = this.instanceQualifier,  loggingContext = this.loggingContext)
         }
 
         override fun scoped(): Registry {
@@ -74,6 +78,11 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
                     timestamp = System.currentTimeMillis())
 
             sink.accept(logMessage)
+        }
+
+        override fun log(msg: LogMessage): LoggingContext {
+            loggingContext.log(msg)
+            return this
         }
 
         override fun processManager(): ProcessManager {
@@ -100,7 +109,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return Ctx(executionId = this.executionId, taskId = taskId, stepId = this.stepId,
                     sink = this.sink, processManager = this.processManager, executorService = this.executorService,
                     scoped = this.scoped, stdout = this.stdout, provisioningState = this.provisioningState,
-                    instanceQualifier = this.instanceQualifier)
+                    instanceQualifier = this.instanceQualifier, loggingContext = this.loggingContext)
 
         }
 
@@ -113,7 +122,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return Ctx(executionId = this.executionId, taskId = this.taskId, stepId = stepId,
                     sink = this.sink, processManager = this.processManager, executorService = this.executorService,
                     scoped = this.scoped, stdout = this.stdout, provisioningState = state,
-                    instanceQualifier = this.instanceQualifier)
+                    instanceQualifier = this.instanceQualifier,  loggingContext = this.loggingContext)
         }
 
 
@@ -122,7 +131,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return Ctx(executionId = this.executionId, taskId = this.taskId, stepId = stepId,
                     sink = this.sink, processManager = this.processManager, executorService = this.executorService,
                     scoped = this.scoped, stdout = this.stdout, provisioningState = this.provisioningState,
-                    instanceQualifier = qualifier)
+                    instanceQualifier = qualifier,  loggingContext = this.loggingContext)
         }
     }
 }

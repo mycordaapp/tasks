@@ -19,3 +19,9 @@ dependencies {
     testCompile("org.spekframework.spek2:spek-runner-junit5:2.0.0")
 }
 
+test {
+    // set heap size for the test JVM(s)
+    minHeapSize = "128m"
+    maxHeapSize = "1024m"
+}
+
