@@ -1,6 +1,7 @@
 package mycorda.app.tasks.executionContext
 
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.Task
 import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
 import java.io.PrintStream
@@ -15,11 +16,29 @@ import java.util.concurrent.Executors
  * change on each run
  */
 interface ExecutionContext : LoggingContext {
+
     /**
      * A standard way to manage log output.
      */
-    fun log(logLevel: LogLevel = LogLevel.INFO, msg: String)
+    @Deprecated("use log() or logXxxx() instead")
+    fun log(logLevel: LogLevel = LogLevel.INFO, msg: String) {
+        val message = LogMessage(level = logLevel, executionId = executionId(), body = msg)
+        log(message)
+    }
 
+
+    /**
+     * Create a fully populated info message
+     */
+    fun logInfo(t: Task, msg: String) {
+        val message = LogMessage(
+            executionId = executionId(),
+            level = LogLevel.INFO,
+            taskId = t.taskID(),
+            body = msg
+        )
+        log(message)
+    }
 
     /**
      *  One single place for running and checking the status of processes.
@@ -75,6 +94,9 @@ interface ExecutionContext : LoggingContext {
     fun instanceQualifier(): String?
 }
 
+/**
+ * A standard way to modify an existing ExecutionContext
+ */
 interface ExecutionContextModifier {
 
     fun withTaskId(taskId: UUID): ExecutionContext
@@ -89,11 +111,10 @@ interface ExecutionContextModifier {
     fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext
 
     fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext
-
 }
 
 /**
- * Makes it easier to mutate an existing ExecutionContext
+ * The
  */
 class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionContextModifier {
     private var working = original
@@ -200,10 +221,6 @@ class DefaultExecutionContext(
         return provisioningState
     }
 
-    override fun log(logLevel: LogLevel, msg: String) {
-        val message = LogMessage(executionId = executionId, level = logLevel, body = msg)
-        log(message)
-    }
 
     override fun log(msg: LogMessage): LoggingContext {
         return loggingContext.log(msg)

@@ -2,6 +2,7 @@ package mycorda.app.tasks
 
 
 import mycorda.app.tasks.executionContext.DefaultExecutionContext
+import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import java.util.UUID
 import java.util.concurrent.Future
@@ -40,11 +41,17 @@ interface AsyncTask<I, O> : Task {
     fun exec(executionContext: ExecutionContext = DefaultExecutionContext(), params: I): Future<O>
 }
 
+
 abstract class BaseBlockingTask<I, O> : BlockingTask<I, O> {
     private val taskID = UUID.randomUUID()
     override fun taskID(): UUID {
         return taskID
     }
+
+    /**
+     * Update the ExecutionContext with the TaskId.
+     */
+    protected fun ctxWithTaskID(ctx: ExecutionContext): ExecutionContext = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
 }
 
 abstract class BaseUnitBlockingTask<I> : UnitBlockingTask<I> {
@@ -52,7 +59,25 @@ abstract class BaseUnitBlockingTask<I> : UnitBlockingTask<I> {
     override fun taskID(): UUID {
         return taskID
     }
+
+    /**
+     * Update the ExecutionContext with the TaskId.
+     */
+    protected fun ctxWithTaskID(ctx: ExecutionContext): ExecutionContext = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
 }
+
+abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
+    private val taskID = UUID.randomUUID()
+    override fun taskID(): UUID {
+        return taskID
+    }
+
+    /**
+     * Update the ExecutionContext with the TaskId.
+     */
+    protected fun updatedCtx(ctx: ExecutionContext): ExecutionContext = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
+}
+
 
 /**
  * A standard result for use in Async tasks.

@@ -28,6 +28,7 @@ As with everything in [myCorda dot App](https://mycorda.app), this library has m
 
 ## Next Steps 
 
-To build a HelloWorld see here 
+More on building and using Tasks is [here](./docs/tasks.md)
 
-For a deeper explanation, see here 
+To build a HelloWorld see here (toto)
+

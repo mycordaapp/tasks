@@ -5,7 +5,6 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.logging.LogLevel
 import java.io.File
 import java.util.*
 import java.util.concurrent.Future
@@ -14,6 +13,7 @@ import java.util.concurrent.Future
  Some prebuilt demo tasks for tests and example
  */
 
+@Deprecated(message = "use one the Base variants defined in Tasks.kt")
 abstract class BaseTask : Task {
     private val id = UUID.randomUUID()
     override fun taskID(): UUID {
@@ -26,11 +26,13 @@ abstract class BaseTask : Task {
     fun updatedCtx(ctx: ExecutionContext): ExecutionContext = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
 }
 
-class CalcSquareTask : BaseTask(), BlockingTask<Int, Int>, TaskDocument<Int, Int> {
+
+class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, params: Int): Int {
-        val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.log(logLevel = LogLevel.INFO, msg = "Calculating square of $params")
+        val ctx = ctxWithTaskID(ctx)
+        ctx.logInfo(this, "Calculating square of $params")
+
         return params.times(params)
     }
 
@@ -50,13 +52,13 @@ class CalcSquareTask : BaseTask(), BlockingTask<Int, Int>, TaskDocument<Int, Int
     }
 }
 
-class CalcSquareAsyncTask(registry: Registry, private val delayMs: Long = 1000) : BaseTask(), AsyncTask<Int, Int> {
+class CalcSquareAsyncTask(registry: Registry, private val delayMs: Long = 1000) : BaseAsyncTask<Int, Int>() {
 
     private val executors = registry.get(ExecutorFactory::class.java).executorService()
 
     override fun exec(ctx: ExecutionContext, num: Int): Future<Int> {
         val ctx = updatedCtx(ctx)
-        ctx.log(logLevel = LogLevel.INFO, msg = "Calculating square of $num")
+        ctx.logInfo(this, msg = "Calculating square of $num")
         return executors.submit<Int> {
             Thread.sleep(delayMs)
             num * num
@@ -64,13 +66,13 @@ class CalcSquareAsyncTask(registry: Registry, private val delayMs: Long = 1000) 
     }
 }
 
-class CalcSquareAsync2Task(registry: Registry) : BaseTask(), AsyncTask<Int, Int> {
+class CalcSquareAsync2Task(registry: Registry) : BaseAsyncTask<Int, Int>() {
 
     private val executors = registry.get(ExecutorFactory::class.java).executorService()
 
     override fun exec(ctx: ExecutionContext, params: Int): Future<Int> {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.log(logLevel = LogLevel.INFO, msg = "Calculating square of $params")
+        ctx.logInfo(this, "Calculating square of $params")
         return executors.submit<Int> {
             Thread.sleep(10)
             params * params
@@ -79,13 +81,13 @@ class CalcSquareAsync2Task(registry: Registry) : BaseTask(), AsyncTask<Int, Int>
 }
 
 
-class ExceptionGeneratingAsyncTask(registry: Registry) : BaseTask(), AsyncTask<String, String> {
+class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, String>() {
 
     private val executors = registry.get(ExecutorFactory::class.java).executorService()
 
     override fun exec(ctx: ExecutionContext, params: String): Future<String> {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.log(logLevel = LogLevel.INFO, msg = "Message is '$params'")
+        ctx.logInfo(this, msg = "Message is '$params'")
         return executors.submit<String> {
             if (params.contains("exception", ignoreCase = true)) throw RuntimeException(params)
             Thread.sleep(10)
@@ -94,10 +96,10 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseTask(), AsyncTask<S
     }
 }
 
-class FileTask : BaseTask(), BlockingTask<File, Int> {
+class FileTask : BaseBlockingTask<File, Int>() {
     override fun exec(ctx: ExecutionContext, file: File): Int {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.log(logLevel = LogLevel.INFO, msg = "Loading file $file")
+        ctx.logInfo(this, "Loading file $file")
         return file.readBytes().size
     }
 }
@@ -105,7 +107,7 @@ class FileTask : BaseTask(), BlockingTask<File, Int> {
 class UnitTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, params: String) {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.log(logLevel = LogLevel.INFO, msg = "Params are: $params")
+        ctx.logInfo(this ,"Params are: $params")
     }
 }
 
