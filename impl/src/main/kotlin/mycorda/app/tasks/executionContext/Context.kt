@@ -20,12 +20,8 @@ interface ExecutionContext : LoggingContext {
     /**
      * A standard way to manage log output.
      */
-    @Deprecated("use log() or logXxxx() instead")
-    fun log(logLevel: LogLevel = LogLevel.INFO, msg: String) {
-        val message = LogMessage(level = logLevel, executionId = executionId(), body = msg)
-        log(message)
-    }
-
+    @Deprecated(message = "use log(")
+    fun log(logLevel: LogLevel = LogLevel.INFO, msg: String)
 
     /**
      * Create a fully populated info message
@@ -219,6 +215,10 @@ class DefaultExecutionContext(
 
     override fun provisioningState(): ProvisioningState {
         return provisioningState
+    }
+
+    override fun log(logLevel: LogLevel, msg: String) {
+        log(LogMessage(executionId = this.executionId, level = logLevel, body = msg))
     }
 
 
