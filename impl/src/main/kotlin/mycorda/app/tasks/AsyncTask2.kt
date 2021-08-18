@@ -1,7 +1,10 @@
 package mycorda.app.tasks
 
 import mycorda.app.helpers.random
+import mycorda.app.tasks.executionContext.DefaultExecutionContext
+import mycorda.app.tasks.executionContext.ExecutionContext
 import java.util.*
+import java.util.function.Consumer
 
 /**
  * A generic encapsulation of a unique identifier that
@@ -54,35 +57,152 @@ open class UniqueId(val id: String = UUID.randomUUID().toString()) {
  * The three basic result types for onSuccess, onFail
  * and onTimeout
  */
-sealed class AsyncResult2
-class Fail(val message: String) : AsyncResult2()
-class Timeout(val message: String) : AsyncResult2()
-object Success : AsyncResult2()
+sealed class AsyncResult2<T>
+class Success<T>(val result: T) : AsyncResult2<T>()
+class Fail<T>(val message: String) : AsyncResult2<T>()
+class Timeout<T>(val message: String) : AsyncResult2<T>()
 
 
 /**
  * The logical channel for passing results between services.
- * Note that writing to channel is ALWAYS idempotent , i.e. we NEVER
+ * Note that writing to channel is ALWAYS idempotent, i.e. we NEVER
  * generate different results for the same channelId
  */
-data class ResultChannelMessage(
+data class AsyncResultChannelMessage(
     val channelId: UniqueId,
-    val result: AsyncResult2
+    val result: AsyncResult2<Any>,
+    val resultClazz: Class<Any>    // for serializer and helping with type safety. Is it s good idea?
 )
 
 /**
- * The client (consumer) side of ResultChannel
+ * The client (consumer) side of ResultChannel.
+ * Note at this
  */
-interface ResultChannelSink {
-    fun accept(result: ResultChannelMessage)
+interface AsyncResultChannelSink : Consumer<AsyncResultChannelMessage> {
+    override fun accept(result: AsyncResultChannelMessage)
 }
 
 /**
  * The server (generator) side of ResultChannel
  */
-interface ResultChannelSource {
-    fun create(): ResultChannelMessage
+interface AsyncResultChannelSource {
+    fun create(): AsyncResultChannelMessage
+}
+
+/**
+ * As the AsyncTask can be long running and may live between restarts,
+ * then there needs to a way for the server side to know how to
+ * recreate the AsyncResultChannelSource that was specified
+ * when the original request was made.
+ *
+ * There are some assumptions and conventions here:
+ *   - the first part of the string specifies the type of channel,
+ *     for example "LOCAL:", "REST:", "AWSSMS:"
+ *   - the second part of the string encodes all other connection information
+ *   - the server side will store the locator linked to the originating
+ *     request
+ *   - an implementation of AsyncResultChannelSourceFactory will
+ *     know how to create a suitable concrete implementations of AsyncResultChannelSource
+ *     from the Locator
+ *
+ */
+data class AsyncResultChannelSinkLocator(val locator: String)
+
+/**
+ * Given a AsyncResultChannelSourceLocator, return the actual channel
+ */
+interface AsyncResultChannelSinkFactory {
+    fun create(locator: AsyncResultChannelSinkLocator): AsyncResultChannelSink
 }
 
 
+/**
+ * The usual way of handling an AsyncResult in client code
+ */
+interface AsyncResultHandler<T> {
+    fun onSuccess(result: T)
+    fun onFail(message: String)
+    fun onTimeout(message: String)
+}
+
+/**
+ * register a handler for the result
+ */
+interface RegisterAsyncResultHandler<T> {
+    fun register(channelId: UniqueId, handler: AsyncResultHandler<T>)
+}
+
+
+interface Async2Task<I, O> : Task {
+    /**
+     * Execute the task.
+     */
+    fun exec(
+        executionContext: ExecutionContext = DefaultExecutionContext(),
+
+        /**
+         * Where to send the result back to? Should be stored
+         * with the original request.
+         */
+        channelLocator: AsyncResultChannelSinkLocator,
+
+        /**
+         * The unique channelId
+         */
+        channelId: UniqueId,
+
+        /**
+         * The actual input
+         */
+        input: I
+    )
+}
+
+/**
+ * Running a task remotely - as it on another
+ * server we pass the tasknum
+ */
+interface Async2TaskClient {
+    fun <I> execTask(
+        taskClazz: String,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: I
+       // handler: AsyncResultHandler<O>
+    )
+}
+
+class Async2TaskClientImpl : Async2TaskClient {
+    override fun <I> execTask(
+        taskClazz: String,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: I
+    ) {
+
+    }
+
+}
+
+
+class InMemoryAsyncResultChannel() : AsyncResultChannelSink {
+    private val channel = LinkedList<AsyncResultChannelMessage>()
+
+    override fun accept(result: AsyncResultChannelMessage) {
+        channel.add(result)
+    }
+
+}
+
+class DefaultAsyncResultChannelSinkFactory() : AsyncResultChannelSinkFactory {
+    private val inMemoryAsyncResultChannel = InMemoryAsyncResultChannel()
+    override fun create(locator: AsyncResultChannelSinkLocator): AsyncResultChannelSink {
+        if (locator.locator == "LOCAL") {
+            return inMemoryAsyncResultChannel
+        } else {
+            throw RuntimeException("Dont know about $locator")
+        }
+    }
+
+}
 
