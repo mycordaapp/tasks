@@ -13,14 +13,11 @@ class Async2TaskTest {
         val channelId = UniqueId.random()
 
 
-        val x = Async2TaskClientImpl()
-
-
+        val x = Async2TaskClientImpl(sinkLocator)
 
 
         x.execTask(
             taskClazz = "mycorda.app.tasks.SimpleAsync2Task",
-            channelLocator = sinkLocator,
             channelId = channelId,
             input = 9
         )

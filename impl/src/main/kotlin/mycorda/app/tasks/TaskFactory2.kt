@@ -3,6 +3,7 @@ package  mycorda.app.tasks
 
 import mycorda.app.registry.Registry
 import java.lang.Exception
+import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 
 
@@ -48,6 +49,8 @@ class TaskFactory2(private val registry: Registry = Registry()) {
                 if (paramClazz == Registry::class) {
                     try {
                         return it.call(registry)
+                    } catch (itex: InvocationTargetException) {
+                        throw TaskException("Problem instantiating `$qualifiedName`. Original error: `${itex.targetException.message}`")
                     } catch (ex: Exception) {
                         throw TaskException("Problem instantiating `$qualifiedName`. Original error: `${ex.message}`")
                     }
@@ -66,6 +69,18 @@ class TaskFactory2(private val registry: Registry = Registry()) {
             }
         }
         throw TaskException("Couldn't find a suitable constructor for task: `$qualifiedName`")
+    }
+
+    fun <I, O> createInstance(task: KClass<out BlockingTask<I, O>>): BlockingTask<I, O> {
+        val taskName: String = task.qualifiedName!!
+        val t = createInstance(taskName)//  as BlockingTask<I, O>
+        return t as BlockingTask<I, O>
+    }
+
+    fun <I, O> createInstance(task: KClass<out Async2Task<I, O>>): Async2Task<I, O> {
+        val taskName: String = task.qualifiedName!!
+        val t = createInstance(taskName)
+        return t as Async2Task<I, O>
     }
 
 }

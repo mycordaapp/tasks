@@ -10,7 +10,6 @@ import org.junit.Test
 import java.util.*
 
 class TaskFactory2Test {
-
     private val executionContext = DefaultExecutionContext()
     private val notRequired = NotRequired.instance()
 
@@ -36,7 +35,10 @@ class TaskFactory2Test {
         val factory2 = TaskFactory2(Registry().store(Multiplier()))
         factory2.register(CalculateTask::class)
         val multiplyCalculator = factory2.createInstance(CalculateTask::class.qualifiedName!!)
-        assertThat((multiplyCalculator as CalculateTask).exec(DefaultExecutionContext(), 10), equalTo(100))
+        assertThat(
+            (multiplyCalculator as CalculateTask).exec(DefaultExecutionContext(), 10),
+            equalTo(100)
+        )
 
         // build CalculateTask with nothing in the registry
         val factory3 = TaskFactory2(Registry())
@@ -46,7 +48,7 @@ class TaskFactory2Test {
             throws<TaskException>(
                 has(
                     Exception::message,
-                    present(equalTo("Problem instantiating `mycorda.app.tasks.CalculateTask`. Original error: `null`"))
+                    present(equalTo("Problem instantiating `mycorda.app.tasks.CalculateTask`. Original error: `Class interface mycorda.app.tasks.Calculator in not in the registry`"))
                 )
             )
         )
@@ -108,17 +110,87 @@ class TaskFactory2Test {
         )
     }
 
+    @Test
+    fun `should lookup BlockingTask by class`() {
+        val factory = TaskFactory2()
+        factory.register(MultiplyTask::class)
+        factory.register(HelloWorldTask::class)
+
+        // can lookup by class rather than string
+        val multiplier = factory.createInstance(MultiplyTask::class)
+        assert(multiplier is MultiplyTask)
+        assertThat(multiplier.exec(executionContext, 10), equalTo(100))
+
+        val helloWorld = factory.createInstance(HelloWorldTask::class)
+        assert(helloWorld is HelloWorldTask)
+        assertThat(helloWorld.exec(executionContext, notRequired), equalTo("Hello World"))
+    }
+
+    @Test
+    fun `should lookup AsyncTask by class`() {
+        // the DefaultAsyncResultChannelSinkFactory will support the "LOCAL" channel
+        val sinkFactory = DefaultAsyncResultChannelSinkFactory()
+        val registry = Registry().store(sinkFactory)
+        val factory = TaskFactory2(registry)
+        factory.register(CalcSquareAsyncTask::class)
+
+        val channelId = UniqueId.randomUUID()
+        val locator = AsyncResultChannelSinkLocator.LOCAL
+        val simpleTask = factory.createInstance(CalcSquareAsyncTask::class)
+
+        // the SimpleAsyncTask returns immediately, so we don't have to wait
+        simpleTask.exec(
+            executionContext = executionContext,
+            channelLocator = locator,
+            channelId = channelId,
+            input = 10
+        )
+
+        val query = sinkFactory.channelQuery(locator)
+        assert(query.hasResult(channelId))
+        assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
+    }
+
+    @Test
+    // TODO - this test case doesn't really belong here, but currently the task client design \
+    //       is still unstable
+    fun `should work with TaskClient `() {
+
+        // the DefaultAsyncResultChannelSinkFactory will support the "LOCAL" channel
+        val sinkFactory = DefaultAsyncResultChannelSinkFactory()
+        val registry = Registry().store(sinkFactory)
+        val factory = TaskFactory2(registry)
+        factory.register(CalcSquareAsyncTask::class)
+
+        val channelId = UniqueId.randomUUID()
+        val locator = AsyncResultChannelSinkLocator("LOCAL")
+
+        //val client = Async2TaskClientImpl()
+
+//        client.execTask(taskClazz = CalcSquareAsyncTask::class.qualifiedName!!,
+//            channelLocator = locator
+//
+//        )
+        val simpleTask = factory.createInstance(CalcSquareAsyncTask::class)
+
+        // the SimpleAsyncTask returns immediately, so we don't have to wait
+        simpleTask.exec(
+            executionContext = executionContext,
+            channelLocator = locator,
+            channelId = channelId,
+            input = 10
+        )
+
+        val query = sinkFactory.channelQuery(locator)
+        assert(query.hasResult(channelId))
+        assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
+    }
 }
 
 class MultiplyTask : BlockingTask<Int, Int> {
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID {
-        return taskId
-    }
-
-    override fun exec(ctx: ExecutionContext, params: Int): Int {
-        return params * params
-    }
+    override fun taskID(): UUID = taskId
+    override fun exec(ctx: ExecutionContext, params: Int) = params * params
 }
 
 interface Calculator {
@@ -134,15 +206,10 @@ class Adder : Calculator {
 }
 
 class CalculateTask(registry: Registry) : BlockingTask<Int, Int> {
-    val calculator = registry.get(Calculator::class.java)
+    private val calculator = registry.get(Calculator::class.java)
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID {
-        return taskId
-    }
-
-    override fun exec(ctx: ExecutionContext, params: Int): Int {
-        return calculator.calc(params)
-    }
+    override fun taskID(): UUID = taskId
+    override fun exec(ctx: ExecutionContext, params: Int): Int = calculator.calc(params)
 }
 
 interface SimpleTask : BlockingTask<NotRequired, String>
@@ -160,7 +227,32 @@ class GoodbyeWorldTask() : SimpleTask {
 }
 
 // Tasks can either have a default constructor, or a constructor that takes a registry
-class TaskWithoutAGoodConstructor(notAllowed: String) : Task {
+class TaskWithoutAGoodConstructor(notAllowedConstructor: String) : Task {
     private val taskId = UUID.randomUUID()
+    override fun taskID(): UUID = taskId
+}
+
+class CalcSquareAsyncTask(registry: Registry) : Async2Task<Int, Int> {
+    private val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
+    private val taskId = UUID.randomUUID()
+    override fun exec(
+        executionContext: ExecutionContext,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: Int
+    ) {
+        // 1. Find my channel
+        val resultChannel = resultChannelFactory.create(channelLocator)
+
+        // In real code wait for the long running process, i.e. start a thread, wait on
+        // an event
+
+        // 2. Generate a result
+        val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
+
+        // 3. Write the result
+        resultChannel.accept(result)
+    }
+
     override fun taskID(): UUID = taskId
 }
