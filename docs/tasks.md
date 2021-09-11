@@ -3,17 +3,17 @@
 ## Introduction
 
 A `Task` is simply a basic building block that can encapsulate some useful activity, typically on an external system.
-The primary motivator is to build up a set of "Lego" like building block to simplify the devops activities needed to
-deploy and manage Corda applications, and their related systems. They are NOT a replacement for tools like Helm, but
-they do aim to simplify by replacing the adhoc scripting prevalent in these solutions with simple API calls to the Lego
-like tasks.
+They have been developed to assist in the deployment of the Corda DLT platform and related systems, however the concepts
+are useful in any situation where there multiple devops technologies to manage. They are NOT a replacement for tools
+like Helm, but they do aim to simplify by replacing the adhoc scripting prevalent in these solutions with simple API
+calls to the Lego like tasks.
 
-A `Task` can be as simple or as complicated as necessary, though of course good design say to try and build complex
-tasks from a set of simpler ones. They can run anywhere there is a JVM installed.
+A `Task` can be as simple or as complicated as necessary, though of course good design is almost certainly to build
+complex tasks from a set of simpler ones. They can run anywhere there is a JVM installed.
 
-To be truly useful, Tasks need a set of higher level services. We don't need to look at these to understand how Tasks
-are built and work, but as with everything in [My Corda App](https://mycorda.app/) these services are modular and built
-to the principle of minimal dependency.
+To be truly useful, Tasks need a set of higher level services (todo - a link to what these are). We don't need to look
+at these to understand how Tasks are built and work, but as with everything in [My Corda App](https://mycorda.app/)
+these services are modular and built to the principle of minimal dependency.
 
 ## The Hello World task.
 
@@ -40,7 +40,7 @@ access to common services.
 
 All `Tasks` follow a simple Request / Response pattern with a single class for each. This is important as:
 
-* for higher level services, it allows for a lot of generalisations
+* for higher level services it allows for a lot of generalisations
 * it works very well with generics in Kotlin.
 
 Tasks really have two key characteristics:
@@ -63,14 +63,69 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>() {
 }
 ```
 
-This doesn't really do anything useful, but it shows the basic progamming model in which everything needed is available
+This doesn't really do anything useful, but it shows the basic programming model in which everything needed is available
 via the `ExeccutionContext`. The `DefaultExeccutionContext`
 is lightweight and suitable for basic testing.
+
+### #2 - Executing a Task
+
+A `Task` can be created and executed in three ways
+
+* by instantiating an instance of the Task and calling the `exec` method directly.
+* by using the `TaskFactory`. Usually this is just part of the implementation of the `TaskClient` below
+* by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it
+** allows for remoting (calling `Tasks` on a remote agent)
+** controls setup of the `ExecutionContext`
+
+#### #2a - Executing the Task directly
+
+See `TaskDocExamples.kt`
+
+```kotlin
+@Test
+fun `should call task directly`() {
+    val task = CalcSquareTask()
+    val ctx = DefaultExecutionContext()
+    val result = task.exec(ctx, 10)
+    assertThat(result, equalTo(100))
+}
+```
+#### #2b - Using the `TaskFactory`
+
+```kotlin
+ @Test
+    fun `should call task via the TaskFactory`() {
+        // register a real task
+        val liveFactory = TaskFactory2()
+        liveFactory.register(ListDirectoryTaskImpl::class, ListDirectoryTask::class)
+
+        // create by class
+        val taskByClass = liveFactory.createInstance(ListDirectoryTask::class)
+        val ctx = DefaultExecutionContext()
+        assert(taskByClass.exec(ctx,".").contains("build.gradle"))
+
+        // create by name
+        val taskByName = liveFactory.createInstance("mycorda.app.tasks.ListDirectoryTask") as BlockingTask<String,List<String>>
+        assert(taskByName.exec(ctx,".").contains("build.gradle"))
+
+        // register and create a fake task
+        val fakeFactory = TaskFactory2()
+        fakeFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
+        val fakeTask= fakeFactory.createInstance(ListDirectoryTask::class)
+        assert(fakeTask.exec(ctx,".").contains("fake.txt"))
+    }
+```
+
+#### #2c - Using the `TaskClient`
+
+TODO 
+
+
 
 ### #2 - Combining Tasks
 
 The second principle is that is easy to call and combine tasks, even if the implementation is running on another server.
-To support this there is prebuilt support for common problems, including:
+To support this there is prebuilt support for common problems including:
 
 * creation of fully wired ExecutionContext
 * serialisation of input and outputs

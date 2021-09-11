@@ -40,6 +40,23 @@ class ExampleTaskFake : ExampleTask, BaseBlockingTask<Int, Int>() {
     }
 }
 
+interface ListDirectoryTask : BlockingTask<String, List<String>>
+
+class ListDirectoryTaskImpl : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
+    override fun exec(executionContext: ExecutionContext, params: String): List<String> {
+        return File(params).listFiles().map { it.name }
+    }
+}
+
+class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
+    override fun exec(executionContext: ExecutionContext, params: String): List<String> {
+        val out = executionContext.stdout()
+        out.println("ListDirectoryTask:")
+        out.println("   params: $params")
+        return listOf("fake.txt")
+    }
+}
+
 
 class RegistryTask(private val registry: Registry) : BaseTask(), BlockingTask<Unit?, String> {
 
@@ -131,7 +148,8 @@ class DatabaseTask() : BaseTask(), BlockingTask<DatabaseConfig, DatabaseConfig> 
 
 // emulates a task that reads some status information. after a period
 // of time that status will change, e.g. a system might go from "starting" to "running" status
-class StatusChangeTask<I, O>(private val before: O, private val after: O, private val delay: Long = 1000) : BaseBlockingTask<I, O>() {
+class StatusChangeTask<I, O>(private val before: O, private val after: O, private val delay: Long = 1000) :
+    BaseBlockingTask<I, O>() {
 
     private val startTime = System.currentTimeMillis()
     override fun exec(ctx: ExecutionContext, params: I): O {
