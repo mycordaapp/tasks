@@ -20,7 +20,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
     private val executor = registry.get(ExecutorFactory::class.java).executorService()
     private val stdout = registry.geteOrElse(StdOut::class.java, StdOut())
     private val provisioningState = DefaultProvisioningState()
-    private val loggingContext = registry.geteOrElse(LoggingContext::class.java, DefaultLoggingContext(registry))
+    private val loggingContext = registry.geteOrElse(LoggingProducerContext::class.java, DefaultLoggingProducerContext(registry))
 
     override fun get(executionId: UUID,
                      taskId: UUID?,
@@ -41,7 +41,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
               private var stdout: PrintStream,
               private val provisioningState: ProvisioningState,
               private val instanceQualifier: String?,
-              private val loggingContext : LoggingContext) : ExecutionContext {
+              private val loggingProducerContext : LoggingProducerContext) : ExecutionContext {
 
 
 
@@ -70,10 +70,10 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             sink.accept(logMessage)
         }
 
-        override fun log(msg: LogMessage): LoggingContext {
-            loggingContext.log(msg)
-            return this
-        }
+//        override fun log(msg: LogMessage): LoggingProducerContext {
+//            loggingProducerContext.log(msg)
+//            return this
+//        }
 
         override fun processManager(): ProcessManager {
             return processManager
@@ -93,6 +93,10 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
 
         override fun instanceQualifier(): String? {
             return instanceQualifier
+        }
+
+        override fun logger(): LogMessageSink {
+            return loggingProducerContext.logger()
         }
 
 

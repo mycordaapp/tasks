@@ -35,18 +35,20 @@ interface BlockingTask<in I, out O> : Task {
 ```
 
 `ExecutionContext` is explained in more detail later. All we need to know to understand a Task is that it injects
-information that is only know at execution time, such as the connection to a stdout console, as well as providing easy
+information that is only known at execution time, such as the connection to a stdout console, as well as providing easy
 access to common services.
 
-All `Tasks` follow a simple Request / Response pattern with a single class for each. This is important as:
+All `Tasks` follow a simple Request / Response pattern with a single class for each input (Request) and output (
+Response). This is important as:
 
 * for higher level services it allows for a lot of generalisations
 * it works very well with generics in Kotlin.
 
-Tasks really have two key characteristics:
+Tasks have three key characteristics:
 
 * do one thing well
 * provide stable and unambiguous inputs and outputs to their clients
+* conform to the rules in [Really Simple Serializer](https://github.com/mycordaapp/really-simple-serialization/blob/master/README.md)
 
 A simple example is below. For clarity there is some boiler-plate code that is normally simplified
 
@@ -74,8 +76,8 @@ A `Task` can be created and executed in three ways
 * by instantiating an instance of the Task and calling the `exec` method directly.
 * by using the `TaskFactory`. Usually this is just part of the implementation of the `TaskClient` below
 * by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it
-** allows for remoting (calling `Tasks` on a remote agent)
-** controls setup of the `ExecutionContext`
+  ** allows for remoting (calling `Tasks` on a remote agent)
+  ** controls setup of the `ExecutionContext`
 
 #### #2a - Executing the Task directly
 
@@ -90,37 +92,39 @@ fun `should call task directly`() {
     assertThat(result, equalTo(100))
 }
 ```
+
 #### #2b - Using the `TaskFactory`
+
+See `TaskDocExamples.kt`
 
 ```kotlin
  @Test
-    fun `should call task via the TaskFactory`() {
-        // register a real task
-        val liveFactory = TaskFactory2()
-        liveFactory.register(ListDirectoryTaskImpl::class, ListDirectoryTask::class)
+fun `should call task via the TaskFactory`() {
+    // register a real task
+    val liveFactory = TaskFactory2()
+    liveFactory.register(ListDirectoryTaskImpl::class, ListDirectoryTask::class)
 
-        // create by class
-        val taskByClass = liveFactory.createInstance(ListDirectoryTask::class)
-        val ctx = DefaultExecutionContext()
-        assert(taskByClass.exec(ctx,".").contains("build.gradle"))
+    // create by class
+    val taskByClass = liveFactory.createInstance(ListDirectoryTask::class)
+    val ctx = DefaultExecutionContext()
+    assert(taskByClass.exec(ctx, ".").contains("build.gradle"))
 
-        // create by name
-        val taskByName = liveFactory.createInstance("mycorda.app.tasks.ListDirectoryTask") as BlockingTask<String,List<String>>
-        assert(taskByName.exec(ctx,".").contains("build.gradle"))
+    // create by name
+    val taskByName =
+        liveFactory.createInstance("mycorda.app.tasks.ListDirectoryTask") as BlockingTask<String, List<String>>
+    assert(taskByName.exec(ctx, ".").contains("build.gradle"))
 
-        // register and create a fake task
-        val fakeFactory = TaskFactory2()
-        fakeFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
-        val fakeTask= fakeFactory.createInstance(ListDirectoryTask::class)
-        assert(fakeTask.exec(ctx,".").contains("fake.txt"))
-    }
+    // register and create a fake task
+    val fakeFactory = TaskFactory2()
+    fakeFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
+    val fakeTask = fakeFactory.createInstance(ListDirectoryTask::class)
+    assert(fakeTask.exec(ctx, ".").contains("fake.txt"))
+}
 ```
 
 #### #2c - Using the `TaskClient`
 
-TODO 
-
-
+TODO
 
 ### #2 - Combining Tasks
 

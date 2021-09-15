@@ -15,12 +15,12 @@ import java.util.concurrent.Executors
  * information that are deferred until execution time, as they may
  * change on each run
  */
-interface ExecutionContext : LoggingContext {
+interface ExecutionContext : LoggingProducerContext {
 
     /**
      * A standard way to manage log output.
      */
-    @Deprecated(message = "use log(")
+    @Deprecated(message = "use log(msg)")
     fun log(logLevel: LogLevel = LogLevel.INFO, msg: String)
 
     /**
@@ -33,7 +33,7 @@ interface ExecutionContext : LoggingContext {
             taskId = t.taskID(),
             body = msg
         )
-        log(message)
+        logger().accept(message)
     }
 
     /**
@@ -115,7 +115,7 @@ interface ExecutionContextModifier {
 class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionContextModifier {
     private var working = original
     override fun withTaskId(taskId: UUID): ExecutionContext {
-        working = DefaultExecutionContext(
+        working = DefaultExecutionProducerContext(
             executionId = working.executionId(),
             taskId = taskId,
             executor = working.executorService(),
@@ -131,7 +131,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 
 
     override fun withStdout(stdout: StdOut): ExecutionContext {
-        working = DefaultExecutionContext(
+        working = DefaultExecutionProducerContext(
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -146,7 +146,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     }
 
     override fun withScope(scopedObject: Any): ExecutionContext {
-        working = DefaultExecutionContext(
+        working = DefaultExecutionProducerContext(
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -161,7 +161,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     }
 
     override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
-        working = DefaultExecutionContext(
+        working = DefaultExecutionProducerContext(
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -176,7 +176,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     }
 
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
-        working = DefaultExecutionContext(
+        working = DefaultExecutionProducerContext(
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -195,10 +195,9 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 /**
  * A simple service, only suitable for basic unit test
  */
-class DefaultExecutionContext(
+class DefaultExecutionProducerContext(
     private val executionId: UUID = UUID.randomUUID(),
     private val taskId: UUID? = null,
-    private val stepId: UUID? = null,
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager(),
@@ -206,7 +205,7 @@ class DefaultExecutionContext(
     private val provisioningState: ProvisioningState = DefaultProvisioningState(),
     private val stdout: PrintStream = System.out,
     private val stderr: PrintStream = System.err,
-    private val loggingContext: LoggingContext = DefaultLoggingContext(scoped)
+    private val loggingProducerContext: LoggingProducerContext = DefaultLoggingProducerContext(scoped)
 ) : ExecutionContext {
 
 //    override fun distributionService(): DistributionService {
@@ -218,13 +217,13 @@ class DefaultExecutionContext(
     }
 
     override fun log(logLevel: LogLevel, msg: String) {
-        log(LogMessage(executionId = this.executionId, level = logLevel, body = msg))
+        logger().accept(LogMessage(executionId = this.executionId, level = logLevel, body = msg))
     }
 
 
-    override fun log(msg: LogMessage): LoggingContext {
-        return loggingContext.log(msg)
-    }
+//    override fun log(msg: LogMessage): LoggingProducerContext {
+//        return loggingProducerContext.log(msg)
+//    }
 
     override fun stdout(): PrintStream {
         return stdout
@@ -257,6 +256,10 @@ class DefaultExecutionContext(
 
     override fun instanceQualifier(): String? {
         return instanceQualifier
+    }
+
+    override fun logger(): LogMessageSink {
+        return loggingProducerContext.logger()
     }
 
 }

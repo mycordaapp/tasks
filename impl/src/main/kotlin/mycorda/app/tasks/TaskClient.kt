@@ -89,6 +89,19 @@ interface TaskClient {
      * Get the Id of the agent linked to this TaskClient.
      */
     fun agentId() : UUID
-
-
 }
+
+
+/**
+ * The simplified new version of the task client for a blocking Task
+ */
+interface BlockingTaskClient {
+    fun <I,O> execTask(
+        taskClazz: String,
+        //channelLocator: AsyncResultChannelSinkLocator,
+        input: I
+        // handler: AsyncResultHandler<O>
+    ) : O
+}
+
+class LocalTaskClint

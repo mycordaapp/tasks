@@ -1,9 +1,11 @@
 package mycorda.app.tasks.logging
 
 import mycorda.app.registry.Registry
+import java.io.OutputStream
 import java.io.PrintStream
 import java.util.*
 import java.util.function.Consumer
+import kotlin.collections.ArrayList
 
 /**
  * A common logging message and supporting classes plus access to stdout and stderr. The basis concept
@@ -81,6 +83,10 @@ data class LogMessage(
      * is that for a set of related task they are linked by a single executionId,
      * for example if a higher level service needed to run TaskA, TaskB and TaskC in
      * order, it would link them with the same executionId
+     *
+     * This is analagous to the concept of the 'traceId' in Zipkin
+     *
+     * not sure this is a good name :(
      */
     val executionId: UUID,
 
@@ -88,8 +94,36 @@ data class LogMessage(
 
     val body: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val taskId: UUID? = null
-)
+    val taskId: UUID? = null    // is this useful ? do
+) {
+    companion object {
+        fun debug(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(
+            executionId = executionId,
+            body = body,
+            level = LogLevel.DEBUG
+        )
+
+        fun info(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(
+            executionId = executionId,
+            body = body,
+            level = LogLevel.INFO
+        )
+
+        fun warn(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(
+            executionId = executionId,
+            body = body,
+            level = LogLevel.WARN
+        )
+
+        fun error(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(
+            executionId = executionId,
+            body = body,
+            level = LogLevel.ERROR
+        )
+
+
+    }
+}
 
 
 /**
@@ -113,13 +147,15 @@ class ConsoleLogMessageSink(registry: Registry = Registry()) :
     }
 }
 
-
+/**
+ * Wrapper classes to work easily with the Registry
+ */
 interface StdoutHolder {
-    fun out() : PrintStream
+    fun out(): PrintStream
 }
 
 interface StderrHolder {
-    fun err() : PrintStream
+    fun err(): PrintStream
 }
 
 class DefaultStdoutHolder : StdoutHolder {
@@ -131,15 +167,15 @@ class DefaultStderrHolder : StderrHolder {
 }
 
 
-
 /**
- * The standard Logging Context
+ * The Logging Context for generation of output.
+ * This is passed to the task's exec() method in the ExecutionContext
  */
-interface LoggingContext {
+interface LoggingProducerContext {
     /**
      * Abstract generating a log message
      */
-    fun log(msg: LogMessage): LoggingContext
+    fun logger(): LogMessageSink
 
     /**
      * Abstract writing to the console
@@ -150,13 +186,110 @@ interface LoggingContext {
      * Abstract writing to the error stream
      */
     fun stderr(): PrintStream
+
+    /**
+     * Shortcut for writing a log message
+     */
+    fun log(msg: LogMessage): LoggingProducerContext {
+        logger().accept(msg)
+        return this
+    }
+
+    /**
+     * Shortcut for writing to the stdout console
+     */
+    fun println(line: String): LoggingProducerContext {
+        stdout().println(line)
+        return this
+    }
 }
+
+
+/**
+ * The consumer of a logging context. This is on the client
+ * side. There is a design assumption that 'channel' linking the
+ * the LoggingProducerContext to the LoggingConsumerContext will be as
+ * timely as is reasonably possible.
+ */
+interface LoggingConsumerContext {
+    fun acceptLog(msg: LogMessage)
+    fun acceptStdout(output: String)
+    fun acceptStderr(error: String)
+
+}
+
+class InMemoryLoggingConsumerContext : LoggingConsumerContext {
+    private val stdout = StringBuilder()
+    private val stderr = StringBuilder()
+    private val logMessages = ArrayList<LogMessage>()
+
+    override fun acceptLog(msg: LogMessage) {
+        logMessages.add(msg)
+    }
+
+    override fun acceptStdout(output: String) {
+        stdout.append(output).append("\n")
+    }
+
+    override fun acceptStderr(error: String) {
+        stderr.append(error).append("\n")
+    }
+
+    fun stdout(): String = stdout.toString()
+
+    fun stderr(): String = stderr.toString()
+
+    fun message(): List<LogMessage> = ArrayList(logMessages)
+}
+
+class InMemoryLoggingProducerContext(private val consumer: LoggingConsumerContext) : LoggingProducerContext {
+    val stdout: PrintStream = PrintStream(CapturedOutputStream(consumer, true))
+    val stderr: PrintStream = PrintStream(CapturedOutputStream(consumer, false))
+
+    override fun logger(): LogMessageSink =
+        object : LogMessageSink {
+            override fun accept(m: LogMessage) {
+                consumer.acceptLog(m)
+            }
+        }
+
+    override fun stdout(): PrintStream = stdout
+
+    override fun stderr(): PrintStream = stderr
+}
+
+
+/**
+ * Simple class for capturing an input stream
+ */
+class CapturedOutputStream(
+    private val loggingConsumerContext: LoggingConsumerContext,
+    private val isStdout: Boolean = true
+) : OutputStream() {
+    private var data = StringBuffer()
+
+    override fun write(p0: Int) {
+        if (p0 == 10) {
+            if (isStdout) {
+                loggingConsumerContext.acceptStdout(data.toString())
+            } else {
+                loggingConsumerContext.acceptStderr(data.toString())
+            }
+            data = StringBuffer()
+        } else {
+            data.append(p0.toChar())
+        }
+    }
+
+}
+
+//class SimpleInMemoryLoggingContextConsumer :
 
 // is this useful
 interface LoggingContextBuilder<T> {
-    fun withStdout(out: PrintStream) : T
-    fun withStderr(out: PrintStream) : T
-    fun buildLoggingContext() : T
+    fun withStdout(out: PrintStream): T
+    fun withStderr(out: PrintStream): T
+    fun buildLoggingContext(): T
 }
 
 class DefaultLoggingContextBuilder<T : Any> : LoggingContextBuilder<T> {
@@ -174,18 +307,14 @@ class DefaultLoggingContextBuilder<T : Any> : LoggingContextBuilder<T> {
 
 }
 
-class DefaultLoggingContext(registry: Registry = Registry()) : LoggingContext {
+// not sure this is named well
+// it usage is unclear as well
+class DefaultLoggingProducerContext(registry: Registry = Registry()) : LoggingProducerContext {
     private val sink = registry.geteOrElse(LogMessageSink::class.java, ConsoleLogMessageSink(registry))
-    private val level = registry.geteOrElse(LogLevel::class.java, LogLevel.INFO)
     private val out = registry.geteOrElse(StdoutHolder::class.java, DefaultStdoutHolder())
     private val err = registry.geteOrElse(StderrHolder::class.java, DefaultStderrHolder())
 
-    override fun log(msg: LogMessage): LoggingContext {
-        if (msg.level >= level) {
-            sink.accept(msg)
-        }
-        return this
-    }
+    override fun logger(): LogMessageSink = sink
 
     override fun stdout(): PrintStream = out.out()
 

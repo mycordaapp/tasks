@@ -1,7 +1,7 @@
 package mycorda.app.tasks
 
 
-import mycorda.app.tasks.executionContext.DefaultExecutionContext
+import mycorda.app.tasks.executionContext.DefaultExecutionProducerContext
 import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import java.util.UUID
@@ -26,7 +26,7 @@ interface BlockingTask<in I, out O> : Task {
     /**
      * Execute the task.
      */
-    fun exec(ctx: ExecutionContext = DefaultExecutionContext(), params: I): O
+    fun exec(ctx: ExecutionContext = DefaultExecutionProducerContext(), params: I): O
 }
 
 interface UnitBlockingTask<I> : BlockingTask<I, Unit> {
@@ -37,7 +37,7 @@ interface AsyncTask<I, O> : Task {
     /**
      * Execute the task.
      */
-    fun exec(executionContext: ExecutionContext = DefaultExecutionContext(), params: I): Future<O>
+    fun exec(executionContext: ExecutionContext = DefaultExecutionProducerContext(), params: I): Future<O>
 }
 
 
