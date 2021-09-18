@@ -205,7 +205,7 @@ class DefaultExecutionProducerContext(
     private val provisioningState: ProvisioningState = DefaultProvisioningState(),
     private val stdout: PrintStream = System.out,
     private val stderr: PrintStream = System.err,
-    private val loggingProducerContext: LoggingProducerContext = DefaultLoggingProducerContext(scoped)
+    private val loggingProducerContext: LoggingProducerContext = InjectableLoggingProducerContext(scoped)
 ) : ExecutionContext {
 
 //    override fun distributionService(): DistributionService {

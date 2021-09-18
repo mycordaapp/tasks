@@ -20,7 +20,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
     private val executor = registry.get(ExecutorFactory::class.java).executorService()
     private val stdout = registry.geteOrElse(StdOut::class.java, StdOut())
     private val provisioningState = DefaultProvisioningState()
-    private val loggingContext = registry.geteOrElse(LoggingProducerContext::class.java, DefaultLoggingProducerContext(registry))
+    private val loggingContext = registry.geteOrElse(LoggingProducerContext::class.java, InjectableLoggingProducerContext(registry))
 
     override fun get(executionId: UUID,
                      taskId: UUID?,

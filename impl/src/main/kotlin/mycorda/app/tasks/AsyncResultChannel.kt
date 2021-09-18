@@ -87,6 +87,7 @@ class InMemoryAsyncResultChannel : AsyncResultChannelSink, AsyncResultChannelQue
         return channel.any { it.channelId == channelId }
     }
 
+    @SuppressWarnings("unchecked")
     override fun <T> result(channelId: UniqueId): AsyncResult2<T> {
         if (hasResult(channelId)) {
             return channel.single { it.channelId == channelId }.result as AsyncResult2<T>

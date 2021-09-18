@@ -62,7 +62,7 @@ class LoggingContextTests {
     @Test
     fun `create logging context with default wiring`() {
         // note, these go stdout and allow INFO and above
-        val loggingContext = DefaultLoggingProducerContext()
+        val loggingContext = InjectableLoggingProducerContext()
         loggingContext.log(debug)
         loggingContext.log(info)
         loggingContext.log(warn)
@@ -78,7 +78,7 @@ class LoggingContextTests {
             .store(InMemoryLogMessageSink(registry))
 
         // 2. log some messages
-        val loggingContext = DefaultLoggingProducerContext(registry)
+        val loggingContext = InjectableLoggingProducerContext(registry)
         loggingContext.log(debug)
         loggingContext.log(info)
         loggingContext.log(warn)

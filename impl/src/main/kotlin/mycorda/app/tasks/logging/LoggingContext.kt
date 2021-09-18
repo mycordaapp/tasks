@@ -13,13 +13,73 @@ import kotlin.collections.ArrayList
  * frameworks can be plugged in. Although not yet included, the plan is to integrate in distributed
  * tracing concepts for use with tools like Zipkin (https://zipkin.io/).
  *
- * As with most services, we wire up using the Registry.
- *  TODO - an example
+ * On the producer side there is [mycorda.app.tasks.logging.LoggingProducerContext]
+ * On the consumer (client) side there is [LoggingConsumerContext]
  *
- * For completeness we also include a "logical" stdout and stderr which should be used in place of
- * the regular println()
+ * The design allows for the producer and consumer to be running in separate processes
+ * with communication over commons protocols including https and Kafka.
+ *
+ * For local development and unit tests there is `InMemoryLoggingProducerContext` and `InMemoryLoggingConsumerContext`
  *
  */
+
+
+/**
+ * The Logging Context for generation of output.
+ * This is passed to the task's exec() method in the ExecutionContext
+ */
+interface LoggingProducerContext {
+    /**
+     * Abstract generating a log message
+     */
+    fun logger(): LogMessageSink
+
+    /**
+     * Abstract writing to the console
+     */
+    fun stdout(): PrintStream
+
+    /**
+     * Abstract writing to the error stream
+     */
+    fun stderr(): PrintStream
+
+    /**
+     * Shortcut for writing a log message
+     */
+    fun log(msg: LogMessage): LoggingProducerContext {
+        logger().accept(msg)
+        return this
+    }
+
+    /**
+     * Shortcut for writing to the stdout console
+     */
+    fun println(line: String): LoggingProducerContext {
+        stdout().println(line)
+        return this
+    }
+
+    /**
+     * Shortcut for writing to the stderr console
+     */
+    fun printErrLn(line: String): LoggingProducerContext {
+        stderr().println(line)
+        return this
+    }
+}
+
+/**
+ * The consumer of a logging context. This is on the client
+ * side. There is a design assumption that 'channel' linking the
+ * the LoggingProducerContext to the LoggingConsumerContext will be as
+ * timely as is reasonably possible.
+ */
+interface LoggingConsumerContext {
+    fun acceptLog(msg: LogMessage)
+    fun acceptStdout(output: String)
+    fun acceptStderr(error: String)
+}
 
 enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 
@@ -120,8 +180,6 @@ data class LogMessage(
             body = body,
             level = LogLevel.ERROR
         )
-
-
     }
 }
 
@@ -167,57 +225,6 @@ class DefaultStderrHolder : StderrHolder {
 }
 
 
-/**
- * The Logging Context for generation of output.
- * This is passed to the task's exec() method in the ExecutionContext
- */
-interface LoggingProducerContext {
-    /**
-     * Abstract generating a log message
-     */
-    fun logger(): LogMessageSink
-
-    /**
-     * Abstract writing to the console
-     */
-    fun stdout(): PrintStream
-
-    /**
-     * Abstract writing to the error stream
-     */
-    fun stderr(): PrintStream
-
-    /**
-     * Shortcut for writing a log message
-     */
-    fun log(msg: LogMessage): LoggingProducerContext {
-        logger().accept(msg)
-        return this
-    }
-
-    /**
-     * Shortcut for writing to the stdout console
-     */
-    fun println(line: String): LoggingProducerContext {
-        stdout().println(line)
-        return this
-    }
-}
-
-
-/**
- * The consumer of a logging context. This is on the client
- * side. There is a design assumption that 'channel' linking the
- * the LoggingProducerContext to the LoggingConsumerContext will be as
- * timely as is reasonably possible.
- */
-interface LoggingConsumerContext {
-    fun acceptLog(msg: LogMessage)
-    fun acceptStdout(output: String)
-    fun acceptStderr(error: String)
-
-}
-
 class InMemoryLoggingConsumerContext : LoggingConsumerContext {
     private val stdout = StringBuilder()
     private val stderr = StringBuilder()
@@ -260,7 +267,8 @@ class InMemoryLoggingProducerContext(private val consumer: LoggingConsumerContex
 
 
 /**
- * Simple class for capturing an input stream
+ * Simple class for capturing an input stream and passing onto a
+ * LoggingConsumerContext.
  */
 class CapturedOutputStream(
     private val loggingConsumerContext: LoggingConsumerContext,
@@ -269,7 +277,7 @@ class CapturedOutputStream(
     private var data = StringBuffer()
 
     override fun write(p0: Int) {
-        if (p0 == 10) {
+        if (p0 == 10) { // newline
             if (isStdout) {
                 loggingConsumerContext.acceptStdout(data.toString())
             } else {
@@ -280,36 +288,15 @@ class CapturedOutputStream(
             data.append(p0.toChar())
         }
     }
-
 }
 
-//class SimpleInMemoryLoggingContextConsumer :
 
-// is this useful
-interface LoggingContextBuilder<T> {
-    fun withStdout(out: PrintStream): T
-    fun withStderr(out: PrintStream): T
-    fun buildLoggingContext(): T
-}
 
-class DefaultLoggingContextBuilder<T : Any> : LoggingContextBuilder<T> {
-    override fun withStdout(out: PrintStream): T {
-        TODO("Not yet implemented")
-    }
-
-    override fun withStderr(out: PrintStream): T {
-        TODO("Not yet implemented")
-    }
-
-    override fun buildLoggingContext(): T {
-        TODO("Not yet implemented")
-    }
-
-}
-
-// not sure this is named well
-// it usage is unclear as well
-class DefaultLoggingProducerContext(registry: Registry = Registry()) : LoggingProducerContext {
+/**
+ * Allows injection of sinks for stdout, stderr and logMessages via the Registry \
+ * Generally is better to use InMemoryLoggingProducerContext & InMemoryLoggingConsumerContext
+ */
+class InjectableLoggingProducerContext(registry: Registry = Registry()) : LoggingProducerContext {
     private val sink = registry.geteOrElse(LogMessageSink::class.java, ConsoleLogMessageSink(registry))
     private val out = registry.geteOrElse(StdoutHolder::class.java, DefaultStdoutHolder())
     private val err = registry.geteOrElse(StderrHolder::class.java, DefaultStderrHolder())
@@ -329,6 +316,7 @@ class DefaultLoggingProducerContext(registry: Registry = Registry()) : LoggingPr
  *  - format is LogFormat.Simple
  *  - formatter is DefaultStringLogFormatter
  */
+@Deprecated (message = "Use InMemoryLoggingProducerContext/InMemoryLoggingConsumerContext")
 class InMemoryLogMessageSink(
     registry: Registry = Registry()
 ) : LogMessageSink {
