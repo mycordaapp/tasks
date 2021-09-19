@@ -47,7 +47,7 @@ interface ClientContext {
     fun customHeaders(): Map<String, String>
 }
 
-interface TaskClient2 {
+interface TaskClient {
     fun <I, O> execBlocking(
         ctx: ClientContext,
         taskName: String,
@@ -78,7 +78,7 @@ class SimpleClientContext : ClientContext {
 /**
  * Enough for unit tests and tasks running locally
  */
-class SimpleTaskClient(private val registry: Registry) : TaskClient2 {
+class SimpleTaskClient(private val registry: Registry) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
     override fun <I, O> execBlocking(ctx: ClientContext, taskName: String, input: I): O {
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
