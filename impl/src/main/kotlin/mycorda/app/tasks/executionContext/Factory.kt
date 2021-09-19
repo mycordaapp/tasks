@@ -4,18 +4,14 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.ExecutorFactory
 import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
-
-
 import java.io.PrintStream
 import java.util.*
 import java.util.concurrent.ExecutorService
-
 
 /**
  * A properly wired up context
  */
 class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFactory {
-    private val messageSink = registry.get(LogMessageSink::class.java)
     private val pm = registry.get(ProcessManager::class.java)
     private val executor = registry.get(ExecutorFactory::class.java).executorService()
     private val stdout = registry.geteOrElse(StdOut::class.java, StdOut())
@@ -31,7 +27,7 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
         logMessageSink: LogMessageSink?
     ): ExecutionContext {
         return Ctx(
-            executionId, taskId, stepId, logMessageSink ?: messageSink, pm, executor, scoped,
+            executionId, taskId,    pm, executor, scoped,
             stdout.printStream, provisioningState, null, loggingContext
         )
     }
@@ -39,8 +35,6 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
     class Ctx(
         private val executionId: UUID,
         private val taskId: UUID?,
-        private val stepId: UUID?,
-        private val sink: LogMessageSink,
         private val processManager: ProcessManager,
         private val executorService: ExecutorService,
         private var scoped: Registry,
