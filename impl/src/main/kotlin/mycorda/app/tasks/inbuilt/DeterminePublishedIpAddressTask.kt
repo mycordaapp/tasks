@@ -24,7 +24,7 @@ class DeterminePublishedIpAddressTaskImpl : DeterminePublishedIpAddressTask {
         return taskId
     }
 
-    override fun exec(ctx: ExecutionContext, params: NotRequired): String {
+    override fun exec(ctx: ExecutionContext, input: NotRequired): String {
         if (isForced()) {
             return forced()
         }
@@ -126,7 +126,7 @@ class DeterminePublishedIpAddressTaskImpl : DeterminePublishedIpAddressTask {
 
 fun main(args: Array<String>) {
     //System.getenv().put("CORDA_FORCE_PUBLISHED_IP","123.123.123.123")
-    val result = DeterminePublishedIpAddressTaskImpl().exec(params = NotRequired.instance())
+    val result = DeterminePublishedIpAddressTaskImpl().exec(input = NotRequired.instance())
     println(result)
 }
 

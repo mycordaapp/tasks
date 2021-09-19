@@ -46,13 +46,12 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
         val output = DefaultTaskExampleData<Int>(4)
         return listOf(
             DefaultTaskExample<Int, Int>(
-                "two sqaured",
+                "two squared",
                 input, output
             )
         )
     }
 }
-
 
 
 class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, String>() {
@@ -70,7 +69,7 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
     }
 
     override fun exec(
-        executionContext: ExecutionContext,
+        ctx: ExecutionContext,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
         input: String
@@ -88,24 +87,23 @@ class FileTask : BaseBlockingTask<File, Int>() {
 }
 
 class UnitTask : BaseUnitBlockingTask<String>() {
-    override fun exec(ctx: ExecutionContext, params: String) {
+    override fun exec(ctx: ExecutionContext, input: String) {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskId())
-        ctx.log(LogMessage.info("Params are: $params"))
+        ctx.log(LogMessage.info("Params are: $input"))
     }
 }
 
 class PrintStreamTask : BaseUnitBlockingTask<String>() {
-    override fun exec(ctx: ExecutionContext, params: String) {
-        ctx.stdout().println(params)
+    override fun exec(ctx: ExecutionContext, input: String) {
+        ctx.stdout().println(input)
     }
 }
-
 
 class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
     private val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
     private val taskId = UUID.randomUUID()
     override fun exec(
-        executionContext: ExecutionContext,
+        ctx: ExecutionContext,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
         input: Int
@@ -113,14 +111,28 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
         // 1. Find my channel
         val resultChannel = resultChannelFactory.create(channelLocator)
 
-        // In real code wait for the long running process, i.e. start a thread, wait on
-        // an event
+        ctx.executorService().submit<Unit> {
 
-        // 2. Generate a result
-        val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
+            // 2. Generate a result
+            val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
 
-        // 3. Write the result
-        resultChannel.accept(result)
+            Thread.sleep(AsyncTask.platformTick())
+
+            // 3. Write the result
+            resultChannel.accept(result)
+        }
+
+//        //ctx.executorService().submit
+//
+//
+//        // In real code wait for the long running process, i.e. start a thread, wait on
+//        // an event
+//
+//        // 2. Generate a result
+//        val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
+//
+//        // 3. Write the result
+//        resultChannel.accept(result)
     }
 
     override fun taskId(): UUID = taskId

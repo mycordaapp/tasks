@@ -20,7 +20,7 @@ interface WaitForSocketTask : AsyncTask<SocketAddress, Long> {}
 class WaitForSocketTaskImpl : WaitForSocketTask {
     private val taskId = UUID.randomUUID()
     override fun exec(
-        executionContext: ExecutionContext,
+        ctx: ExecutionContext,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
         input: SocketAddress
@@ -47,7 +47,7 @@ class WaitForSocketTaskImpl : WaitForSocketTask {
 class WaitForSocketTaskFake : WaitForSocketTask {
     private val taskId = UUID.randomUUID()
     override fun exec(
-        executionContext: ExecutionContext,
+        ctx: ExecutionContext,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
         input: SocketAddress

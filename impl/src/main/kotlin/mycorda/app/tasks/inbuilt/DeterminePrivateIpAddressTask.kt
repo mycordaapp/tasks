@@ -4,7 +4,6 @@ package mycorda.app.tasks.inbuilt
 import mycorda.app.tasks.BlockingTask
 import mycorda.app.tasks.NotRequired
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.tasks.logging.LogMessage
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -26,7 +25,7 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
         return taskId
     }
 
-    override fun exec(ctx: ExecutionContext, params: NotRequired): String {
+    override fun exec(ctx: ExecutionContext, input: NotRequired): String {
         if (isForced()) {
             return forced()
         }
@@ -126,7 +125,7 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
 
 
 fun main(args: Array<String>) {
-    val result = DeterminePrivateIpAddressTaskImpl().exec(params = NotRequired.instance())
+    val result = DeterminePrivateIpAddressTaskImpl().exec(input = NotRequired.instance())
     println(result)
 }
 

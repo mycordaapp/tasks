@@ -23,14 +23,14 @@ class PollBlockingTask<I, O>(
         return taskId
     }
 
-    override fun exec(ctx: ExecutionContext, params: I): O {
+    override fun exec(ctx: ExecutionContext, input: I): O {
         val startTime = System.currentTimeMillis()
-        var result = task.exec(ctx, params)
+        var result = task.exec(ctx, input)
 
         val t = thread(start = false) {
             while (!successMapper(result) && System.currentTimeMillis() < (startTime + maxWaitMs)) {
                 Thread.sleep(intervalMs)
-                result = task.exec(ctx, params)
+                result = task.exec(ctx, input)
             }
         }
         t.run()

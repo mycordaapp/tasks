@@ -2,13 +2,10 @@ package mycorda.app.tasks
 
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.BaseTask
-import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogMessage
 import java.io.File
 import java.net.URL
-import java.util.*
-
 
 
 interface ExampleTask : BlockingTask<Int, Int>
@@ -31,17 +28,17 @@ class ExampleTaskFake : ExampleTask, BaseBlockingTask<Int, Int>() {
 interface ListDirectoryTask : BlockingTask<String, List<String>>
 
 class ListDirectoryTaskImpl : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
-    override fun exec(executionContext: ExecutionContext, params: String): List<String> {
-        return File(params).listFiles().map { it.name }
+    override fun exec(executionContext: ExecutionContext, input: String): List<String> {
+        return File(input).listFiles().map { it.name }
     }
 }
 
 class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
-    override fun exec(executionContext: ExecutionContext, params: String): List<String> {
+    override fun exec(executionContext: ExecutionContext, input: String): List<String> {
         val out = executionContext.stdout()
         out.println("ListDirectoryTask:")
-        out.println("   params: $params")
-        executionContext.log(LogMessage.info("listing directory '$params'"))
+        out.println("   params: $input")
+        executionContext.log(LogMessage.info("listing directory '$input'"))
         return listOf("fake.txt")
     }
 }
@@ -49,7 +46,7 @@ class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, List<S
 
 class RegistryTask(private val registry: Registry) : BaseTask(), BlockingTask<Unit?, String> {
 
-    override fun exec(ctx: ExecutionContext, params: Unit?): String {
+    override fun exec(ctx: ExecutionContext, input: Unit?): String {
         return registry.get(String::class.java)
     }
 }
@@ -57,29 +54,29 @@ class RegistryTask(private val registry: Registry) : BaseTask(), BlockingTask<Un
 
 data class Params(val p1: String, val p2: Int)
 class ParamsTask() : BaseTask(), UnitBlockingTask<Params> {
-    override fun exec(ctx: ExecutionContext, params: Params) {
-        ctx.log(LogMessage.info("called with params $params"))
+    override fun exec(ctx: ExecutionContext, input: Params) {
+        ctx.log(LogMessage.info("called with params $input"))
     }
 }
 
 enum class Colour { Red, Green, Blue }
 class EnumTask() : BaseTask(), UnitBlockingTask<Colour> {
-    override fun exec(ctx: ExecutionContext, params: Colour) {
-        ctx.log(LogMessage.info("called with params $params"))
+    override fun exec(ctx: ExecutionContext, input: Colour) {
+        ctx.log(LogMessage.info("called with params $input"))
     }
 }
 
 data class ParamsWithDefault(val p1: String, val p2: Int = 99, val p3: String = "foo")
 class ParamsWithDefaultTask() : BaseTask(), BlockingTask<ParamsWithDefault, ParamsWithDefault> {
-    override fun exec(ctx: ExecutionContext, params: ParamsWithDefault): ParamsWithDefault {
-        ctx.log(LogMessage.info("called with params $params"))
-        return params
+    override fun exec(ctx: ExecutionContext, input: ParamsWithDefault): ParamsWithDefault {
+        ctx.log(LogMessage.info("called with params $input"))
+        return input
     }
 }
 
 class MapTask() : BaseTask(), UnitBlockingTask<Map<String, Any>> {
-    override fun exec(ctx: ExecutionContext, params: Map<String, Any>) {
-        ctx.log(LogMessage.info("called with params $params"))
+    override fun exec(ctx: ExecutionContext, input: Map<String, Any>) {
+        ctx.log(LogMessage.info("called with params $input"))
     }
 }
 
@@ -90,34 +87,34 @@ class NoParamTask() : BaseTask(), UnitBlockingTask<Nothing?> {
 }
 
 class NotRequiredParamTask() : BaseTask(), UnitBlockingTask<NotRequired> {
-    override fun exec(ctx: ExecutionContext, params: NotRequired) {
-        ctx.log(LogMessage.info("called with params $params"))
+    override fun exec(ctx: ExecutionContext, input: NotRequired) {
+        ctx.log(LogMessage.info("called with params $input"))
     }
 }
 
 class FileTask : BaseTask(), BlockingTask<File, Int> {
-    override fun exec(ctx: ExecutionContext, params: File): Int {
+    override fun exec(ctx: ExecutionContext, input: File): Int {
         val ctx = updatedCtx(ctx)
-        ctx.log(LogMessage.info("Loading file $params"))
-        return params.readBytes().size
+        ctx.log(LogMessage.info("Loading file $input"))
+        return input.readBytes().size
     }
 }
 
 
 class URLTask : BaseTask(), BlockingTask<URL, String> {
-    override fun exec(ctx: ExecutionContext, params: URL): String {
+    override fun exec(ctx: ExecutionContext, input: URL): String {
         val ctx = updatedCtx(ctx)
-        ctx.log(LogMessage.info("Loading url $params"))
-        return params.toExternalForm()
+        ctx.log(LogMessage.info("Loading url $input"))
+        return input.toExternalForm()
     }
 }
 
 
 data class ParamsWithFile(val file: File, val files: List<File>)
 class ParamsWithFileTask() : BaseTask(), BlockingTask<ParamsWithFile, ParamsWithFile> {
-    override fun exec(ctx: ExecutionContext, params: ParamsWithFile): ParamsWithFile {
-        ctx.log(LogMessage.info("called with params $params"))
-        return params
+    override fun exec(ctx: ExecutionContext, input: ParamsWithFile): ParamsWithFile {
+        ctx.log(LogMessage.info("called with params $input"))
+        return input
     }
 }
 
@@ -129,9 +126,9 @@ data class PostgresConfig(val postgres: String) : DatabaseConfig()
 data class OracleConfig(val oracle: String) : DatabaseConfig()
 
 class DatabaseTask() : BaseTask(), BlockingTask<DatabaseConfig, DatabaseConfig> {
-    override fun exec(ctx: ExecutionContext, params: DatabaseConfig): DatabaseConfig {
-        ctx.log(LogMessage.info("called with params $params"))
-        return params
+    override fun exec(ctx: ExecutionContext, input: DatabaseConfig): DatabaseConfig {
+        ctx.log(LogMessage.info("called with params $input"))
+        return input
     }
 }
 
@@ -141,7 +138,7 @@ class StatusChangeTask<I, O>(private val before: O, private val after: O, privat
     BaseBlockingTask<I, O>() {
 
     private val startTime = System.currentTimeMillis()
-    override fun exec(ctx: ExecutionContext, params: I): O {
+    override fun exec(ctx: ExecutionContext, input: I): O {
         return if (System.currentTimeMillis() < (startTime + delay)) before else after
     }
 

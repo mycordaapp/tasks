@@ -141,13 +141,14 @@ class TaskFactoryTest {
 
         // the SimpleAsyncTask returns immediately, so we don't have to wait
         simpleTask.exec(
-            executionContext = executionContext,
+            ctx = executionContext,
             channelLocator = locator,
             channelId = channelId,
             input = 10
         )
 
         val query = sinkFactory.channelQuery(locator)
+        AsyncTask.sleepForTicks(2)
         assert(query.hasResult(channelId))
         assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
     }
@@ -176,13 +177,14 @@ class TaskFactoryTest {
 
         // the SimpleAsyncTask returns immediately, so we don't have to wait
         simpleTask.exec(
-            executionContext = executionContext,
+            ctx = executionContext,
             channelLocator = locator,
             channelId = channelId,
             input = 10
         )
 
         val query = sinkFactory.channelQuery(locator)
+        AsyncTask.sleepForTicks(2)
         assert(query.hasResult(channelId))
         assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
     }
@@ -217,13 +219,13 @@ interface SimpleTask : BlockingTask<NotRequired, String>
 
 class HelloWorldTask() : SimpleTask {
     private val taskId = UUID.randomUUID()
-    override fun exec(ctx: ExecutionContext, params: NotRequired): String = "Hello World"
+    override fun exec(ctx: ExecutionContext, input: NotRequired): String = "Hello World"
     override fun taskId(): UUID = taskId
 }
 
 class GoodbyeWorldTask() : SimpleTask {
     private val taskId = UUID.randomUUID()
-    override fun exec(ctx: ExecutionContext, params: NotRequired): String = "Goodbye, cruel World"
+    override fun exec(ctx: ExecutionContext, input: NotRequired): String = "Goodbye, cruel World"
     override fun taskId(): UUID = taskId
 }
 

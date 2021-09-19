@@ -27,10 +27,6 @@ class Fail<T>(val message: String) : AsyncResult<T>()
 class Timeout<T>(val message: String) : AsyncResult<T>()
 
 
-
-
-
-
 /**
  * The server (generator) side of ResultChannel
  */
@@ -61,7 +57,7 @@ interface AsyncTask<I, O> : Task {
      * Execute the task.
      */
     fun exec(
-        executionContext: ExecutionContext = SimpleExecutionContext(),
+        ctx: ExecutionContext = SimpleExecutionContext(),
 
         /**
          * Where to send the result back to? Should be stored
@@ -79,6 +75,14 @@ interface AsyncTask<I, O> : Task {
          */
         input: I
     )
+
+    companion object {
+        // use for timings in threads, esp test cases.  Keep to
+        // the minimum for underlying system clock on the OS
+        // for now just defaulting to 5 ms
+        fun platformTick(): Long = 5
+        fun sleepForTicks(ticks: Int) = Thread.sleep(platformTick() * ticks)
+    }
 }
 
 /**
@@ -95,7 +99,7 @@ interface Async2TaskClient {
     )
 }
 
-class Async2TaskClientImpl(channelLocator: AsyncResultChannelSinkLocator ) : Async2TaskClient {
+class Async2TaskClientImpl(channelLocator: AsyncResultChannelSinkLocator) : Async2TaskClient {
     override fun <I> execTask(
         taskClazz: String,
         //channelLocator: AsyncResultChannelSinkLocator,

@@ -52,7 +52,9 @@ Tasks have three key characteristics:
 * conform to the rules
   in [Really Simple Serializer](https://github.com/mycordaapp/really-simple-serialization/blob/master/README.md)
 
-A simple example is below:
+## Blocking Tasks
+
+The most basic form is a `BlockingTask`. A simple example is below:
 
 ```kotlin
 class CalcSquareTask : BaseBlockingTask<Int, Int>() {
@@ -165,6 +167,97 @@ fun `should call task via a task client`() {
             .hasMessage(LogLevel.INFO, "listing directory '.'")
     )
 }
+```
+
+The example also shows another important characteristic of the design. Logging output from the Task (structured log
+messages and stdout/stderr) are made available to the client, which can help greatly in debugging and fault detection.
+The implementing task controls what is sent. Looking at the code for `ListDirectoryTaskFake` we can see this clearly.
+
+This behaviour is in addition to being any distributed logging that may be enabled, which is described later.
+
+```kotlin
+class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
+    override fun exec(executionContext: ExecutionContext, params: String): List<String> {
+        val out = executionContext.stdout()
+        out.println("ListDirectoryTask:")
+        out.println("   params: $params")
+        executionContext.log(LogMessage.info("listing directory '$params'"))
+        return listOf("fake.txt")
+    }
+}
+```
+
+## Async Tasks
+
+In most cases to build a robust application Async Tasks are needed. These manage three problems in distributed systems:
+
+* It is usually unsafe to assume a Task will execute and respond quickly. Network latency, system failovers and the
+  general inconsistency of timings on cloud platforms have to be considered.
+* Both the client and server may restart while running a task
+* It is safer to be pessimistic, and assume that any message between a client and server can be lost.
+
+The Async Task version of CalcSquareTask is below. In this case
+
+```kotlin
+class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
+    private val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
+    private val taskId = UUID.randomUUID()
+    override fun exec(
+        executionContext: ExecutionContext,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: Int
+    ) {
+        // 1. Find my channel
+        val resultChannel = resultChannelFactory.create(channelLocator)
+
+        // In real code wait for the long running process, i.e. start a thread, wait on
+        // an event
+
+        // 2. Generate a result
+        val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
+
+        // 3. Write the result
+        resultChannel.accept(result)
+    }
+}
+
+```
+
+and the basic test case is
+
+```kotlin
+ fun `should call task directly`() {
+    // 1. Setup a result sink,
+    val resultSinkFactory = DefaultAsyncResultChannelSinkFactory()
+    val reg = Registry().store(resultSinkFactory)
+
+    // 2. setup a channel for the results
+    val locator = AsyncResultChannelSinkLocator.LOCAL
+    val channelId = UniqueId.random()
+
+    // 3. setup the task
+    val task = CalcSquareAsyncTask(reg)
+    val ctx = SimpleExecutionContext()
+
+    // 4. call the task. The result will come back on the results channel
+    task.exec(ctx, locator, channelId, 10)
+
+    // 5. run a query over the result channel. In this
+    //    CalcSquareAsyncTask is a demo and has returned a result immediately
+    val query = resultSinkFactory.channelQuery(locator)
+
+    // 6. assert expected results
+    // not yet read
+    assertThat(query.hasResult(channelId), equalTo(false))
+    // wait long enough
+    Thread.sleep(AsyncTask.platformTick() * 2)
+    // now ready
+    assert(query.hasResult(channelId))
+    val result = query.result<Int>(channelId)
+    assertThat(result, equalTo(Success<Int>(100) as AsyncResult<Int>))
+}
+
 ```
 
 ### #2 - Combining Tasks

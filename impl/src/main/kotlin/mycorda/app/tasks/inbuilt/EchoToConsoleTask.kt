@@ -15,8 +15,8 @@ class EchoToConsoleTask : BlockingTask<String, Unit> {
         return taskId
     }
 
-    override fun exec(ctx: ExecutionContext, params: String): Unit {
-        ctx.stdout().println(params)
+    override fun exec(ctx: ExecutionContext, input: String): Unit {
+        ctx.stdout().println(input)
     }
 }
 
