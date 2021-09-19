@@ -5,8 +5,8 @@
 A `Task` is simply a basic building block that can encapsulate some useful activity, typically on an external system.
 They have been developed to assist in the deployment of the Corda DLT platform and related systems, however the concepts
 are useful in any situation where there multiple devops technologies to manage. They are NOT a replacement for tools
-like Helm, but they do aim to simplify by replacing the adhoc scripting prevalent in these solutions with simple API
-calls to the Lego like tasks.
+like Helm, Terraform and Ansible, but they do aim to simplify by replacing the adhoc scripting prevalent in these
+solutions with simple API calls to the Lego like tasks.
 
 A `Task` can be as simple or as complicated as necessary, though of course good design is almost certainly to build
 complex tasks from a set of simpler ones. They can run anywhere there is a JVM installed.
@@ -17,8 +17,8 @@ these services are modular and built to the principle of minimal dependency.
 
 ## The Hello World task.
 
-Every time a `Task` is run, it is allocated a unique id, the `taskID()`. This is used in logging 
-and events. Strictly speaking it is a taskInstanceId  
+Every time a `Task` is run, it is allocated a unique id, the `taskId()`. This is used in logging and events. Strictly
+speaking it is a taskInstanceId, but taskId is shorter
 
 ```kotlin
 interface Task {
@@ -49,7 +49,8 @@ Tasks have three key characteristics:
 
 * do one thing well
 * provide stable and unambiguous inputs and outputs to their clients
-* conform to the rules in [Really Simple Serializer](https://github.com/mycordaapp/really-simple-serialization/blob/master/README.md)
+* conform to the rules
+  in [Really Simple Serializer](https://github.com/mycordaapp/really-simple-serialization/blob/master/README.md)
 
 A simple example is below. For clarity there is some boiler-plate code that is normally simplified
 

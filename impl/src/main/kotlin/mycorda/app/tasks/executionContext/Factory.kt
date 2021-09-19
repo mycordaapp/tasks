@@ -20,29 +20,35 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
     private val executor = registry.get(ExecutorFactory::class.java).executorService()
     private val stdout = registry.geteOrElse(StdOut::class.java, StdOut())
     private val provisioningState = DefaultProvisioningState()
-    private val loggingContext = registry.geteOrElse(LoggingProducerContext::class.java, InjectableLoggingProducerContext(registry))
+    private val loggingContext =
+        registry.geteOrElse(LoggingProducerContext::class.java, InjectableLoggingProducerContext(registry))
 
-    override fun get(executionId: UUID,
-                     taskId: UUID?,
-                     stepId: UUID?,
-                     scoped: Registry,
-                     logMessageSink: LogMessageSink?): ExecutionContext {
-        return Ctx(executionId, taskId, stepId, logMessageSink ?: messageSink, pm, executor, scoped,
-                stdout.printStream, provisioningState,  null, loggingContext)
+    override fun get(
+        executionId: UUID,
+        taskId: UUID?,
+        stepId: UUID?,
+        scoped: Registry,
+        logMessageSink: LogMessageSink?
+    ): ExecutionContext {
+        return Ctx(
+            executionId, taskId, stepId, logMessageSink ?: messageSink, pm, executor, scoped,
+            stdout.printStream, provisioningState, null, loggingContext
+        )
     }
 
-    class Ctx(private val executionId: UUID,
-              private val taskId: UUID?,
-              private val stepId: UUID?,
-              private val sink: LogMessageSink,
-              private val processManager: ProcessManager,
-              private val executorService: ExecutorService,
-              private var scoped: Registry,
-              private var stdout: PrintStream,
-              private val provisioningState: ProvisioningState,
-              private val instanceQualifier: String?,
-              private val loggingProducerContext : LoggingProducerContext) : ExecutionContext {
-
+    class Ctx(
+        private val executionId: UUID,
+        private val taskId: UUID?,
+        private val stepId: UUID?,
+        private val sink: LogMessageSink,
+        private val processManager: ProcessManager,
+        private val executorService: ExecutorService,
+        private var scoped: Registry,
+        private var stdout: PrintStream,
+        private val provisioningState: ProvisioningState,
+        private val instanceQualifier: String?,
+        private val loggingProducerContext: LoggingProducerContext
+    ) : ExecutionContext {
 
 
         override fun stdout(): PrintStream {
@@ -51,6 +57,23 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
 
         override fun stderr(): PrintStream {
             return stdout
+        }
+
+        override fun withTaskId(taskId: UUID): ExecutionContext {
+            return DefaultExecutionContextModifier(this).withTaskId(taskId)
+        }
+
+        override fun withScope(scopedObject: Any): ExecutionContext {
+            return DefaultExecutionContextModifier(this).withScope(scopedObject)
+        }
+
+        override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
+            return DefaultExecutionContextModifier(this).withProvisioningState(provisioningState)
+
+        }
+
+        override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
+            return DefaultExecutionContextModifier(this).withInstanceQualifier(instanceQualifier)
         }
 
 

@@ -1,5 +1,6 @@
 package mycorda.app.tasks.logging
 
+import ClientContext
 import mycorda.app.registry.Registry
 import java.io.OutputStream
 import java.io.PrintStream
@@ -45,27 +46,31 @@ interface LoggingProducerContext {
     fun stderr(): PrintStream
 
     /**
-     * Shortcut for writing a log message
+     * Shortcut for writing a log message. The message must be fully
+     * constructed manually in order to correctly record within the distributed
+     * logging framework
      */
-    fun log(msg: LogMessage): LoggingProducerContext {
+    fun log(msg: LogMessage) {
         logger().accept(msg)
-        return this
     }
+
+    fun log(clientContext: ClientContext, msg: LogMessage) {
+        logger().accept(msg)
+    }
+
 
     /**
      * Shortcut for writing to the stdout console
      */
-    fun println(line: String): LoggingProducerContext {
+    fun println(line: String) {
         stdout().println(line)
-        return this
     }
 
     /**
      * Shortcut for writing to the stderr console
      */
-    fun printErrLn(line: String): LoggingProducerContext {
+    fun printErrLn(line: String) {
         stderr().println(line)
-        return this
     }
 }
 

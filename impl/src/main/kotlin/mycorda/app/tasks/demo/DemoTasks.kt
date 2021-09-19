@@ -31,9 +31,9 @@ abstract class BaseTask : Task {
 class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, params: Int): Int {
-        val ctx = ctxWithTaskID(ctx)
-        ctx.log(LogMessage.info("Calculating square of $params"))
-
+        // this is normally the first line - it ensures the task is stored in the context
+        val ctx = ctx.withTaskId(this)
+        ctx.log("Calculating square of $params")
         return params.times(params)
     }
 

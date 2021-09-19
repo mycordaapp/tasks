@@ -1,6 +1,7 @@
 package mycorda.app.tasks.executionContext
 
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.Task
 import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
 import java.io.PrintStream
@@ -9,13 +10,12 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
-
 /**
  * A standard context to pass around. It provides access to services and
  * information that are deferred until execution time, as they may
  * change on each run
  */
-interface ExecutionContext : LoggingProducerContext {
+interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
 
     /**
      *  One single place for running and checking the status of processes.
@@ -69,6 +69,27 @@ interface ExecutionContext : LoggingProducerContext {
      * server based deploy is a single service per VM / container.
      */
     fun instanceQualifier(): String?
+
+    fun log(body: String, level: LogLevel = LogLevel.INFO) {
+        val msg = LogMessage(
+            executionId = this.executionId(),
+            taskId = this.taskId(),
+            body = body,
+            level = level
+        )
+        log(msg)
+    }
+
+
+//    /**
+//     * Shortcut for writing a log message associated to a Task and ExecutionContext
+//     * This ensures that all the information necessary for distributed logging is
+//     * captured
+//     */
+//    fun log(task: Task, msg: LogMessage) {
+//        val qualified = msg.copy(executionId = this.executionId(), taskId = task.taskId())
+//        logger().accept(qualified)
+//    }
 }
 
 /**
@@ -77,6 +98,9 @@ interface ExecutionContext : LoggingProducerContext {
 interface ExecutionContextModifier {
 
     fun withTaskId(taskId: UUID): ExecutionContext
+
+    fun withTaskId(task: Task): ExecutionContext = withTaskId(task.taskId())
+
 
     /**
      * Make it easy to add objects to the scope
@@ -162,7 +186,7 @@ class SimpleExecutionContext(
     private val pm: ProcessManager = ProcessManager(),
     private val scoped: Registry = Registry(),
     private val provisioningState: ProvisioningState = DefaultProvisioningState()
-) : ExecutionContext {
+) : ExecutionContext, ExecutionContextModifier {
 
 
     override fun provisioningState(): ProvisioningState {
@@ -199,6 +223,22 @@ class SimpleExecutionContext(
 
     override fun instanceQualifier(): String? {
         return instanceQualifier
+    }
+
+    override fun withTaskId(taskId: UUID): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withTaskId(taskId)
+    }
+
+    override fun withScope(scopedObject: Any): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withScope(scopedObject)
+    }
+
+    override fun withProvisioningState(withProvisioningState: ProvisioningState): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withProvisioningState(withProvisioningState)
+    }
+
+    override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withInstanceQualifier(instanceQualifier)
     }
 
 
