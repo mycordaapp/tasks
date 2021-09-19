@@ -5,7 +5,6 @@ import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import java.util.UUID
-import java.util.concurrent.Future
 
 /**
  * A common marker interface for a Task
@@ -62,7 +61,7 @@ abstract class BaseUnitBlockingTask<I> : UnitBlockingTask<I> {
         DefaultExecutionContextModifier(ctx).withTaskId(taskId())
 }
 
-abstract class BaseAsyncTask<I, O> : Async2Task<I, O> {
+abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
     private val taskID = UUID.randomUUID()
     override fun taskId(): UUID {
         return taskID

@@ -9,18 +9,6 @@ import java.io.File
 import java.net.URL
 import java.util.*
 
-class CalcSquare2Task : BlockingTask<Int, Int> {
-    private val id = UUID.randomUUID()
-    override fun taskId(): UUID {
-        return id
-    }
-
-    override fun exec(executionContext: ExecutionContext, num: Int): Int {
-        val ctx = DefaultExecutionContextModifier(executionContext).withTaskId(taskId())
-        ctx.log(LogMessage.info("Calculating square of $num"))
-        return num.times(num)
-    }
-}
 
 
 interface ExampleTask : BlockingTask<Int, Int>

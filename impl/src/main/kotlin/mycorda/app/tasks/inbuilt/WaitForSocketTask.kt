@@ -2,22 +2,20 @@ package  mycorda.app.tasks.inbuilt
 
 
 import mycorda.app.registry.Registry
-import mycorda.app.tasks.Async2Task
+import mycorda.app.tasks.AsyncTask
 import mycorda.app.tasks.AsyncResultChannelSinkLocator
 import mycorda.app.tasks.SocketAddress
 import mycorda.app.tasks.UniqueId
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.executionContext.TestContextManager
-import mycorda.app.tasks.helpers.NetworkingHelper
 import java.util.*
-import java.util.concurrent.Future
 
 /**
  * Checks for an open socket on a given address
  *
  */
 
-interface WaitForSocketTask : Async2Task<SocketAddress, Long> {}
+interface WaitForSocketTask : AsyncTask<SocketAddress, Long> {}
 
 class WaitForSocketTaskImpl : WaitForSocketTask {
     private val taskId = UUID.randomUUID()

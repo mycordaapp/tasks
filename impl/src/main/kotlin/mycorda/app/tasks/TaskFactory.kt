@@ -77,10 +77,10 @@ class TaskFactory(private val registry: Registry = Registry()) {
         return t as BlockingTask<I, O>
     }
 
-    fun <I, O> createInstance(task: KClass<out Async2Task<I, O>>): Async2Task<I, O> {
+    fun <I, O> createInstance(task: KClass<out AsyncTask<I, O>>): AsyncTask<I, O> {
         val taskName: String = task.qualifiedName!!
         val t = createInstance(taskName)
-        return t as Async2Task<I, O>
+        return t as AsyncTask<I, O>
     }
 
 }

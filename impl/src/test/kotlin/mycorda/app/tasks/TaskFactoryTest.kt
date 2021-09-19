@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assertThat
 import junit.framework.Assert.fail
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.executionContext.ExecutionContext
 import org.junit.Test
@@ -229,30 +230,5 @@ class GoodbyeWorldTask() : SimpleTask {
 // Tasks can either have a default constructor, or a constructor that takes a registry
 class TaskWithoutAGoodConstructor(notAllowedConstructor: String) : Task {
     private val taskId = UUID.randomUUID()
-    override fun taskId(): UUID = taskId
-}
-
-class CalcSquareAsyncTask(registry: Registry) : Async2Task<Int, Int> {
-    private val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
-    private val taskId = UUID.randomUUID()
-    override fun exec(
-        executionContext: ExecutionContext,
-        channelLocator: AsyncResultChannelSinkLocator,
-        channelId: UniqueId,
-        input: Int
-    ) {
-        // 1. Find my channel
-        val resultChannel = resultChannelFactory.create(channelLocator)
-
-        // In real code wait for the long running process, i.e. start a thread, wait on
-        // an event
-
-        // 2. Generate a result
-        val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
-
-        // 3. Write the result
-        resultChannel.accept(result)
-    }
-
     override fun taskId(): UUID = taskId
 }

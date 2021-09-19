@@ -53,34 +53,6 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
     }
 }
 
-class CalcSquareAsyncTask(registry: Registry, private val delayMs: Long = 1000) : BaseAsyncTask<Int, Int>() {
-
-    private val executors = registry.get(ExecutorFactory::class.java).executorService()
-
-    fun exec(ctx: ExecutionContext, num: Int): Future<Int> {
-        val ctx = updatedCtx(ctx)
-        ctx.log(LogMessage.info("Calculating square of $num"))
-        return executors.submit<Int> {
-            Thread.sleep(delayMs)
-            num * num
-        }
-    }
-
-    override fun exec(
-        ctx: ExecutionContext,
-        channelLocator: AsyncResultChannelSinkLocator,
-        channelId: UniqueId,
-        input: Int
-    ) {
-        val ctx = updatedCtx(ctx)
-        ctx.log(LogMessage.info("Calculating square of $input"))
-//        return executors.submit<Int> {
-//            Thread.sleep(delayMs)
-//            num * num
-//        }
-        TODO("Not yet implemented")
-    }
-}
 
 
 class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, String>() {
@@ -126,6 +98,32 @@ class PrintStreamTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, params: String) {
         ctx.stdout().println(params)
     }
+}
+
+
+class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
+    private val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
+    private val taskId = UUID.randomUUID()
+    override fun exec(
+        executionContext: ExecutionContext,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: Int
+    ) {
+        // 1. Find my channel
+        val resultChannel = resultChannelFactory.create(channelLocator)
+
+        // In real code wait for the long running process, i.e. start a thread, wait on
+        // an event
+
+        // 2. Generate a result
+        val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
+
+        // 3. Write the result
+        resultChannel.accept(result)
+    }
+
+    override fun taskId(): UUID = taskId
 }
 
 

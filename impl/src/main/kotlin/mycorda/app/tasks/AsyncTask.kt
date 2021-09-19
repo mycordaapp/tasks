@@ -56,7 +56,7 @@ interface RegisterAsyncResultHandler<T> {
 }
 
 
-interface Async2Task<I, O> : Task {
+interface AsyncTask<I, O> : Task {
     /**
      * Execute the task.
      */

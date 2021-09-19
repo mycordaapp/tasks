@@ -28,7 +28,7 @@ class Async2TaskTest {
     /**
      *
      */
-    class SimpleAsync2Task : Async2Task<Int, Int> {
+    class SimpleAsync2Task : AsyncTask<Int, Int> {
         private val taskId = UUID.randomUUID()
         override fun exec(
             executionContext: ExecutionContext,
