@@ -52,24 +52,23 @@ Tasks have three key characteristics:
 * conform to the rules
   in [Really Simple Serializer](https://github.com/mycordaapp/really-simple-serialization/blob/master/README.md)
 
-A simple example is below. For clarity there is some boiler-plate code that is normally simplified
+A simple example is below:
 
 ```kotlin
 class CalcSquareTask : BaseBlockingTask<Int, Int>() {
 
     override fun exec(ctx: ExecutionContext, params: Int): Int {
-        val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        val msg =
-            LogMessage(executionId = ctx.executionId(), level = LogLevel.DEBUG, body = "Calculating square of $params")
-        ctx.log(msg)
+        // this is normally the first line - it ensures the task is stored in the context
+        val ctx = ctx.withTaskId(this)
+
+        ctx.log("Calculating square of $params")
         return params.times(params)
     }
 }
 ```
 
 This doesn't really do anything useful, but it shows the basic programming model in which everything needed is available
-via the `ExeccutionContext`. The `DefaultExeccutionContext`
-is lightweight and suitable for basic testing.
+via the `ExeccutionContext`.
 
 ### #2 - Executing a Task
 
@@ -81,9 +80,11 @@ A `Task` can be created and executed in three ways
   ** allows for remoting (calling `Tasks` on a remote agent)
   ** controls setup of the `ExecutionContext`
 
+`TaskDocExamples.kt` has full source code for the examples below.
+
 #### #2a - Executing the Task directly
 
-See `TaskDocExamples.kt`
+The `DefaultExeccutionContext` is lightweight and suitable for testing and simple use cases
 
 ```kotlin
 @Test
@@ -97,10 +98,10 @@ fun `should call task directly`() {
 
 #### #2b - Using the `TaskFactory`
 
-See `TaskDocExamples.kt`
+This is usually part of the server side. It allows for dynamic registration of tasks
 
 ```kotlin
- @Test
+@Test
 fun `should call task via the TaskFactory`() {
     // register a real task
     val liveFactory = TaskFactory2()
@@ -126,7 +127,45 @@ fun `should call task via the TaskFactory`() {
 
 #### #2c - Using the `TaskClient`
 
-TODO
+This is the typical case as it reflects the usual client server model, with tasks invoked locally but running on another
+agent of some form on another server. Note that for simplicity, in this example we create the SimpleTaskClient which
+uses in memory communication.
+
+```kotlin
+@Test
+fun `should call task via a task client`() {
+    // 1. register a real task in the TaskFactory (server side)
+    val taskFactory = TaskFactory2()
+    taskFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
+    val registry = Registry().store(taskFactory)
+
+    // 2. get a task client (client side)
+    val taskClient = SimpleTaskClient(registry)
+
+    // 3. call the client
+    val clientContext = SimpleClientContext()
+    val result = taskClient.execBlocking<String, List<String>>(
+        clientContext,
+        "mycorda.app.tasks.ListDirectoryTask", "."
+    )
+
+    // 4. assert results
+    assert(result.contains("fake.txt"))
+
+    // 5. assert logging output
+    assertThat(
+        clientContext.inMemoryLoggingConsumerContext().stdout(),
+        equalTo(
+            "ListDirectoryTask:\n" +
+                    "   params: .\n"
+        )
+    )
+    assert(
+        clientContext.inMemoryLoggingConsumerContext().messages()
+            .hasMessage(LogLevel.INFO, "listing directory '.'")
+    )
+}
+```
 
 ### #2 - Combining Tasks
 
