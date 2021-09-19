@@ -6,8 +6,8 @@ package  mycorda.app.tasks.inbuilt
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.AsyncTask
 import mycorda.app.tasks.SocketAddress
-import mycorda.app.tasks.executionContext.ContextManager
 import mycorda.app.tasks.executionContext.ExecutionContext
+import mycorda.app.tasks.executionContext.TestContextManager
 import mycorda.app.tasks.helpers.NetworkingHelper
 import java.util.*
 import java.util.concurrent.Future
@@ -59,7 +59,7 @@ class WaitForSocketTaskFake : WaitForSocketTask {
 fun main(args: Array<String>) {
 
     val registry = Registry()
-    val manager = ContextManager(registry).register()
+    val manager = TestContextManager()
     val ctx = manager.createExecutionContext()
     val address = SocketAddress("localhost", 12345)
 
