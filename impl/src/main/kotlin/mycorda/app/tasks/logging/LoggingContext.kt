@@ -246,7 +246,7 @@ class InMemoryLoggingConsumerContext : LoggingConsumerContext {
 
     fun stderr(): String = stderr.toString()
 
-    fun message(): List<LogMessage> = ArrayList(logMessages)
+    fun messages(): List<LogMessage> = ArrayList(logMessages)
 }
 
 class InMemoryLoggingProducerContext(private val consumer: LoggingConsumerContext) : LoggingProducerContext {

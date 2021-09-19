@@ -56,7 +56,7 @@ class LoggingContextTests {
         // test log messages
         logProducerContext.logger().accept(info)
         logProducerContext.log(warn)
-        assertThat(logConsumerContext.message(), equalTo(listOf(info, warn)))
+        assertThat(logConsumerContext.messages(), equalTo(listOf(info, warn)))
     }
 
     @Test

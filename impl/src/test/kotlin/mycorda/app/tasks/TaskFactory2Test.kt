@@ -4,13 +4,13 @@ import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assertThat
 import junit.framework.Assert.fail
 import mycorda.app.registry.Registry
-import mycorda.app.tasks.executionContext.DefaultExecutionProducerContext
+import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.executionContext.ExecutionContext
 import org.junit.Test
 import java.util.*
 
 class TaskFactory2Test {
-    private val executionContext = DefaultExecutionProducerContext()
+    private val executionContext = SimpleExecutionContext()
     private val notRequired = NotRequired.instance()
 
     @Test
@@ -29,14 +29,14 @@ class TaskFactory2Test {
         factory1.register(CalculateTask::class)
         val sumCalculator = factory1.createInstance(CalculateTask::class.qualifiedName!!)
         assertThat(sumCalculator::class.qualifiedName, equalTo(CalculateTask::class.qualifiedName!!))
-        assertThat((sumCalculator as CalculateTask).exec(DefaultExecutionProducerContext(), 10), equalTo(20))
+        assertThat((sumCalculator as CalculateTask).exec(SimpleExecutionContext(), 10), equalTo(20))
 
         // build CalculateTask with an Multiplier in the registry
         val factory2 = TaskFactory2(Registry().store(Multiplier()))
         factory2.register(CalculateTask::class)
         val multiplyCalculator = factory2.createInstance(CalculateTask::class.qualifiedName!!)
         assertThat(
-            (multiplyCalculator as CalculateTask).exec(DefaultExecutionProducerContext(), 10),
+            (multiplyCalculator as CalculateTask).exec(SimpleExecutionContext(), 10),
             equalTo(100)
         )
 

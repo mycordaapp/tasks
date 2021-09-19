@@ -115,7 +115,7 @@ interface ExecutionContextModifier {
 class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionContextModifier {
     private var working = original
     override fun withTaskId(taskId: UUID): ExecutionContext {
-        working = DefaultExecutionProducerContext(
+        working = SimpleExecutionContext(
             executionId = working.executionId(),
             taskId = taskId,
             executor = working.executorService(),
@@ -131,7 +131,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 
 
     override fun withStdout(stdout: StdOut): ExecutionContext {
-        working = DefaultExecutionProducerContext(
+        working = SimpleExecutionContext(
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -146,7 +146,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     }
 
     override fun withScope(scopedObject: Any): ExecutionContext {
-        working = DefaultExecutionProducerContext(
+        working = SimpleExecutionContext(
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -161,7 +161,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     }
 
     override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
-        working = DefaultExecutionProducerContext(
+        working = SimpleExecutionContext(
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -176,7 +176,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     }
 
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
-        working = DefaultExecutionProducerContext(
+        working = SimpleExecutionContext(
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -195,7 +195,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 /**
  * A simple service, only suitable for basic unit test
  */
-class DefaultExecutionProducerContext(
+class SimpleExecutionContext(
     private val executionId: UUID = UUID.randomUUID(),
     private val taskId: UUID? = null,
     private val instanceQualifier: String? = null,
@@ -203,14 +203,11 @@ class DefaultExecutionProducerContext(
     private val pm: ProcessManager = ProcessManager(),
     private val scoped: Registry = Registry(),
     private val provisioningState: ProvisioningState = DefaultProvisioningState(),
-    private val stdout: PrintStream = System.out,
-    private val stderr: PrintStream = System.err,
-    private val loggingProducerContext: LoggingProducerContext = InjectableLoggingProducerContext(scoped)
+    private var stdout: PrintStream = System.out,
+    private var stderr: PrintStream = System.err,
+    private var loggingProducerContext: LoggingProducerContext = InjectableLoggingProducerContext(scoped)
 ) : ExecutionContext {
 
-//    override fun distributionService(): DistributionService {
-//        return distributionService
-//    }
 
     override fun provisioningState(): ProvisioningState {
         return provisioningState
@@ -220,10 +217,6 @@ class DefaultExecutionProducerContext(
         logger().accept(LogMessage(executionId = this.executionId, level = logLevel, body = msg))
     }
 
-
-//    override fun log(msg: LogMessage): LoggingProducerContext {
-//        return loggingProducerContext.log(msg)
-//    }
 
     override fun stdout(): PrintStream {
         return stdout
@@ -260,6 +253,13 @@ class DefaultExecutionProducerContext(
 
     override fun logger(): LogMessageSink {
         return loggingProducerContext.logger()
+    }
+
+    fun withLoggingProducerContext(producer: LoggingProducerContext): SimpleExecutionContext {
+        loggingProducerContext = producer
+        stdout = producer.stdout()
+        stderr = producer.stderr()
+        return this
     }
 
 }

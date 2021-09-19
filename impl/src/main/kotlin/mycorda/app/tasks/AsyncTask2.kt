@@ -1,7 +1,7 @@
 package mycorda.app.tasks
 
 import mycorda.app.helpers.random
-import mycorda.app.tasks.executionContext.DefaultExecutionProducerContext
+import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.executionContext.ExecutionContext
 import java.util.*
 
@@ -110,7 +110,7 @@ interface Async2Task<I, O> : Task {
      * Execute the task.
      */
     fun exec(
-        executionContext: ExecutionContext = DefaultExecutionProducerContext(),
+        executionContext: ExecutionContext = SimpleExecutionContext(),
 
         /**
          * Where to send the result back to? Should be stored

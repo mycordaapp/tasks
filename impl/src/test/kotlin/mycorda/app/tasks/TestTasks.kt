@@ -5,6 +5,7 @@ import mycorda.app.tasks.demo.BaseTask
 import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogLevel
+import mycorda.app.tasks.logging.LogMessage
 import java.io.File
 import java.net.URL
 import java.util.*
@@ -53,6 +54,7 @@ class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, List<S
         val out = executionContext.stdout()
         out.println("ListDirectoryTask:")
         out.println("   params: $params")
+        executionContext.log(LogMessage.info("listing directory '$params'"))
         return listOf("fake.txt")
     }
 }
