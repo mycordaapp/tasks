@@ -59,7 +59,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      */
     fun provisioningState(): ProvisioningState
 
-
     /**
      * Instance qualifier - if multiple services are deployed to a server,
      * this gives that task the additional information needed to disambiguate names and
@@ -70,6 +69,10 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      */
     fun instanceQualifier(): String?
 
+    /**
+     * A short cut for logging that pulls in all the information
+     * on the ExecutionContext
+     */
     fun log(body: String, level: LogLevel = LogLevel.INFO) {
         val msg = LogMessage(
             executionId = this.executionId(),
@@ -79,17 +82,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
         )
         log(msg)
     }
-
-
-//    /**
-//     * Shortcut for writing a log message associated to a Task and ExecutionContext
-//     * This ensures that all the information necessary for distributed logging is
-//     * captured
-//     */
-//    fun log(task: Task, msg: LogMessage) {
-//        val qualified = msg.copy(executionId = this.executionId(), taskId = task.taskId())
-//        logger().accept(qualified)
-//    }
 }
 
 /**
@@ -188,11 +180,9 @@ class SimpleExecutionContext(
     private val provisioningState: ProvisioningState = DefaultProvisioningState()
 ) : ExecutionContext, ExecutionContextModifier {
 
-
     override fun provisioningState(): ProvisioningState {
         return provisioningState
     }
-
 
     override fun stdout(): PrintStream = loggingProducerContext.stdout()
 
