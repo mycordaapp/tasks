@@ -82,7 +82,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient2 {
 
         // hook in logging producer / consumer pair
         val loggingProducerContext = InMemoryLoggingProducerContext(ctx.loggingConsumer())
-        val executionContext = SimpleExecutionContext().withLoggingProducerContext(loggingProducerContext)
+        val executionContext = SimpleExecutionContext(loggingProducerContext)
 
         return task.exec(executionContext, input)
     }

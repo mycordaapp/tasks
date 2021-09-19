@@ -24,7 +24,8 @@ class DefaultTaskClient(registry: Registry) : TaskClient {
     }
 
     private fun ctxWithCapturedPrintStream(original: ExecutionContext): ExecutionContext {
-        return DefaultExecutionContextModifier(original).withStdout(StdOut(capturedPrintStream.printStream()))
+        println("TODO ctxWithCapturedPrintStream() is not needed ")
+        return original
     }
 
     override fun defaultTimeoutInSeconds(): Int {

@@ -291,10 +291,11 @@ class CapturedOutputStream(
 }
 
 
-
 /**
  * Allows injection of sinks for stdout, stderr and logMessages via the Registry \
  * Generally is better to use InMemoryLoggingProducerContext & InMemoryLoggingConsumerContext
+ *
+ * By default all logging is directed to stdout and strerr
  */
 class InjectableLoggingProducerContext(registry: Registry = Registry()) : LoggingProducerContext {
     private val sink = registry.geteOrElse(LogMessageSink::class.java, ConsoleLogMessageSink(registry))
@@ -308,6 +309,23 @@ class InjectableLoggingProducerContext(registry: Registry = Registry()) : Loggin
     override fun stderr(): PrintStream = err.err()
 }
 
+
+/**
+ * Everything is directed to stdout & stderr
+ */
+class ConsoleLoggingProducerContext : LoggingProducerContext {
+    private val sink = ConsoleLogMessageSink()
+    private val out = DefaultStdoutHolder()
+    private val err = DefaultStderrHolder()
+
+    override fun logger(): LogMessageSink = sink
+
+    override fun stdout(): PrintStream = out.out()
+
+    override fun stderr(): PrintStream = err.err()
+}
+
+
 /**
  * Stores in memory. Mainly for unit testing. All configuration is via
  * the registry. If not provided, the following defaults are used:
@@ -316,7 +334,7 @@ class InjectableLoggingProducerContext(registry: Registry = Registry()) : Loggin
  *  - format is LogFormat.Simple
  *  - formatter is DefaultStringLogFormatter
  */
-@Deprecated (message = "Use InMemoryLoggingProducerContext/InMemoryLoggingConsumerContext")
+@Deprecated(message = "Use InMemoryLoggingProducerContext/InMemoryLoggingConsumerContext")
 class InMemoryLogMessageSink(
     registry: Registry = Registry()
 ) : LogMessageSink {

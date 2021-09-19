@@ -1,13 +1,13 @@
 package mycorda.app.tasks.executionContext
 
 import mycorda.app.registry.Registry
-import mycorda.app.tasks.Task
 import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
 import java.io.PrintStream
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 
 /**
@@ -78,8 +78,6 @@ interface ExecutionContextModifier {
 
     fun withTaskId(taskId: UUID): ExecutionContext
 
-    fun withStdout(stdout: StdOut): ExecutionContext
-
     /**
      * Make it easy to add objects to the scope
      */
@@ -97,34 +95,18 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     private var working = original
     override fun withTaskId(taskId: UUID): ExecutionContext {
         working = SimpleExecutionContext(
+            loggingProducerContext = working,
             executionId = working.executionId(),
             taskId = taskId,
             executor = working.executorService(),
             pm = working.processManager(),
             scoped = working.scoped(),
             provisioningState = working.provisioningState(),
-            instanceQualifier = working.instanceQualifier(),
-            stdout = working.stdout(),
-            stderr = working.stderr()
+            instanceQualifier = working.instanceQualifier()
         )
         return working
     }
 
-
-    override fun withStdout(stdout: StdOut): ExecutionContext {
-        working = SimpleExecutionContext(
-            executionId = working.executionId(),
-            taskId = working.taskId(),
-            executor = working.executorService(),
-            pm = working.processManager(),
-            scoped = working.scoped(),
-            provisioningState = working.provisioningState(),
-            instanceQualifier = working.instanceQualifier(),
-            stdout = stdout.printStream,
-            stderr = working.stderr()
-        )
-        return working
-    }
 
     override fun withScope(scopedObject: Any): ExecutionContext {
         working = SimpleExecutionContext(
@@ -134,9 +116,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             pm = working.processManager(),
             scoped = working.scoped().clone().store(scopedObject),
             provisioningState = working.provisioningState(),
-            instanceQualifier = working.instanceQualifier(),
-            stdout = working.stdout(),
-            stderr = working.stderr()
+            instanceQualifier = working.instanceQualifier()
         )
         return working
     }
@@ -149,9 +129,8 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             pm = working.processManager(),
             scoped = working.scoped(),
             provisioningState = provisioningState,
-            instanceQualifier = working.instanceQualifier(),
-            stdout = working.stdout(),
-            stderr = working.stderr()
+            instanceQualifier = working.instanceQualifier()
+
         )
         return working
     }
@@ -164,9 +143,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             pm = working.processManager(),
             scoped = working.scoped(),
             provisioningState = working.provisioningState(),
-            instanceQualifier = instanceQualifier,
-            stdout = working.stdout(),
-            stderr = working.stderr()
+            instanceQualifier = instanceQualifier
         )
         return working
     }
@@ -177,16 +154,14 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
  * A simple service, only suitable for basic unit test
  */
 class SimpleExecutionContext(
+    private val loggingProducerContext: LoggingProducerContext = ConsoleLoggingProducerContext(),
     private val executionId: UUID = UUID.randomUUID(),
     private val taskId: UUID? = null,
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager(),
     private val scoped: Registry = Registry(),
-    private val provisioningState: ProvisioningState = DefaultProvisioningState(),
-    private var stdout: PrintStream = System.out,
-    private var stderr: PrintStream = System.err,
-    private var loggingProducerContext: LoggingProducerContext = InjectableLoggingProducerContext(scoped)
+    private val provisioningState: ProvisioningState = DefaultProvisioningState()
 ) : ExecutionContext {
 
 
@@ -195,13 +170,11 @@ class SimpleExecutionContext(
     }
 
 
-    override fun stdout(): PrintStream {
-        return stdout
-    }
+    override fun stdout(): PrintStream = loggingProducerContext.stdout()
 
-    override fun stderr(): PrintStream {
-        return stderr
-    }
+    override fun stderr(): PrintStream = loggingProducerContext.stderr()
+
+    override fun logger(): LogMessageSink = loggingProducerContext.logger()
 
 
     override fun processManager(): ProcessManager {
@@ -228,16 +201,6 @@ class SimpleExecutionContext(
         return instanceQualifier
     }
 
-    override fun logger(): LogMessageSink {
-        return loggingProducerContext.logger()
-    }
-
-    fun withLoggingProducerContext(producer: LoggingProducerContext): SimpleExecutionContext {
-        loggingProducerContext = producer
-        stdout = producer.stdout()
-        stderr = producer.stderr()
-        return this
-    }
 
 }
 
