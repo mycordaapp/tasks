@@ -7,7 +7,11 @@ import kotlin.reflect.KClass
 
 
 fun List<LogMessage>.hasMessage(level: LogLevel, body: String): Boolean {
-    return this.filter { (it.level == level) && it.body == body }.size == 1
+    return this.any { (it.level == level) && it.body == body }
+}
+
+fun List<LogMessage>.doesNotHaveMessage(level: LogLevel, body: String): Boolean {
+    return this.none { (it.level == level) && it.body == body }
 }
 
 fun Set<SecurityPrinciple>.hasType(type : KClass<SecurityPrinciple>) : Boolean = true

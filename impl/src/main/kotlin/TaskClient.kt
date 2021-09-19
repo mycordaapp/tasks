@@ -1,6 +1,5 @@
 import mycorda.app.registry.Registry
-import mycorda.app.tasks.BlockingTask
-import mycorda.app.tasks.TaskFactory
+import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.InMemoryLoggingConsumerContext
 import mycorda.app.tasks.logging.InMemoryLoggingProducerContext
@@ -42,7 +41,7 @@ interface ClientContext {
     fun loggingConsumer(): LoggingConsumerContext
 
     /**
-     * Web Request style custom headers. Should be used with care
+     * Web Request style custom headers. Should be used with care (is this a good idea?)
      */
     fun customHeaders(): Map<String, String>
 }
@@ -53,6 +52,14 @@ interface TaskClient {
         taskName: String,
         input: I
     ): O
+
+    fun <I, O> execAsync(
+        ctx: ClientContext,
+        taskName: String,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: I
+    )
 }
 
 /**
@@ -70,8 +77,7 @@ class SimpleClientContext : ClientContext {
 
     // shortcut to
     fun notAuthenticatedSecurityPrinciple(): NotAuthenticatedSecurityPrinciple = principle
-    fun inMemoryLoggingConsumerContext(): InMemoryLoggingConsumerContext = logging
-
+    fun inMemoryLoggingContext(): InMemoryLoggingConsumerContext = logging
 }
 
 
@@ -88,6 +94,23 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val executionContext = SimpleExecutionContext(loggingProducerContext)
 
         return task.exec(executionContext, input)
+    }
+
+    override fun <I, O> execAsync(
+        ctx: ClientContext,
+        taskName: String,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: I
+    ) {
+        val task = taskFactory.createInstance(taskName) as AsyncTask<I, O>
+
+        // hook in logging producer / consumer pair
+        val loggingProducerContext = InMemoryLoggingProducerContext(ctx.loggingConsumer())
+        val executionContext = SimpleExecutionContext(loggingProducerContext)
+
+        task.exec(executionContext, channelLocator, channelId, input)
+
     }
 
 }

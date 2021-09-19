@@ -1,10 +1,13 @@
 package mycorda.app.tasks
 
+import SimpleClientContext
+import SimpleTaskClient
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
+import mycorda.app.tasks.logging.LogLevel
 import org.junit.Test
 
 /**
@@ -30,7 +33,7 @@ class AsyncTaskDocExamples {
         task.exec(ctx, locator, channelId, 10)
 
         // 5. run a query over the result channel. In this
-        //    CalcSquareAsyncTask is a demo and has returned a result immediately
+        //    CalcSquareAsyncTask is a demo and just has a simple sleep
         val query = resultSinkFactory.channelQuery(locator)
 
         // 6. assert expected results
@@ -42,5 +45,73 @@ class AsyncTaskDocExamples {
         assert(query.hasResult(channelId))
         val result = query.result<Int>(channelId)
         assertThat(result, equalTo(Success<Int>(100) as AsyncResult<Int>))
+    }
+
+    @Test
+    fun `should call task via a task client`() {
+        // 1. Create a registry and store a AsyncResultChannelSinkFactory
+        val registry = Registry()
+        val resultSinkFactory = DefaultAsyncResultChannelSinkFactory()
+        registry.store(resultSinkFactory)
+
+        // 2. register a real task in the TaskFactory (server side)
+        val taskFactory = TaskFactory(registry)
+        taskFactory.register(CalcSquareAsyncTask::class)
+        registry.store(taskFactory)
+
+        // 3. get a task client (client side)
+        val taskClient = SimpleTaskClient(Registry().store(taskFactory))
+
+        // 4. setup a channel for the results
+        val locator = AsyncResultChannelSinkLocator.LOCAL
+        val channelId = UniqueId.random()
+
+        // 5. call the client
+        val clientContext = SimpleClientContext()
+        taskClient.execAsync<Int, Int>(
+            clientContext,
+            "mycorda.app.tasks.demo.CalcSquareAsyncTask",
+            locator,
+            channelId,
+            10
+        )
+
+        // 6. the first log message is already available, but the second isn't
+        assert(
+            clientContext.inMemoryLoggingContext().messages().hasMessage(LogLevel.INFO, "Starting calculation")
+        )
+        assert(
+            clientContext.inMemoryLoggingContext().messages().doesNotHaveMessage(LogLevel.INFO, "Completed calculation")
+        )
+
+        // 7. run a query over the result channel. In this case
+        //    CalcSquareAsyncTask is a demo and just has a simple sleep
+        val query = resultSinkFactory.channelQuery(locator)
+
+        // 6. assert expected results
+        // not yet read
+        assertThat(query.hasResult(channelId), equalTo(false))
+        // wait long enough
+        Thread.sleep(AsyncTask.platformTick() * 2)
+        // now ready
+        assert(query.hasResult(channelId))
+        val result = query.result<Int>(channelId)
+        assertThat(result, equalTo(Success<Int>(100) as AsyncResult<Int>))
+
+        // 4. assert results
+//        assert(result.contains("fake.txt"))
+//
+//        // 5. assert logging output
+//        assertThat(
+//            clientContext.inMemoryLoggingConsumerContext().stdout(),
+//            equalTo(
+//                "ListDirectoryTask:\n" +
+//                        "   params: .\n"
+//            )
+//        )
+//        assert(
+//            clientContext.inMemoryLoggingConsumerContext().messages()
+//                .hasMessage(LogLevel.INFO, "listing directory '.'")
+//        )
     }
 }

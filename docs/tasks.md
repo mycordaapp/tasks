@@ -196,7 +196,7 @@ In most cases to build a robust application Async Tasks are needed. These manage
 * Both the client and server may restart while running a task
 * It is safer to be pessimistic, and assume that any message between a client and server can be lost.
 
-The Async Task version of CalcSquareTask is below. In this case
+The Async Task version of CalcSquareTask is below.
 
 ```kotlin
 class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
@@ -226,7 +226,7 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
 
 ```
 
-and the basic test case is
+and the basic test case is 
 
 ```kotlin
  fun `should call task directly`() {

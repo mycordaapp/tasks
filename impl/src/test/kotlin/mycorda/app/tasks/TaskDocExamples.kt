@@ -69,14 +69,14 @@ class TaskDocExamples {
 
         // 5. assert logging output
         assertThat(
-            clientContext.inMemoryLoggingConsumerContext().stdout(),
+            clientContext.inMemoryLoggingContext().stdout(),
             equalTo(
                 "ListDirectoryTask:\n" +
                         "   params: .\n"
             )
         )
         assert(
-            clientContext.inMemoryLoggingConsumerContext().messages()
+            clientContext.inMemoryLoggingContext().messages()
                 .hasMessage(LogLevel.INFO, "listing directory '.'")
         )
     }
