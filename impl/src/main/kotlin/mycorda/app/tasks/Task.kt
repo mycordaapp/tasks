@@ -33,12 +33,7 @@ interface UnitBlockingTask<I> : BlockingTask<I, Unit> {
     override fun exec(ctx: ExecutionContext, params: I)
 }
 
-interface AsyncTask<I, O> : Task {
-    /**
-     * Execute the task.
-     */
-    fun exec(executionContext: ExecutionContext = SimpleExecutionContext(), params: I): Future<O>
-}
+
 
 
 abstract class BaseBlockingTask<I, O> : BlockingTask<I, O> {
@@ -67,7 +62,7 @@ abstract class BaseUnitBlockingTask<I> : UnitBlockingTask<I> {
         DefaultExecutionContextModifier(ctx).withTaskId(taskId())
 }
 
-abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
+abstract class BaseAsyncTask<I, O> : Async2Task<I, O> {
     private val taskID = UUID.randomUUID()
     override fun taskId(): UUID {
         return taskID
@@ -81,15 +76,6 @@ abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
 }
 
 
-/**
- * A standard result for use in Async tasks.
- */
-data class AsyncResult(
-    val success: Boolean,
-    val message: String,
-    val exception: Exception? = null,
-    val processId: UUID? = null
-)
 
 class TaskException(override val message: String, override val cause : Throwable? = null) : RuntimeException(message, cause)
 

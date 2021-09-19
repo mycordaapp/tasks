@@ -11,7 +11,7 @@ import java.util.function.Consumer
  */
 data class AsyncResultChannelMessage<T>(
     val channelId: UniqueId,
-    val result: AsyncResult2<T>,
+    val result: AsyncResult<T>,
     val resultClazz: Class<T>   // for serializer and helping with type safety. Is it s good idea?
                                 // it does mean that the client must be Java / Kotlin ? I think this
                                 // is OK. With the really simple serializer concept, we are not
@@ -32,7 +32,7 @@ interface AsyncResultChannelSink : Consumer<AsyncResultChannelMessage<*>> {
  */
 interface AsyncResultChannelQuery {
     fun hasResult(channelId: UniqueId): Boolean
-    fun <T> result(channelId: UniqueId): AsyncResult2<T>
+    fun <T> result(channelId: UniqueId): AsyncResult<T>
 }
 
 /**
@@ -69,7 +69,7 @@ interface AsyncResultChannelSinkFactory {
  * TODO - A Future based "waitfor" style API
  */
 interface AsyncResultChannelFuture {
-    fun <T> get(channelId: UniqueId): Future<AsyncResult2<T>>
+    fun <T> get(channelId: UniqueId): Future<AsyncResult<T>>
 }
 
 /**
@@ -88,9 +88,9 @@ class InMemoryAsyncResultChannel : AsyncResultChannelSink, AsyncResultChannelQue
     }
 
     @SuppressWarnings("unchecked")
-    override fun <T> result(channelId: UniqueId): AsyncResult2<T> {
+    override fun <T> result(channelId: UniqueId): AsyncResult<T> {
         if (hasResult(channelId)) {
-            return channel.single { it.channelId == channelId }.result as AsyncResult2<T>
+            return channel.single { it.channelId == channelId }.result as AsyncResult<T>
         } else {
             throw TaskException("no result yet for $channelId")
         }

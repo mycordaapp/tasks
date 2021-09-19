@@ -40,22 +40,22 @@ object TasksSpec : Spek({
             assertThat(result, equalTo(81))
         }
 
-        it("should run CalcSquareTask via executor") {
-            // doExec
-            val executionId = UUID.randomUUID()
-            val ctx = DefaultExecutionContextFactory(registry).get(executionId = executionId, logMessageSink = messageSink)
-            val executor = SimpleTaskExecutor<Int, Int>(ctx)
-            val task = CalcSquareTask()
-            val result = executor.exec(task, params = 9)
-
-            // verify
-            assertThat(result, equalTo(81))
-            assertThat(messageSink.toString(), equalTo("level=INFO, message=Started CalcSquareTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
-                    "level=INFO, message=Calculating square of 9, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
-                    "level=INFO, message=Completed CalcSquareTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"))
-            assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(3))
-            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(3))
-        }
+//        it("should run CalcSquareTask via executor") {
+//            // doExec
+//            val executionId = UUID.randomUUID()
+//            val ctx = DefaultExecutionContextFactory(registry).get(executionId = executionId, logMessageSink = messageSink)
+//            val executor = SimpleTaskExecutor<Int, Int>(ctx)
+//            val task = CalcSquareTask()
+//            val result = executor.exec(task, params = 9)
+//
+//            // verify
+//            assertThat(result, equalTo(81))
+//            assertThat(messageSink.toString(), equalTo("level=INFO, message=Started CalcSquareTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
+//                    "level=INFO, message=Calculating square of 9, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
+//                    "level=INFO, message=Completed CalcSquareTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"))
+//            assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(3))
+//            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(3))
+//        }
     }
 
     describe("Running an Async Task") {
@@ -63,56 +63,56 @@ object TasksSpec : Spek({
                 .store(ProcessManager())
                 .store(messageSink)
 
-        it("executing CalcSquareAsyncTask directly") {
-            val task = CalcSquareAsyncTask(registry) as AsyncTask<Int, Int>
-            val result = task.exec(params = 9).get()
-            assertThat(result, equalTo(81))
-            assert(messageSink.messages().isEmpty())
-        }
+//        it("executing CalcSquareAsyncTask directly") {
+//            val task = CalcSquareAsyncTask(registry) as AsyncTask<Int, Int>
+//            val result = task.exec(params = 9).get()
+//            assertThat(result, equalTo(81))
+//            assert(messageSink.messages().isEmpty())
+//        }
 
-        it("executing CalcSquareAsyncTask via executor") {
-            val executionId = UUID.randomUUID()
-            val ctx = DefaultExecutionContextFactory(registry).get(executionId = executionId, logMessageSink = messageSink)
-            val executor = SimpleTaskExecutor<Int, Int>(ctx)
-            val task = CalcSquareAsyncTask(registry)
-            val result = executor.exec(task, params = 9) as Future<Int>
+//        it("executing CalcSquareAsyncTask via executor") {
+//            val executionId = UUID.randomUUID()
+//            val ctx = DefaultExecutionContextFactory(registry).get(executionId = executionId, logMessageSink = messageSink)
+//            val executor = SimpleTaskExecutor<Int, Int>(ctx)
+//            val task = CalcSquareAsyncTask(registry)
+//            val result = executor.exec(task, params = 9) as Future<Int>
+//
+//            // verify
+//            assertThat(result.get(), equalTo(81))
+//            assertThat(messageSink.toString(), equalTo("level=INFO, message=Started CalcSquareAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
+//                    "level=INFO, message=Calculating square of 9, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
+//                    "level=INFO, message=Running Future for CalcSquareAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
+//                    "level=INFO, message=Completed Future for CalcSquareAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"))
+//            assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(4))
+//            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(4))
+//        }
 
-            // verify
-            assertThat(result.get(), equalTo(81))
-            assertThat(messageSink.toString(), equalTo("level=INFO, message=Started CalcSquareAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
-                    "level=INFO, message=Calculating square of 9, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
-                    "level=INFO, message=Running Future for CalcSquareAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
-                    "level=INFO, message=Completed Future for CalcSquareAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"))
-            assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(4))
-            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(4))
-        }
 
-
-        it("executing ExceptionGeneratingAsyncTask via executor") {
-            val executionId = UUID.randomUUID()
-            val ctx = DefaultExecutionContextFactory(registry).get(executionId = executionId, logMessageSink = messageSink)
-            val executor = SimpleTaskExecutor<String, String>(ctx)
-            val task = ExceptionGeneratingAsyncTask(registry)
-            val result = executor.exec(task, params = "Here is the exception") as Future<Int>
-
-            try {
-                result.get()
-                fail("There should have been an Exception")
-            } catch (ignored: Exception) {
-            }
-
-            // verify
-            val expected = """
-                level=INFO, message=Started ExceptionGeneratingAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
-                level=INFO, message=Message is 'Here is the exception', taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
-                level=INFO, message=Running Future for ExceptionGeneratingAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
-                level=INFO, message=ExecutionException: java.lang.RuntimeException: Here is the exception, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
-                level=ERROR, message=Future Failed for ExceptionGeneratingAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx""".trimIndent()
-            assertThat(messageSink.toString(), equalTo(expected))
-            assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(5))
-            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(5))
-
-        }
+//        it("executing ExceptionGeneratingAsyncTask via executor") {
+//            val executionId = UUID.randomUUID()
+//            val ctx = DefaultExecutionContextFactory(registry).get(executionId = executionId, logMessageSink = messageSink)
+//            val executor = SimpleTaskExecutor<String, String>(ctx)
+//            val task = ExceptionGeneratingAsyncTask(registry)
+//            val result = executor.exec(task, params = "Here is the exception") as Future<Int>
+//
+//            try {
+//                result.get()
+//                fail("There should have been an Exception")
+//            } catch (ignored: Exception) {
+//            }
+//
+//            // verify
+//            val expected = """
+//                level=INFO, message=Started ExceptionGeneratingAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
+//                level=INFO, message=Message is 'Here is the exception', taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
+//                level=INFO, message=Running Future for ExceptionGeneratingAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
+//                level=INFO, message=ExecutionException: java.lang.RuntimeException: Here is the exception, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
+//                level=ERROR, message=Future Failed for ExceptionGeneratingAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx""".trimIndent()
+//            assertThat(messageSink.toString(), equalTo(expected))
+//            assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(5))
+//            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(5))
+//
+//        }
     }
 
 })

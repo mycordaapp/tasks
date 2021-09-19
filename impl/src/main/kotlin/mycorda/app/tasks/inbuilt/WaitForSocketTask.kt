@@ -2,8 +2,10 @@ package  mycorda.app.tasks.inbuilt
 
 
 import mycorda.app.registry.Registry
-import mycorda.app.tasks.AsyncTask
+import mycorda.app.tasks.Async2Task
+import mycorda.app.tasks.AsyncResultChannelSinkLocator
 import mycorda.app.tasks.SocketAddress
+import mycorda.app.tasks.UniqueId
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.executionContext.TestContextManager
 import mycorda.app.tasks.helpers.NetworkingHelper
@@ -15,41 +17,59 @@ import java.util.concurrent.Future
  *
  */
 
-interface WaitForSocketTask : AsyncTask<SocketAddress, Long> {}
+interface WaitForSocketTask : Async2Task<SocketAddress, Long> {}
 
 class WaitForSocketTaskImpl : WaitForSocketTask {
     private val taskId = UUID.randomUUID()
+    override fun exec(
+        executionContext: ExecutionContext,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: SocketAddress
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override fun taskId(): UUID {
         return taskId
     }
 
-    override fun exec(ctx: ExecutionContext, params: SocketAddress): Future<Long> {
-        val start = System.currentTimeMillis()
-        return ctx.executorService().submit<Long> {
-            while (!NetworkingHelper.isSocketAlive(params)) {
-                Thread.sleep(1000)
-            }
-            System.currentTimeMillis() - start
-        }
-    }
+//    override fun exec(ctx: ExecutionContext, params: SocketAddress): Future<Long> {
+//        val start = System.currentTimeMillis()
+//        return ctx.executorService().submit<Long> {
+//            while (!NetworkingHelper.isSocketAlive(params)) {
+//                Thread.sleep(1000)
+//            }
+//            System.currentTimeMillis() - start
+//        }
+//    }
 }
 
 
 class WaitForSocketTaskFake : WaitForSocketTask {
     private val taskId = UUID.randomUUID()
+    override fun exec(
+        executionContext: ExecutionContext,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: SocketAddress
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override fun taskId(): UUID {
         return taskId
     }
 
-    override fun exec(ctx: ExecutionContext, params: SocketAddress): Future<Long> {
-        val out = ctx.stdout()
-        out.println("WaitForSocketTask:")
-        out.println("   params: ${params}")
-        return ctx.executorService().submit<Long> {
-            Thread.sleep(1000L)
-            1000
-        }
-    }
+//    override fun exec(ctx: ExecutionContext, params: SocketAddress): Future<Long> {
+//        val out = ctx.stdout()
+//        out.println("WaitForSocketTask:")
+//        out.println("   params: ${params}")
+//        return ctx.executorService().submit<Long> {
+//            Thread.sleep(1000L)
+//            1000
+//        }
+//    }
 }
 
 
@@ -68,8 +88,8 @@ fun main(args: Array<String>) {
 
     try {
         println("Running WaitAgentReadyCmdImpl")
-        val result = WaitForSocketTaskImpl().exec(ctx, address).get()
-        println("Success!, that took $result milliseconds")
+        //val result = WaitForSocketTaskImpl().exec(ctx, address).get()
+        //println("Success!, that took $result milliseconds")
     } catch (ex: RuntimeException) {
         ex.printStackTrace()
     }

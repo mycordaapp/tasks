@@ -57,7 +57,7 @@ class CalcSquareAsyncTask(registry: Registry, private val delayMs: Long = 1000) 
 
     private val executors = registry.get(ExecutorFactory::class.java).executorService()
 
-    override fun exec(ctx: ExecutionContext, num: Int): Future<Int> {
+    fun exec(ctx: ExecutionContext, num: Int): Future<Int> {
         val ctx = updatedCtx(ctx)
         ctx.log(LogMessage.info("Calculating square of $num"))
         return executors.submit<Int> {
@@ -65,19 +65,20 @@ class CalcSquareAsyncTask(registry: Registry, private val delayMs: Long = 1000) 
             num * num
         }
     }
-}
 
-class CalcSquareAsync2Task(registry: Registry) : BaseAsyncTask<Int, Int>() {
-
-    private val executors = registry.get(ExecutorFactory::class.java).executorService()
-
-    override fun exec(ctx: ExecutionContext, params: Int): Future<Int> {
-        val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskId())
-        ctx.log(LogMessage.info("Calculating square of $params"))
-        return executors.submit<Int> {
-            Thread.sleep(10)
-            params * params
-        }
+    override fun exec(
+        ctx: ExecutionContext,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: Int
+    ) {
+        val ctx = updatedCtx(ctx)
+        ctx.log(LogMessage.info("Calculating square of $input"))
+//        return executors.submit<Int> {
+//            Thread.sleep(delayMs)
+//            num * num
+//        }
+        TODO("Not yet implemented")
     }
 }
 
@@ -86,7 +87,7 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
 
     private val executors = registry.get(ExecutorFactory::class.java).executorService()
 
-    override fun exec(ctx: ExecutionContext, params: String): Future<String> {
+    fun exec(ctx: ExecutionContext, params: String): Future<String> {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskId())
         ctx.log(LogMessage.info("Message is '$params'"))
         return executors.submit<String> {
@@ -94,6 +95,15 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
             Thread.sleep(10)
             params
         }
+    }
+
+    override fun exec(
+        executionContext: ExecutionContext,
+        channelLocator: AsyncResultChannelSinkLocator,
+        channelId: UniqueId,
+        input: String
+    ) {
+        TODO("Not yet implemented")
     }
 }
 
