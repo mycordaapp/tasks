@@ -4,7 +4,6 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.BaseTask
 import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.tasks.logging.LogMessage
 import java.io.File
 import java.net.URL
@@ -18,7 +17,7 @@ class CalcSquare2Task : BlockingTask<Int, Int> {
 
     override fun exec(executionContext: ExecutionContext, num: Int): Int {
         val ctx = DefaultExecutionContextModifier(executionContext).withTaskId(taskID())
-        ctx.log(logLevel = LogLevel.INFO, msg = "Calculating square of $num")
+        ctx.log(LogMessage.info("Calculating square of $num"))
         return num.times(num)
     }
 }
@@ -71,47 +70,47 @@ class RegistryTask(private val registry: Registry) : BaseTask(), BlockingTask<Un
 data class Params(val p1: String, val p2: Int)
 class ParamsTask() : BaseTask(), UnitBlockingTask<Params> {
     override fun exec(ctx: ExecutionContext, params: Params) {
-        ctx.log(msg = "called with params $params")
+        ctx.log(LogMessage.info("called with params $params"))
     }
 }
 
 enum class Colour { Red, Green, Blue }
 class EnumTask() : BaseTask(), UnitBlockingTask<Colour> {
     override fun exec(ctx: ExecutionContext, params: Colour) {
-        ctx.log(msg = "called with params $params")
+        ctx.log(LogMessage.info("called with params $params"))
     }
 }
 
 data class ParamsWithDefault(val p1: String, val p2: Int = 99, val p3: String = "foo")
 class ParamsWithDefaultTask() : BaseTask(), BlockingTask<ParamsWithDefault, ParamsWithDefault> {
     override fun exec(ctx: ExecutionContext, params: ParamsWithDefault): ParamsWithDefault {
-        ctx.log(msg = "called with params $params")
+        ctx.log(LogMessage.info("called with params $params"))
         return params
     }
 }
 
 class MapTask() : BaseTask(), UnitBlockingTask<Map<String, Any>> {
     override fun exec(ctx: ExecutionContext, params: Map<String, Any>) {
-        ctx.log(msg = "called with params $params")
+        ctx.log(LogMessage.info("called with params $params"))
     }
 }
 
 class NoParamTask() : BaseTask(), UnitBlockingTask<Nothing?> {
     override fun exec(executionContext: ExecutionContext, params: Nothing?) {
-        executionContext.log(msg = "called with params $params")
+        executionContext.log(LogMessage.info("called with params $params"))
     }
 }
 
 class NotRequiredParamTask() : BaseTask(), UnitBlockingTask<NotRequired> {
     override fun exec(ctx: ExecutionContext, params: NotRequired) {
-        ctx.log(msg = "called with params $params")
+        ctx.log(LogMessage.info("called with params $params"))
     }
 }
 
 class FileTask : BaseTask(), BlockingTask<File, Int> {
     override fun exec(ctx: ExecutionContext, params: File): Int {
         val ctx = updatedCtx(ctx)
-        ctx.log(logLevel = LogLevel.INFO, msg = "Loading file $params")
+        ctx.log(LogMessage.info("Loading file $params"))
         return params.readBytes().size
     }
 }
@@ -120,7 +119,7 @@ class FileTask : BaseTask(), BlockingTask<File, Int> {
 class URLTask : BaseTask(), BlockingTask<URL, String> {
     override fun exec(ctx: ExecutionContext, params: URL): String {
         val ctx = updatedCtx(ctx)
-        ctx.log(logLevel = LogLevel.INFO, msg = "Loading url $params")
+        ctx.log(LogMessage.info("Loading url $params"))
         return params.toExternalForm()
     }
 }
@@ -129,7 +128,7 @@ class URLTask : BaseTask(), BlockingTask<URL, String> {
 data class ParamsWithFile(val file: File, val files: List<File>)
 class ParamsWithFileTask() : BaseTask(), BlockingTask<ParamsWithFile, ParamsWithFile> {
     override fun exec(ctx: ExecutionContext, params: ParamsWithFile): ParamsWithFile {
-        ctx.log(msg = "called with params $params")
+        ctx.log(LogMessage.info("called with params $params"))
         return params
     }
 }
@@ -143,7 +142,7 @@ data class OracleConfig(val oracle: String) : DatabaseConfig()
 
 class DatabaseTask() : BaseTask(), BlockingTask<DatabaseConfig, DatabaseConfig> {
     override fun exec(ctx: ExecutionContext, params: DatabaseConfig): DatabaseConfig {
-        ctx.log(msg = "called with params $params")
+        ctx.log(LogMessage.info("called with params $params"))
         return params
     }
 }

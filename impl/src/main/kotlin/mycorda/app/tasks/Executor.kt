@@ -6,7 +6,7 @@ import mycorda.app.tasks.executionContext.DefaultExecutionContextFactory
 import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.executionContext.ProvisioningState
-import mycorda.app.tasks.logging.LogLevel
+import mycorda.app.tasks.logging.LogMessage
 import java.lang.RuntimeException
 import java.util.*
 import java.util.concurrent.Future
@@ -93,13 +93,13 @@ abstract class BaseTaskExecutor<I, O> {
         params: I
     ): O {
 
-        executionContext.log(LogLevel.INFO, "Started ${t::class.java.simpleName}")
+        executionContext.log(LogMessage.info("Started ${t::class.java.simpleName}"))
 
         try {
             if (t is BlockingTask<*, *>) {
                 val tt = t as BlockingTask<I, O>
                 val result = tt.exec(executionContext, params)
-                executionContext.log(LogLevel.INFO, "Completed ${t::class.java.simpleName}")
+                executionContext.log(LogMessage.info("Completed ${t::class.java.simpleName}"))
                 return result
             }
 
@@ -107,7 +107,7 @@ abstract class BaseTaskExecutor<I, O> {
                 val tt = t as AsyncTask<I, O>
 
                 val result = tt.exec(executionContext, params)
-                executionContext.log(LogLevel.INFO, "Running Future for ${tt::class.java.simpleName}")
+                executionContext.log(LogMessage.info("Running Future for ${tt::class.java.simpleName}"))
                 val wrapped = WrappedFuture(result as Future<Any>, executionContext, tt::class.java)
                 return wrapped as O
             }
@@ -115,8 +115,8 @@ abstract class BaseTaskExecutor<I, O> {
             throw RuntimeException("Don't known what to do with ${t::class.qualifiedName}")
 
         } catch (ex: Exception) {
-            executionContext.log(LogLevel.INFO, "${ex::class.java.simpleName}: ${ex.message}")
-            executionContext.log(LogLevel.ERROR, "Failed ${t::class.java.name}")
+            executionContext.log(LogMessage.info("${ex::class.java.simpleName}: ${ex.message}"))
+            executionContext.log(LogMessage.info("Failed ${t::class.java.name}"))
             throw ex
         }
     }
@@ -150,13 +150,13 @@ abstract class BaseTaskExecutor<I, O> {
         override fun get(): T {
             try {
                 val result = f.get()
-                ctx.log(LogLevel.INFO, "Completed Future for ${clazz.simpleName}")
+                ctx.log(LogMessage.info("Completed Future for ${clazz.simpleName}"))
                 //generateCompletedEvent()
 
                 return result
             } catch (ex: Exception) {
-                ctx.log(LogLevel.INFO, "${ex::class.java.simpleName}: ${ex.message}")
-                ctx.log(LogLevel.ERROR, "Future Failed for ${clazz.simpleName}")
+                ctx.log(LogMessage.info("${ex::class.java.simpleName}: ${ex.message}"))
+                ctx.log(LogMessage.error("Future Failed for ${clazz.simpleName}"))
                 //generateFailedEvent(ex)
                 throw ex
             } finally {
@@ -183,12 +183,12 @@ abstract class BaseTaskExecutor<I, O> {
         override fun get(timeout: Long, unit: TimeUnit): T {
             try {
                 val result = f.get(timeout, unit)
-                ctx.log(LogLevel.INFO, "Completed Future for ${clazz.simpleName}")
+                ctx.log(LogMessage.info("Completed Future for ${clazz.simpleName}"))
                 //generateCompletedEvent()
                 return result
             } catch (ex: Exception) {
-                ctx.log(LogLevel.INFO, "${ex::class.java.simpleName}: ${ex.message}")
-                ctx.log(LogLevel.ERROR, "Future Failed for ${clazz.simpleName}")
+                ctx.log(LogMessage.info("${ex::class.java.simpleName}: ${ex.message}"))
+                ctx.log(LogMessage.error("Future Failed for ${clazz.simpleName}"))
                 //generateFailedEvent(ex)
                 throw ex
             } finally {
@@ -197,7 +197,7 @@ abstract class BaseTaskExecutor<I, O> {
         }
 
         override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
-            ctx.log(LogLevel.INFO, "Cancelling Future for ${clazz.simpleName}")
+            ctx.log(LogMessage.info("Cancelling Future for ${clazz.simpleName}"))
             return f.cancel(mayInterruptIfRunning)
         }
 

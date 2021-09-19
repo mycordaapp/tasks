@@ -5,6 +5,7 @@ import mycorda.app.tasks.BlockingTask
 import mycorda.app.tasks.NotRequired
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogLevel
+import mycorda.app.tasks.logging.LogMessage
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -38,21 +39,21 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
         // AWS
         val aws = doRequest("http://169.254.169.254/latest/meta-data/local-ipv4")
         if (aws.success) {
-            ctx.log(LogLevel.INFO, "Found private ip address of ${aws.result} using AWS endpoint")
+            ctx.log(LogMessage.info("Found private ip address of ${aws.result} using AWS endpoint"))
             return aws.result
         }
 
         // Ask the OS
         val linux = doCommand(listOf("hostname", "-I"))
         if (linux.success) {
-            ctx.log(LogLevel.INFO, "Found private ip address of ${linux.result} using 'hostname -I'")
+            ctx.log(LogMessage.info( "Found private ip address of ${linux.result} using 'hostname -I'"))
             return linux.result
         }
 
         // Ask the JVM
         val localhost = InetAddress.getLocalHost()
         val localIP = localhost.hostAddress.trim()
-        ctx.log(LogLevel.INFO, "Found private ip address of $localIP from JVM")
+        ctx.log(LogMessage.info( "Found private ip address of $localIP from JVM"))
         return localIP
     }
 

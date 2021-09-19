@@ -5,6 +5,7 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
+import mycorda.app.tasks.logging.LogMessage
 import java.io.File
 import java.util.*
 import java.util.concurrent.Future
@@ -31,7 +32,7 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, params: Int): Int {
         val ctx = ctxWithTaskID(ctx)
-        ctx.logInfo(this, "Calculating square of $params")
+        ctx.log(LogMessage.info("Calculating square of $params"))
 
         return params.times(params)
     }
@@ -58,7 +59,7 @@ class CalcSquareAsyncTask(registry: Registry, private val delayMs: Long = 1000) 
 
     override fun exec(ctx: ExecutionContext, num: Int): Future<Int> {
         val ctx = updatedCtx(ctx)
-        ctx.logInfo(this, msg = "Calculating square of $num")
+        ctx.log(LogMessage.info("Calculating square of $num"))
         return executors.submit<Int> {
             Thread.sleep(delayMs)
             num * num
@@ -72,7 +73,7 @@ class CalcSquareAsync2Task(registry: Registry) : BaseAsyncTask<Int, Int>() {
 
     override fun exec(ctx: ExecutionContext, params: Int): Future<Int> {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.logInfo(this, "Calculating square of $params")
+        ctx.log(LogMessage.info("Calculating square of $params"))
         return executors.submit<Int> {
             Thread.sleep(10)
             params * params
@@ -87,7 +88,7 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
 
     override fun exec(ctx: ExecutionContext, params: String): Future<String> {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.logInfo(this, msg = "Message is '$params'")
+        ctx.log(LogMessage.info("Message is '$params'"))
         return executors.submit<String> {
             if (params.contains("exception", ignoreCase = true)) throw RuntimeException(params)
             Thread.sleep(10)
@@ -99,7 +100,7 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
 class FileTask : BaseBlockingTask<File, Int>() {
     override fun exec(ctx: ExecutionContext, file: File): Int {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.logInfo(this, "Loading file $file")
+        ctx.log(LogMessage.info("Loading file $file"))
         return file.readBytes().size
     }
 }
@@ -107,7 +108,7 @@ class FileTask : BaseBlockingTask<File, Int>() {
 class UnitTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, params: String) {
         val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskID())
-        ctx.logInfo(this ,"Params are: $params")
+        ctx.log(LogMessage.info("Params are: $params"))
     }
 }
 

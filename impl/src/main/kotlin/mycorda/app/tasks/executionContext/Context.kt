@@ -18,25 +18,6 @@ import java.util.concurrent.Executors
 interface ExecutionContext : LoggingProducerContext {
 
     /**
-     * A standard way to manage log output.
-     */
-    @Deprecated(message = "use log(msg)")
-    fun log(logLevel: LogLevel = LogLevel.INFO, msg: String)
-
-    /**
-     * Create a fully populated info message
-     */
-    fun logInfo(t: Task, msg: String) {
-        val message = LogMessage(
-            executionId = executionId(),
-            level = LogLevel.INFO,
-            taskId = t.taskID(),
-            body = msg
-        )
-        logger().accept(message)
-    }
-
-    /**
      *  One single place for running and checking the status of processes.
      *
      *  @see ProcessManager
@@ -211,10 +192,6 @@ class SimpleExecutionContext(
 
     override fun provisioningState(): ProvisioningState {
         return provisioningState
-    }
-
-    override fun log(logLevel: LogLevel, msg: String) {
-        logger().accept(LogMessage(executionId = this.executionId, level = logLevel, body = msg))
     }
 
 

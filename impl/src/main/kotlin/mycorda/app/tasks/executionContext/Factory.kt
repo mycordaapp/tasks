@@ -58,23 +58,6 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return scoped
         }
 
-
-
-        override fun log(logLevel: LogLevel, msg: String) {
-            val logMessage = LogMessage(executionId = executionId,
-                    level = logLevel,
-                    body = msg,
-                    taskId = taskId,
-                    timestamp = System.currentTimeMillis())
-
-            sink.accept(logMessage)
-        }
-
-//        override fun log(msg: LogMessage): LoggingProducerContext {
-//            loggingProducerContext.log(msg)
-//            return this
-//        }
-
         override fun processManager(): ProcessManager {
             return processManager
         }
