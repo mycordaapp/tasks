@@ -6,23 +6,26 @@ import mycorda.app.tasks.logging.InMemoryLoggingConsumerContext
 import mycorda.app.tasks.logging.InMemoryLoggingProducerContext
 import mycorda.app.tasks.logging.LoggingConsumerContext
 
-sealed class SecurityPrinciple
+/**
+ * Marker interface for any type of security (authentication & authorisation) protocol
+ *
+ */
+interface SecurityPrinciple
 
 /**
  * Pass a JWT token that can be checked
  */
-class JwtSecurityPrinciple(val jwtToken: String) : SecurityPrinciple() {}
+class JwtSecurityPrinciple(val jwtToken: String) : SecurityPrinciple
 
 /**
- * Authenicated with just a username and set of roles. We trust an external system
- * to
+ * Authenticated with just a username and set of roles. We trust an external system
  */
-class UserAndRoles(val userName: String, val roles: Set<String>) : SecurityPrinciple() {}
+class UserAndRoles(val userName: String, val roles: Set<String>) : SecurityPrinciple
 
 /**
  * For testing, or environments where security is unimportant
  */
-class NotAuthenticatedSecurityPrinciple(val userName: String = "unknown") : SecurityPrinciple()
+class NotAuthenticatedSecurityPrinciple(val userName: String = "unknown") : SecurityPrinciple
 
 /**
  * The information that any client must provide
@@ -31,7 +34,7 @@ interface ClientContext {
     /**
      * One of the security principles
      */
-    fun securityPrinciple(): SecurityPrinciple
+    fun securityPrinciples(): Set<SecurityPrinciple>
 
     /**
      * Be able to consume the logging output
@@ -59,7 +62,7 @@ class SimpleClientContext : ClientContext {
     private val principle = NotAuthenticatedSecurityPrinciple()
     private val logging = InMemoryLoggingConsumerContext()
 
-    override fun securityPrinciple(): SecurityPrinciple = principle
+    override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
 
     override fun loggingConsumer(): LoggingConsumerContext = logging
 
