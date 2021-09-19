@@ -76,9 +76,9 @@ A `Task` can be created and executed in three ways
 
 * by instantiating an instance of the Task and calling the `exec` method directly.
 * by using the `TaskFactory`. Usually this is just part of the implementation of the `TaskClient` below
-* by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it
-  ** allows for remoting (calling `Tasks` on a remote agent)
-  ** controls setup of the `ExecutionContext`
+* by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it:
+    - allows for remoting (calling `Tasks` on a remote agent)
+    - controls setup of the `ExecutionContext`
 
 `TaskDocExamples.kt` has full source code for the examples below.
 
@@ -104,7 +104,7 @@ This is usually part of the server side. It allows for dynamic registration of t
 @Test
 fun `should call task via the TaskFactory`() {
     // register a real task
-    val liveFactory = TaskFactory2()
+    val liveFactory = TaskFactory()
     liveFactory.register(ListDirectoryTaskImpl::class, ListDirectoryTask::class)
 
     // create by class
@@ -118,7 +118,7 @@ fun `should call task via the TaskFactory`() {
     assert(taskByName.exec(ctx, ".").contains("build.gradle"))
 
     // register and create a fake task
-    val fakeFactory = TaskFactory2()
+    val fakeFactory = TaskFactory()
     fakeFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
     val fakeTask = fakeFactory.createInstance(ListDirectoryTask::class)
     assert(fakeTask.exec(ctx, ".").contains("fake.txt"))
@@ -135,7 +135,7 @@ uses in memory communication.
 @Test
 fun `should call task via a task client`() {
     // 1. register a real task in the TaskFactory (server side)
-    val taskFactory = TaskFactory2()
+    val taskFactory = TaskFactory()
     taskFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
     val registry = Registry().store(taskFactory)
 

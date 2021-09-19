@@ -48,13 +48,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
     fun taskId(): UUID?
 
     /**
-     * Any additional data that is scoped to a specific request and therefore setup when building
-     * the ExecutionContext, for example a User object holding the current user.
-     */
-    fun scoped(): Registry
-
-
-    /**
      * Provisioning state
      */
     fun provisioningState(): ProvisioningState
@@ -116,7 +109,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = taskId,
             executor = working.executorService(),
             pm = working.processManager(),
-            scoped = working.scoped(),
+            //scoped = working.scoped(),
             provisioningState = working.provisioningState(),
             instanceQualifier = working.instanceQualifier()
         )
@@ -130,7 +123,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            scoped = working.scoped().clone().store(scopedObject),
+            //scoped = working.scoped().clone().store(scopedObject),
             provisioningState = working.provisioningState(),
             instanceQualifier = working.instanceQualifier()
         )
@@ -143,7 +136,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            scoped = working.scoped(),
+            //scoped = working.scoped(),
             provisioningState = provisioningState,
             instanceQualifier = working.instanceQualifier()
 
@@ -157,7 +150,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            scoped = working.scoped(),
+            //scoped = working.scoped(),
             provisioningState = working.provisioningState(),
             instanceQualifier = instanceQualifier
         )
@@ -207,9 +200,9 @@ class SimpleExecutionContext(
         return taskId
     }
 
-    override fun scoped(): Registry {
-        return scoped
-    }
+//    override fun scoped(): Registry {
+//        return scoped
+//    }
 
     override fun instanceQualifier(): String? {
         return instanceQualifier

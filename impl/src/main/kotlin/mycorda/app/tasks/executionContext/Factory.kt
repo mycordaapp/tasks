@@ -70,11 +70,6 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return DefaultExecutionContextModifier(this).withInstanceQualifier(instanceQualifier)
         }
 
-
-        override fun scoped(): Registry {
-            return scoped
-        }
-
         override fun processManager(): ProcessManager {
             return processManager
         }
