@@ -1,7 +1,6 @@
-package mycorda.app.tasks
+package mycorda.app.tasks.logging
 
-import mycorda.app.tasks.logging.StderrHolder
-import mycorda.app.tasks.logging.StdoutHolder
+
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream

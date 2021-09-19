@@ -1,11 +1,10 @@
-package mycorda.app.tasks
+package mycorda.app.tasks.logging
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import junit.framework.Assert.fail
 import org.junit.Test
 import java.io.File
-import java.lang.RuntimeException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
