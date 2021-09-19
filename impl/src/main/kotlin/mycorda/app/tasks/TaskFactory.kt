@@ -3,6 +3,7 @@ package  mycorda.app.tasks
 
 import mycorda.app.registry.Registry
 import java.lang.Exception
+import java.lang.RuntimeException
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 
@@ -45,6 +46,7 @@ class TaskFactory(private val registry: Registry = Registry()) {
         // try with Registry
         clazz.constructors.forEach {
             if (it.parameters.size == 1) {
+                @Suppress("UNCHECKED_CAST")
                 val paramClazz = it.parameters[0].type.classifier as KClass<Any>
                 if (paramClazz == Registry::class) {
                     try {
@@ -73,14 +75,24 @@ class TaskFactory(private val registry: Registry = Registry()) {
 
     fun <I, O> createInstance(task: KClass<out BlockingTask<I, O>>): BlockingTask<I, O> {
         val taskName: String = task.qualifiedName!!
-        val t = createInstance(taskName)//  as BlockingTask<I, O>
-        return t as BlockingTask<I, O>
+        val task = createInstance(taskName)
+        if (task is BlockingTask<*, *>) {
+            @Suppress("UNCHECKED_CAST")
+            return task as BlockingTask<I, O>
+        } else {
+            throw RuntimeException("${task::class.qualifiedName} is not a BlockingTask")
+        }
     }
 
     fun <I, O> createInstance(task: KClass<out AsyncTask<I, O>>): AsyncTask<I, O> {
         val taskName: String = task.qualifiedName!!
-        val t = createInstance(taskName)
-        return t as AsyncTask<I, O>
+        val task = createInstance(taskName)
+        if (task is AsyncTask<*, *>) {
+            @Suppress("UNCHECKED_CAST")
+            return task as AsyncTask<I, O>
+        } else {
+            throw RuntimeException("${task::class.qualifiedName} is not an AsyncTask")
+        }
     }
 
 }

@@ -87,6 +87,7 @@ class SimpleClientContext : ClientContext {
 class SimpleTaskClient(private val registry: Registry) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
     override fun <I, O> execBlocking(ctx: ClientContext, taskName: String, input: I): O {
+        @Suppress("UNCHECKED_CAST")
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
         // hook in logging producer / consumer pair
@@ -103,6 +104,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         channelId: UniqueId,
         input: I
     ) {
+        @Suppress("UNCHECKED_CAST")
         val task = taskFactory.createInstance(taskName) as AsyncTask<I, O>
 
         // hook in logging producer / consumer pair

@@ -85,31 +85,7 @@ interface AsyncTask<I, O> : Task {
     }
 }
 
-/**
- * Running a task remotely - as it on another
- * server we pass the tasknum
- */
-interface Async2TaskClient {
-    fun <I> execTask(
-        taskClazz: String,
-        //channelLocator: AsyncResultChannelSinkLocator,
-        channelId: UniqueId,
-        input: I
-        // handler: AsyncResultHandler<O>
-    )
-}
 
-class Async2TaskClientImpl(channelLocator: AsyncResultChannelSinkLocator) : Async2TaskClient {
-    override fun <I> execTask(
-        taskClazz: String,
-        //channelLocator: AsyncResultChannelSinkLocator,
-        channelId: UniqueId,
-        input: I
-    ) {
-
-    }
-
-}
 
 
 

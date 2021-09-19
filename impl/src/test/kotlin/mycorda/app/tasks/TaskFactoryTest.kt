@@ -2,7 +2,7 @@ package mycorda.app.tasks
 
 import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assertThat
-import junit.framework.Assert.fail
+import junit.framework.TestCase.fail
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
@@ -167,12 +167,7 @@ class TaskFactoryTest {
         val channelId = UniqueId.randomUUID()
         val locator = AsyncResultChannelSinkLocator("LOCAL")
 
-        //val client = Async2TaskClientImpl()
 
-//        client.execTask(taskClazz = CalcSquareAsyncTask::class.qualifiedName!!,
-//            channelLocator = locator
-//
-//        )
         val simpleTask = factory.createInstance(CalcSquareAsyncTask::class)
 
         // the SimpleAsyncTask returns immediately, so we don't have to wait
@@ -193,7 +188,7 @@ class TaskFactoryTest {
 class MultiplyTask : BlockingTask<Int, Int> {
     private val taskId = UUID.randomUUID()
     override fun taskId(): UUID = taskId
-    override fun exec(ctx: ExecutionContext, params: Int) = params * params
+    override fun exec(ctx: ExecutionContext, input: Int) = input * input
 }
 
 interface Calculator {
@@ -212,7 +207,7 @@ class CalculateTask(registry: Registry) : BlockingTask<Int, Int> {
     private val calculator = registry.get(Calculator::class.java)
     private val taskId = UUID.randomUUID()
     override fun taskId(): UUID = taskId
-    override fun exec(ctx: ExecutionContext, params: Int): Int = calculator.calc(params)
+    override fun exec(ctx: ExecutionContext, input: Int): Int = calculator.calc(input)
 }
 
 interface SimpleTask : BlockingTask<NotRequired, String>

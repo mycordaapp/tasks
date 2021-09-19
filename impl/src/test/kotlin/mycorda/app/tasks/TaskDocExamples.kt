@@ -35,6 +35,7 @@ class TaskDocExamples {
         assert(taskByClass.exec(ctx, ".").contains("build.gradle"))
 
         // create by name
+        @Suppress("UNCHECKED_CAST")
         val taskByName =
             liveFactory.createInstance("mycorda.app.tasks.ListDirectoryTask") as BlockingTask<String, List<String>>
         assert(taskByName.exec(ctx, ".").contains("build.gradle"))

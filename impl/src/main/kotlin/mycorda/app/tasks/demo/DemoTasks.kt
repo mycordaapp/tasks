@@ -3,38 +3,23 @@ package mycorda.app.tasks.demo
 
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
-import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogMessage
 import java.io.File
 import java.util.*
-import java.util.concurrent.Future
 
 /*
  Some prebuilt demo tasks for tests and example
  */
 
-@Deprecated(message = "use one the Base variants defined in Tasks.kt")
-abstract class BaseTask : Task {
-    private val id = UUID.randomUUID()
-    override fun taskId(): UUID {
-        return id
-    }
-
-    /**
-     * Update the ExecutionContext with the TaskId.
-     */
-    fun updatedCtx(ctx: ExecutionContext): ExecutionContext = DefaultExecutionContextModifier(ctx).withTaskId(taskId())
-}
-
 
 class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
 
-    override fun exec(ctx: ExecutionContext, params: Int): Int {
+    override fun exec(ctx: ExecutionContext, input: Int): Int {
         // this is normally the first line - it ensures the task is stored in the context
         val ctx = ctx.withTaskId(this)
-        ctx.log("Calculating square of $params")
-        return params.times(params)
+        ctx.log("Calculating square of $input")
+        return input.times(input)
     }
 
     override fun description(): String {
@@ -58,15 +43,15 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
 
     private val executors = registry.get(ExecutorFactory::class.java).executorService()
 
-    fun exec(ctx: ExecutionContext, params: String): Future<String> {
-        val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskId())
-        ctx.log(LogMessage.info("Message is '$params'"))
-        return executors.submit<String> {
-            if (params.contains("exception", ignoreCase = true)) throw RuntimeException(params)
-            Thread.sleep(10)
-            params
-        }
-    }
+//    fun exec(ctx: ExecutionContext, input: String): Future<String> {
+//        val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskId())
+//        ctx.log(LogMessage.info("Message is '$input'"))
+//        return executors.submit<String> {
+//            if (input.contains("exception", ignoreCase = true)) throw RuntimeException(input)
+//            AsyncTask.sleepForTicks(1)
+//            input
+//        }
+//    }
 
     override fun exec(
         ctx: ExecutionContext,
@@ -79,17 +64,17 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
 }
 
 class FileTask : BaseBlockingTask<File, Int>() {
-    override fun exec(ctx: ExecutionContext, file: File): Int {
-        val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskId())
-        ctx.log(LogMessage.info("Loading file $file"))
-        return file.readBytes().size
+    override fun exec(ctx: ExecutionContext, input: File): Int {
+        val ctx2 = ctx.withTaskId(taskId())
+        ctx2.log(LogMessage.info("Loading file $input"))
+        return input.readBytes().size
     }
 }
 
 class UnitTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, input: String) {
-        val ctx = DefaultExecutionContextModifier(ctx).withTaskId(taskId())
-        ctx.log(LogMessage.info("Params are: $input"))
+        val ctx2 = ctx.withTaskId(taskId())
+        ctx2.log(LogMessage.info("Params are: $input"))
     }
 }
 
@@ -108,12 +93,14 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
         channelId: UniqueId,
         input: Int
     ) {
-        ctx.log("Starting calculation")
+        val ctxWithTask = ctx.withTaskId(taskId())
+
+        ctxWithTask.log("Starting calculation")
 
         // 1. Find the channel
         val resultChannel = resultChannelFactory.create(channelLocator)
 
-        ctx.executorService().submit<Unit> {
+        ctxWithTask.executorService().submit<Unit> {
             // 2. Generate a result
             val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
 
@@ -121,8 +108,8 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
             Thread.sleep(AsyncTask.platformTick())
 
             // 4. Write the result and also echo to logging channels
-            ctx.log("Completed calculation")
-            ctx.stdout().println(result)
+            ctxWithTask.log("Completed calculation")
+            ctxWithTask.stdout().println(result)
             resultChannel.accept(result)
         }
     }
