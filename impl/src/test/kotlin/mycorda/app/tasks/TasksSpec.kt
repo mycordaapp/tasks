@@ -9,7 +9,6 @@ import mycorda.app.tasks.demo.CalcSquareTask
 import mycorda.app.tasks.demo.ExceptionGeneratingAsyncTask
 import mycorda.app.tasks.executionContext.DefaultExecutionContextFactory
 import mycorda.app.tasks.logging.InMemoryLogMessageSink
-import mycorda.app.tasks.logging.LogFormat
 import mycorda.app.tasks.processManager.ProcessManager
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
@@ -55,7 +54,7 @@ object TasksSpec : Spek({
                     "level=INFO, message=Calculating square of 9, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
                     "level=INFO, message=Completed CalcSquareTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"))
             assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(3))
-            assertThat(messageSink.messages().count { it.taskId == task.taskID() }, equalTo(3))
+            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(3))
         }
     }
 
@@ -85,7 +84,7 @@ object TasksSpec : Spek({
                     "level=INFO, message=Running Future for CalcSquareAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx\n" +
                     "level=INFO, message=Completed Future for CalcSquareAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"))
             assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(4))
-            assertThat(messageSink.messages().count { it.taskId == task.taskID() }, equalTo(4))
+            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(4))
         }
 
 
@@ -111,7 +110,7 @@ object TasksSpec : Spek({
                 level=ERROR, message=Future Failed for ExceptionGeneratingAsyncTask, taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx""".trimIndent()
             assertThat(messageSink.toString(), equalTo(expected))
             assertThat(messageSink.messages().count { it.executionId == executionId }, equalTo(5))
-            assertThat(messageSink.messages().count { it.taskId == task.taskID() }, equalTo(5))
+            assertThat(messageSink.messages().count { it.taskId == task.taskId() }, equalTo(5))
 
         }
     }

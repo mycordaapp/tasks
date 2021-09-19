@@ -189,7 +189,7 @@ class TaskFactory2Test {
 
 class MultiplyTask : BlockingTask<Int, Int> {
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID = taskId
+    override fun taskId(): UUID = taskId
     override fun exec(ctx: ExecutionContext, params: Int) = params * params
 }
 
@@ -208,7 +208,7 @@ class Adder : Calculator {
 class CalculateTask(registry: Registry) : BlockingTask<Int, Int> {
     private val calculator = registry.get(Calculator::class.java)
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID = taskId
+    override fun taskId(): UUID = taskId
     override fun exec(ctx: ExecutionContext, params: Int): Int = calculator.calc(params)
 }
 
@@ -217,19 +217,19 @@ interface SimpleTask : BlockingTask<NotRequired, String>
 class HelloWorldTask() : SimpleTask {
     private val taskId = UUID.randomUUID()
     override fun exec(ctx: ExecutionContext, params: NotRequired): String = "Hello World"
-    override fun taskID(): UUID = taskId
+    override fun taskId(): UUID = taskId
 }
 
 class GoodbyeWorldTask() : SimpleTask {
     private val taskId = UUID.randomUUID()
     override fun exec(ctx: ExecutionContext, params: NotRequired): String = "Goodbye, cruel World"
-    override fun taskID(): UUID = taskId
+    override fun taskId(): UUID = taskId
 }
 
 // Tasks can either have a default constructor, or a constructor that takes a registry
 class TaskWithoutAGoodConstructor(notAllowedConstructor: String) : Task {
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID = taskId
+    override fun taskId(): UUID = taskId
 }
 
 class CalcSquareAsyncTask(registry: Registry) : Async2Task<Int, Int> {
@@ -254,5 +254,5 @@ class CalcSquareAsyncTask(registry: Registry) : Async2Task<Int, Int> {
         resultChannel.accept(result)
     }
 
-    override fun taskID(): UUID = taskId
+    override fun taskId(): UUID = taskId
 }

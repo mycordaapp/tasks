@@ -14,7 +14,7 @@ interface Task {
     /**
      * A unique ID created for each run of the Task
      */
-    fun taskID(): UUID
+    fun taskId(): UUID
 }
 
 
@@ -43,7 +43,7 @@ interface AsyncTask<I, O> : Task {
 
 abstract class BaseBlockingTask<I, O> : BlockingTask<I, O> {
     private val taskID = UUID.randomUUID()
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         return taskID
     }
 
@@ -51,12 +51,12 @@ abstract class BaseBlockingTask<I, O> : BlockingTask<I, O> {
      * Update the ExecutionContext with the TaskId.
      */
     protected fun ctxWithTaskID(ctx: ExecutionContext): ExecutionContext =
-        DefaultExecutionContextModifier(ctx).withTaskId(taskID())
+        DefaultExecutionContextModifier(ctx).withTaskId(taskId())
 }
 
 abstract class BaseUnitBlockingTask<I> : UnitBlockingTask<I> {
     private val taskID = UUID.randomUUID()
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         return taskID
     }
 
@@ -64,12 +64,12 @@ abstract class BaseUnitBlockingTask<I> : UnitBlockingTask<I> {
      * Update the ExecutionContext with the TaskId.
      */
     protected fun ctxWithTaskID(ctx: ExecutionContext): ExecutionContext =
-        DefaultExecutionContextModifier(ctx).withTaskId(taskID())
+        DefaultExecutionContextModifier(ctx).withTaskId(taskId())
 }
 
 abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
     private val taskID = UUID.randomUUID()
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         return taskID
     }
 
@@ -77,7 +77,7 @@ abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
      * Update the ExecutionContext with the TaskId.
      */
     protected fun updatedCtx(ctx: ExecutionContext): ExecutionContext =
-        DefaultExecutionContextModifier(ctx).withTaskId(taskID())
+        DefaultExecutionContextModifier(ctx).withTaskId(taskId())
 }
 
 

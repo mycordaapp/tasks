@@ -58,7 +58,7 @@ class DefaultTaskExecutor<I, O>(
         // todo - should be using the execution context factory in the registry if available, else ...
         return DefaultExecutionContextFactory(registry).get(
             executionId = executionId,
-            taskId = task.taskID(), scoped = scoped
+            taskId = task.taskId(), scoped = scoped
         )
     }
 }
@@ -73,7 +73,7 @@ class DefaultTaskExecutor<I, O>(
 class SimpleTaskExecutor<I, O>(private val ctx: ExecutionContext) : TaskExecutor<I, O>,
     BaseTaskExecutor<I, O>() {
     override fun exec(t: Task, params: I): O {
-        val modifiedCtx = DefaultExecutionContextModifier(ctx).withTaskId(t.taskID())
+        val modifiedCtx = DefaultExecutionContextModifier(ctx).withTaskId(t.taskId())
         return doExec(modifiedCtx, t, params)
     }
 

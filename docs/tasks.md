@@ -17,12 +17,13 @@ these services are modular and built to the principle of minimal dependency.
 
 ## The Hello World task.
 
-Every time a `Task` is run, it is allocated a unique id, the taskID().
+Every time a `Task` is run, it is allocated a unique id, the `taskID()`. This is used in logging 
+and events. Strictly speaking it is a taskInstanceId  
 
 ```kotlin
 interface Task {
     //a unique ID created for each run of the Task
-    fun taskID(): UUID
+    fun taskId(): UUID
 }
 ```
 

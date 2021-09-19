@@ -46,7 +46,7 @@ class Async2TaskTest {
             }
         }
 
-        override fun taskID(): UUID {
+        override fun taskId(): UUID {
             return taskId
         }
 

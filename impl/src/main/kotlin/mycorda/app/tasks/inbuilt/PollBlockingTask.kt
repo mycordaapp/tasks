@@ -19,7 +19,7 @@ class PollBlockingTask<I, O>(
 ) : BlockingTask<I, O> {
 
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         return taskId
     }
 

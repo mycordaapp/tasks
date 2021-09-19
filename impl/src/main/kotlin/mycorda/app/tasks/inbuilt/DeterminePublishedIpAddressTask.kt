@@ -20,7 +20,7 @@ interface DeterminePublishedIpAddressTask : BlockingTask<NotRequired, String>
 
 class DeterminePublishedIpAddressTaskImpl : DeterminePublishedIpAddressTask {
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         return taskId
     }
 

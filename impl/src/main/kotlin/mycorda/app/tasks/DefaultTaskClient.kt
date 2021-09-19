@@ -1,9 +1,7 @@
 package mycorda.app.tasks
 
 import mycorda.app.registry.Registry
-import mycorda.app.tasks.executionContext.DefaultExecutionContextModifier
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.executionContext.StdOut
 import java.util.*
 import java.util.concurrent.Future
 import kotlin.reflect.KClass

@@ -21,7 +21,7 @@ interface WaitForSocketTask : AsyncTask<SocketAddress, Long> {}
 
 class WaitForSocketTaskImpl : WaitForSocketTask {
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         return taskId
     }
 
@@ -39,7 +39,7 @@ class WaitForSocketTaskImpl : WaitForSocketTask {
 
 class WaitForSocketTaskFake : WaitForSocketTask {
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         return taskId
     }
 

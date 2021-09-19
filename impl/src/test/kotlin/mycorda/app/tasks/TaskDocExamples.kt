@@ -23,7 +23,6 @@ class TaskDocExamples {
         assertThat(result, equalTo(100))
     }
 
-
     @Test
     fun `should call task via the TaskFactory`() {
         // register a real task

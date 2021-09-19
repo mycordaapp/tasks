@@ -11,7 +11,7 @@ import java.util.*
  */
 class EchoToConsoleTask : BlockingTask<String, Unit> {
     private val taskId = UUID.randomUUID()
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         return taskId
     }
 

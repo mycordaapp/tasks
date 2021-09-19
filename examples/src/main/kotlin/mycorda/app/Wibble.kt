@@ -9,7 +9,7 @@ class Wibble {
 }
 
 class MyTask : Task {
-    override fun taskID(): UUID {
+    override fun taskId(): UUID {
         TODO("Not yet implemented")
     }
 }
