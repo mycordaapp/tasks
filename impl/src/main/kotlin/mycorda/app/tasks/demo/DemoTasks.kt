@@ -108,31 +108,19 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
         channelId: UniqueId,
         input: Int
     ) {
-        // 1. Find my channel
+        // 1. Find the channel
         val resultChannel = resultChannelFactory.create(channelLocator)
 
         ctx.executorService().submit<Unit> {
-
             // 2. Generate a result
             val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
 
+            // 3. Simulate a delay
             Thread.sleep(AsyncTask.platformTick())
 
-            // 3. Write the result
+            // 4. Write the result
             resultChannel.accept(result)
         }
-
-//        //ctx.executorService().submit
-//
-//
-//        // In real code wait for the long running process, i.e. start a thread, wait on
-//        // an event
-//
-//        // 2. Generate a result
-//        val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
-//
-//        // 3. Write the result
-//        resultChannel.accept(result)
     }
 
     override fun taskId(): UUID = taskId

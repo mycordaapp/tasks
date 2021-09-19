@@ -173,7 +173,7 @@ The example also shows another important characteristic of the design. Logging o
 messages and stdout/stderr) are made available to the client, which can help greatly in debugging and fault detection.
 The implementing task controls what is sent. Looking at the code for `ListDirectoryTaskFake` we can see this clearly.
 
-This behaviour is in addition to being any distributed logging that may be enabled, which is described later.
+This behaviour is in addition to any distributed logging that may be enabled, which is described later.
 
 ```kotlin
 class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
@@ -203,22 +203,24 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
     private val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
     private val taskId = UUID.randomUUID()
     override fun exec(
-        executionContext: ExecutionContext,
+        ctx: ExecutionContext,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
         input: Int
     ) {
-        // 1. Find my channel
+        // 1. Find the channel
         val resultChannel = resultChannelFactory.create(channelLocator)
 
-        // In real code wait for the long running process, i.e. start a thread, wait on
-        // an event
+        ctx.executorService().submit<Unit> {
+            // 2. Generate a result
+            val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
 
-        // 2. Generate a result
-        val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
+            // 3. Simulate a delay 
+            Thread.sleep(AsyncTask.platformTick())
 
-        // 3. Write the result
-        resultChannel.accept(result)
+            // 4. Write the result
+            resultChannel.accept(result)
+        }
     }
 }
 
