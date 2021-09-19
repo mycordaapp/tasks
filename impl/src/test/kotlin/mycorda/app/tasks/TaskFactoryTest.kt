@@ -9,13 +9,13 @@ import mycorda.app.tasks.executionContext.ExecutionContext
 import org.junit.Test
 import java.util.*
 
-class TaskFactory2Test {
+class TaskFactoryTest {
     private val executionContext = SimpleExecutionContext()
     private val notRequired = NotRequired.instance()
 
     @Test
     fun `should store by class name`() {
-        val factory = TaskFactory2()
+        val factory = TaskFactory()
         factory.register(MultiplyTask::class)
 
         val t = factory.createInstance(MultiplyTask::class.qualifiedName!!)
@@ -25,14 +25,14 @@ class TaskFactory2Test {
     @Test
     fun `should construct using registry version of the constructor`() {
         // build CalculateTask with an Adder in the registry
-        val factory1 = TaskFactory2(Registry().store(Adder()))
+        val factory1 = TaskFactory(Registry().store(Adder()))
         factory1.register(CalculateTask::class)
         val sumCalculator = factory1.createInstance(CalculateTask::class.qualifiedName!!)
         assertThat(sumCalculator::class.qualifiedName, equalTo(CalculateTask::class.qualifiedName!!))
         assertThat((sumCalculator as CalculateTask).exec(SimpleExecutionContext(), 10), equalTo(20))
 
         // build CalculateTask with an Multiplier in the registry
-        val factory2 = TaskFactory2(Registry().store(Multiplier()))
+        val factory2 = TaskFactory(Registry().store(Multiplier()))
         factory2.register(CalculateTask::class)
         val multiplyCalculator = factory2.createInstance(CalculateTask::class.qualifiedName!!)
         assertThat(
@@ -41,7 +41,7 @@ class TaskFactory2Test {
         )
 
         // build CalculateTask with nothing in the registry
-        val factory3 = TaskFactory2(Registry())
+        val factory3 = TaskFactory(Registry())
         factory3.register(CalculateTask::class)
         assertThat(
             { factory3.createInstance(CalculateTask::class.qualifiedName!!) },
@@ -56,7 +56,7 @@ class TaskFactory2Test {
 
     @Test
     fun `should lookup task by interface name if provided`() {
-        val factory = TaskFactory2()
+        val factory = TaskFactory()
         factory.register(HelloWorldTask::class, SimpleTask::class)
 
         // can lookup by the interface
@@ -73,7 +73,7 @@ class TaskFactory2Test {
 
     @Test
     fun `should fail to create task if no suitable constructor`() {
-        val factory = TaskFactory2()
+        val factory = TaskFactory()
         factory.register(TaskWithoutAGoodConstructor::class)
 
         assertThat(
@@ -88,7 +88,7 @@ class TaskFactory2Test {
 
     @Test
     fun `cannot register the same task twice`() {
-        val factory = TaskFactory2()
+        val factory = TaskFactory()
         factory.register(MultiplyTask::class)
         assertThat(
             { factory.register(MultiplyTask::class) }, throws<TaskException>(
@@ -112,7 +112,7 @@ class TaskFactory2Test {
 
     @Test
     fun `should lookup BlockingTask by class`() {
-        val factory = TaskFactory2()
+        val factory = TaskFactory()
         factory.register(MultiplyTask::class)
         factory.register(HelloWorldTask::class)
 
@@ -131,7 +131,7 @@ class TaskFactory2Test {
         // the DefaultAsyncResultChannelSinkFactory will support the "LOCAL" channel
         val sinkFactory = DefaultAsyncResultChannelSinkFactory()
         val registry = Registry().store(sinkFactory)
-        val factory = TaskFactory2(registry)
+        val factory = TaskFactory(registry)
         factory.register(CalcSquareAsyncTask::class)
 
         val channelId = UniqueId.randomUUID()
@@ -159,7 +159,7 @@ class TaskFactory2Test {
         // the DefaultAsyncResultChannelSinkFactory will support the "LOCAL" channel
         val sinkFactory = DefaultAsyncResultChannelSinkFactory()
         val registry = Registry().store(sinkFactory)
-        val factory = TaskFactory2(registry)
+        val factory = TaskFactory(registry)
         factory.register(CalcSquareAsyncTask::class)
 
         val channelId = UniqueId.randomUUID()

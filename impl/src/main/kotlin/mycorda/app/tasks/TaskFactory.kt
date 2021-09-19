@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 
 
-class TaskFactory2(private val registry: Registry = Registry()) {
+class TaskFactory(private val registry: Registry = Registry()) {
     private val lookup = HashMap<String, KClass<out Task>>()
 
     /**

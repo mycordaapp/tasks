@@ -26,7 +26,7 @@ class TaskDocExamples {
     @Test
     fun `should call task via the TaskFactory`() {
         // register a real task
-        val liveFactory = TaskFactory2()
+        val liveFactory = TaskFactory()
         liveFactory.register(ListDirectoryTaskImpl::class, ListDirectoryTask::class)
 
         // create by class
@@ -40,7 +40,7 @@ class TaskDocExamples {
         assert(taskByName.exec(ctx, ".").contains("build.gradle"))
 
         // register and create a fake task
-        val fakeFactory = TaskFactory2()
+        val fakeFactory = TaskFactory()
         fakeFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
         val fakeTask = fakeFactory.createInstance(ListDirectoryTask::class)
         assert(fakeTask.exec(ctx, ".").contains("fake.txt"))
@@ -50,7 +50,7 @@ class TaskDocExamples {
     fun `should call task via a task client`() {
 
         // 1. register a real task in the TaskFactory (server side)
-        val taskFactory = TaskFactory2()
+        val taskFactory = TaskFactory()
         taskFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
         val registry = Registry().store(taskFactory)
 

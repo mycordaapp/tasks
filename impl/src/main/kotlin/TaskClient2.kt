@@ -1,6 +1,6 @@
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.BlockingTask
-import mycorda.app.tasks.TaskFactory2
+import mycorda.app.tasks.TaskFactory
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.InMemoryLoggingConsumerContext
 import mycorda.app.tasks.logging.InMemoryLoggingProducerContext
@@ -79,7 +79,7 @@ class SimpleClientContext : ClientContext {
  * Enough for unit tests and tasks running locally
  */
 class SimpleTaskClient(private val registry: Registry) : TaskClient2 {
-    private val taskFactory = registry.get(TaskFactory2::class.java)
+    private val taskFactory = registry.get(TaskFactory::class.java)
     override fun <I, O> execBlocking(ctx: ClientContext, taskName: String, input: I): O {
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
