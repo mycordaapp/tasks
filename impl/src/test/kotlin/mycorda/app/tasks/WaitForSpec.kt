@@ -1,6 +1,5 @@
 package mycorda.app.tasks
 
-import net.corda.ccl.commons.tasks.WaitFor
 import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 import org.spekframework.spek2.Spek
