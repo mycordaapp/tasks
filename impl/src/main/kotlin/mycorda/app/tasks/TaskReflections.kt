@@ -49,11 +49,13 @@ class TaskReflections(val t: KClass<out Task>) {
     fun paramClass(): KClass<out Any> {
         val execMethod = t.functions.single { it.name == "exec" }
         val type = execMethod.parameters[2].type
+        @Suppress("UNCHECKED_CAST")
         return type.classifier as KClass<Any>
     }
 
     fun resultClass(): KClass<out Any> {
         val execMethod = t.functions.single { it.name == "exec" }
+        @Suppress("UNCHECKED_CAST")
         return execMethod.returnType.classifier as KClass<Any>
     }
 

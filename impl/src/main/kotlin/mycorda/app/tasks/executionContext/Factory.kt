@@ -57,10 +57,6 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return DefaultExecutionContextModifier(this).withTaskId(taskId)
         }
 
-        override fun withScope(scopedObject: Any): ExecutionContext {
-            return DefaultExecutionContextModifier(this).withScope(scopedObject)
-        }
-
         override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
             return DefaultExecutionContextModifier(this).withProvisioningState(provisioningState)
 

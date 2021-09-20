@@ -86,12 +86,6 @@ interface ExecutionContextModifier {
 
     fun withTaskId(task: Task): ExecutionContext = withTaskId(task.taskId())
 
-
-    /**
-     * Make it easy to add objects to the scope
-     */
-    fun withScope(scopedObject: Any): ExecutionContext
-
     fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext
 
     fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext
@@ -110,20 +104,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             executor = working.executorService(),
             pm = working.processManager(),
             //scoped = working.scoped(),
-            provisioningState = working.provisioningState(),
-            instanceQualifier = working.instanceQualifier()
-        )
-        return working
-    }
-
-
-    override fun withScope(scopedObject: Any): ExecutionContext {
-        working = SimpleExecutionContext(
-            executionId = working.executionId(),
-            taskId = working.taskId(),
-            executor = working.executorService(),
-            pm = working.processManager(),
-            //scoped = working.scoped().clone().store(scopedObject),
             provisioningState = working.provisioningState(),
             instanceQualifier = working.instanceQualifier()
         )
@@ -208,12 +188,8 @@ class SimpleExecutionContext(
         return DefaultExecutionContextModifier(this).withTaskId(taskId)
     }
 
-    override fun withScope(scopedObject: Any): ExecutionContext {
-        return DefaultExecutionContextModifier(this).withScope(scopedObject)
-    }
-
-    override fun withProvisioningState(withProvisioningState: ProvisioningState): ExecutionContext {
-        return DefaultExecutionContextModifier(this).withProvisioningState(withProvisioningState)
+    override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withProvisioningState(provisioningState)
     }
 
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {

@@ -73,8 +73,8 @@ class TaskFactory(private val registry: Registry = Registry()) {
         throw TaskException("Couldn't find a suitable constructor for task: `$qualifiedName`")
     }
 
-    fun <I, O> createInstance(task: KClass<out BlockingTask<I, O>>): BlockingTask<I, O> {
-        val taskName: String = task.qualifiedName!!
+    fun <I, O> createInstance(taskClazz: KClass<out BlockingTask<I, O>>): BlockingTask<I, O> {
+        val taskName: String = taskClazz.qualifiedName!!
         val task = createInstance(taskName)
         if (task is BlockingTask<*, *>) {
             @Suppress("UNCHECKED_CAST")
@@ -84,8 +84,8 @@ class TaskFactory(private val registry: Registry = Registry()) {
         }
     }
 
-    fun <I, O> createInstance(task: KClass<out AsyncTask<I, O>>): AsyncTask<I, O> {
-        val taskName: String = task.qualifiedName!!
+    fun <I, O> createInstance(taskClazz: KClass<out AsyncTask<I, O>>): AsyncTask<I, O> {
+        val taskName: String = taskClazz.qualifiedName!!
         val task = createInstance(taskName)
         if (task is AsyncTask<*, *>) {
             @Suppress("UNCHECKED_CAST")

@@ -17,8 +17,8 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, input: Int): Int {
         // this is normally the first line - it ensures the task is stored in the context
-        val ctx = ctx.withTaskId(this)
-        ctx.log("Calculating square of $input")
+        val ctxWithTask = ctx.withTaskId(this)
+        ctxWithTask.log("Calculating square of $input")
         return input.times(input)
     }
 
