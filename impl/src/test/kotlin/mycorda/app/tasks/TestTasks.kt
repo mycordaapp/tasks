@@ -7,22 +7,6 @@ import java.io.File
 import java.net.URL
 
 
-interface ExampleTask : BlockingTask<Int, Int>
-
-class ExampleTaskImpl : ExampleTask, BaseBlockingTask<Int, Int>() {
-    override fun exec(ctx: ExecutionContext, input: Int): Int {
-        return input + input
-    }
-}
-
-class ExampleTaskFake : ExampleTask, BaseBlockingTask<Int, Int>() {
-    override fun exec(ctx: ExecutionContext, input: Int): Int {
-        val out = ctx.stdout()
-        out.println("MyTask:")
-        out.println("   params: ${input}")
-        return 99
-    }
-}
 
 interface ListDirectoryTask : BlockingTask<String, List<String>>
 

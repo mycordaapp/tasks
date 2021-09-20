@@ -17,7 +17,6 @@ object WaitForSpec : Spek({
 
             waitFor.wait(func)
             println("it worked!")
-
         }
     }
 })

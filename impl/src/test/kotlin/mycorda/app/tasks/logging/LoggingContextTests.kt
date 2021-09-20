@@ -2,7 +2,6 @@ package mycorda.app.tasks.logging
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-import mycorda.app.registry.Registry
 import org.junit.Test
 import java.io.PrintStream
 import java.util.*
