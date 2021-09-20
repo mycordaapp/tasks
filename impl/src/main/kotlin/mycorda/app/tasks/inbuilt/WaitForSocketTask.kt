@@ -7,7 +7,7 @@ import mycorda.app.tasks.AsyncResultChannelSinkLocator
 import mycorda.app.tasks.SocketAddress
 import mycorda.app.tasks.UniqueId
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.executionContext.TestContextManager
+import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import java.util.*
 
 /**
@@ -59,15 +59,7 @@ class WaitForSocketTaskFake : WaitForSocketTask {
         return taskId
     }
 
-//    override fun exec(ctx: ExecutionContext, params: SocketAddress): Future<Long> {
-//        val out = ctx.stdout()
-//        out.println("WaitForSocketTask:")
-//        out.println("   params: ${params}")
-//        return ctx.executorService().submit<Long> {
-//            Thread.sleep(1000L)
-//            1000
-//        }
-//    }
+
 }
 
 
@@ -75,8 +67,7 @@ class WaitForSocketTaskFake : WaitForSocketTask {
 fun main(args: Array<String>) {
 
     val registry = Registry()
-    val manager = TestContextManager()
-    val ctx = manager.createExecutionContext()
+    val ctx = SimpleExecutionContext()
     val address = SocketAddress("localhost", 12345)
 
     // Can use netcat to create a test server:
@@ -86,7 +77,7 @@ fun main(args: Array<String>) {
 
     try {
         println("Running WaitAgentReadyCmdImpl")
-        //val result = WaitForSocketTaskImpl().exec(ctx, address).get()
+        //val result = WaitForSocketTaskImpl().exec(ctx, address)
         //println("Success!, that took $result milliseconds")
     } catch (ex: RuntimeException) {
         ex.printStackTrace()

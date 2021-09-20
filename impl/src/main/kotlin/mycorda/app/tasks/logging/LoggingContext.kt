@@ -113,18 +113,22 @@ interface LoggingContext {
             fun messages(): List<LogMessage> = consumer.messages()
         }
 
+        class NoOpConsumer : LoggingConsumerContext {
+            override fun acceptLog(msg: LogMessage) {}
+
+            override fun acceptStdout(output: String) {}
+
+
+            override fun acceptStderr(error: String) {}
+
+
+        }
+
         class ConsoleLoggingContext : LoggingContext {
-            private val consumer = InMemoryLoggingConsumerContext()
-            private val producer = InMemoryLoggingProducerContext(consumer)
+            private val consumer = NoOpConsumer()
+            private val producer = ConsoleLoggingProducerContext()
             override fun consumer(): LoggingConsumerContext = consumer
-
             override fun producer(): LoggingProducerContext = producer
-
-            fun stdout(): String = consumer.stdout()
-
-            fun stderr(): String = consumer.stderr()
-
-            fun messages(): List<LogMessage> = consumer.messages()
         }
     }
 }
