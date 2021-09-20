@@ -66,9 +66,8 @@ class WaitForSocketTaskFake : WaitForSocketTask {
 // basic test harness
 fun main(args: Array<String>) {
 
-    val registry = Registry()
     val ctx = SimpleExecutionContext()
-    val address = SocketAddress("localhost", 12345)
+    //val address = SocketAddress("localhost", 12345)
 
     // Can use netcat to create a test server:
     // $ nc -l -p 12345

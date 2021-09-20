@@ -26,6 +26,7 @@ class CaptureOutput {
 class CaptureCompleted {
     @Volatile
     var pm: ProcessManagerInternal.ManagedProcess? = null
+
     @Volatile
     var code: Int? = null
 
@@ -35,22 +36,29 @@ class CaptureCompleted {
     }
 }
 
-class Captured(val stdout: CaptureOutput = CaptureOutput(),
-               val stderr: CaptureOutput = CaptureOutput(),
-               val onCompleted: CaptureCompleted = CaptureCompleted())
+class Captured(
+    val stdout: CaptureOutput = CaptureOutput(),
+    val stderr: CaptureOutput = CaptureOutput(),
+    val onCompleted: CaptureCompleted = CaptureCompleted()
+)
 
 
 data class ProcessRestartInfo(val newId: UUID, val oldId: UUID, val label: String)
 
 class ProcessManager(registry: Registry = Registry()) {
-    private val processManager: ProcessManagerInternal = ProcessManagerInternal()
+    private val processManager: ProcessManagerInternal = registry.geteOrElse(
+        ProcessManagerInternal::class.java,
+        ProcessManagerInternal()
+    )
     private val captures = HashMap<UUID, Captured>()
 
-    fun registerProcess(builder: ProcessBuilder,
-                        id: UUID,
-                        label: String,
-                        autoRestart: Boolean = false) {
-
+    fun registerProcess(
+        builder: ProcessBuilder,
+        id: UUID,
+        label: String,
+        autoRestart: Boolean = false
+    ) {
+        autoRestart == autoRestart
         registerProcess(builder.start(), id, label)
 
 
@@ -66,19 +74,21 @@ class ProcessManager(registry: Registry = Registry()) {
     /**
      * Register a Java process to be tracked and managed by the ProcessManager
      */
-    private fun registerProcess(process: Process,
-                        id: UUID,
-                        label: String) {
+    private fun registerProcess(
+        process: Process,
+        id: UUID,
+        label: String
+    ) {
 
         val capture = Captured()
         captures[id] = capture
 
         processManager.register(process = process,
-                id = id,
-                label = label,
-                outputSink = { capture.stdout.messageSink(it) },
-                errorSink = { capture.stderr.messageSink(it) },
-                onCompletedSink = { a, b -> capture.onCompleted.sink(a, b) })
+            id = id,
+            label = label,
+            outputSink = { capture.stdout.messageSink(it) },
+            errorSink = { capture.stderr.messageSink(it) },
+            onCompletedSink = { a, b -> capture.onCompleted.sink(a, b) })
     }
 
 

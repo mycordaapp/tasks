@@ -226,6 +226,11 @@ class GoodbyeWorldTask() : SimpleTask {
 
 // Tasks can either have a default constructor, or a constructor that takes a registry
 class TaskWithoutAGoodConstructor(notAllowedConstructor: String) : Task {
+
+    init { // just to stop a compiler warning
+        notAllowedConstructor == notAllowedConstructor
+    }
+
     private val taskId = UUID.randomUUID()
     override fun taskId(): UUID = taskId
 }
