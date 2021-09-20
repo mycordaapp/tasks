@@ -266,7 +266,7 @@ class ProcessMonitor constructor(
         }
     }
 
-    fun isRunning(): Boolean {
+    private fun isRunning(): Boolean {
         return exitCode == null
     }
 

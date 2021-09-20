@@ -93,14 +93,12 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
         channelId: UniqueId,
         input: Int
     ) {
-        val ctxWithTask = ctx.withTaskId(taskId())
-
-        ctxWithTask.log("Starting calculation")
+        ctx.log("Starting calculation")
 
         // 1. Find the channel
         val resultChannel = resultChannelFactory.create(channelLocator)
 
-        ctxWithTask.executorService().submit<Unit> {
+        ctx.executorService().submit<Unit> {
             // 2. Generate a result
             val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
 
@@ -108,8 +106,8 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
             Thread.sleep(AsyncTask.platformTick())
 
             // 4. Write the result and also echo to logging channels
-            ctxWithTask.log("Completed calculation")
-            ctxWithTask.stdout().println(result)
+            ctx.log("Completed calculation")
+            ctx.stdout().println(result)
             resultChannel.accept(result)
         }
     }

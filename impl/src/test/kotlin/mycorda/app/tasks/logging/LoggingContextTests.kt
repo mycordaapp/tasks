@@ -69,31 +69,4 @@ class LoggingContextTests {
         loggingContext.log(error)
     }
 
-    @Test
-    fun `create logging context with explicit  wiring`() {
-        // 1. setup the registry
-        val registry = Registry()
-        registry.store(LogFormat.Simple)
-            .store(DefaultStringLogFormatter())
-            .store(InMemoryLogMessageSink(registry))
-
-        // 2. log some messages
-        val loggingContext = InjectableLoggingProducerContext(registry)
-        loggingContext.log(debug)
-        loggingContext.log(info)
-        loggingContext.log(warn)
-        loggingContext.log(error)
-
-        // 3. validate captured messages
-        val inMemory = registry.get(InMemoryLogMessageSink::class.java)
-        assertThat(inMemory.messages().size, equalTo(3))
-        assertThat(inMemory.messages(), equalTo(listOf(info, warn, error)))
-        assertThat(
-            inMemory.toString(), equalTo(
-                "INFO Info Message\n" +
-                        "WARN Warning Message\n" +
-                        "ERROR Error Message"
-            )
-        )
-    }
 }

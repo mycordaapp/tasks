@@ -72,7 +72,7 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>() {
 This doesn't really do anything useful, but it shows the basic programming model in which everything needed is available
 via the `ExeccutionContext`.
 
-### #2 - Executing a Task
+## Executing a Task
 
 A `Task` can be created and executed in three ways
 
@@ -84,7 +84,7 @@ A `Task` can be created and executed in three ways
 
 `TaskDocExamples.kt` has full source code for the examples below.
 
-#### #2a - Executing the Task directly
+### Executing a Blocking Task directly
 
 The `SimpleExeccutionContext` is lightweight and suitable for testing and simple use cases
 
@@ -98,7 +98,7 @@ fun `should call task directly`() {
 }
 ```
 
-#### #2b - Using the `TaskFactory`
+### Executing a Blocking Task via the `TaskFactory`
 
 This is usually part of the server side. It allows for dynamic registration of tasks
 
@@ -127,7 +127,7 @@ fun `should call task via the TaskFactory`() {
 }
 ```
 
-#### #2c - Using the `TaskClient`
+### Executing a Blocking Task via the `TaskClient`
 
 This is the typical case as it reflects the usual client server model, with tasks invoked locally but running on another
 agent of some form on another server. Note that for simplicity, in this example we create the SimpleTaskClient which
@@ -225,6 +225,9 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
 }
 
 ```
+Breaking this code down:
+
+
 
 and the basic test case is 
 
