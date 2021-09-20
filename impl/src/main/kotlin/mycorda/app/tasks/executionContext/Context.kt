@@ -169,7 +169,6 @@ class SimpleExecutionContext(
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager(),
-    private val scoped: Registry = Registry(),
     private val provisioningState: ProvisioningState = DefaultProvisioningState()
 ) : ExecutionContext, ExecutionContextModifier {
 
@@ -200,9 +199,6 @@ class SimpleExecutionContext(
         return taskId
     }
 
-//    override fun scoped(): Registry {
-//        return scoped
-//    }
 
     override fun instanceQualifier(): String? {
         return instanceQualifier

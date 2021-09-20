@@ -31,7 +31,7 @@ There are few "flavours" of `Tasks`. The simplest is a `BlockingTask`
 
 ```kotlin
 interface BlockingTask<in I, out O> : Task {
-    fun exec(ctx: ExecutionContext = DefaultExecutionContext(), params: I): O
+    fun exec(ctx: ExecutionContext = SimpleExeccutionContext(), params: I): O
 }
 ```
 
@@ -86,13 +86,13 @@ A `Task` can be created and executed in three ways
 
 #### #2a - Executing the Task directly
 
-The `DefaultExeccutionContext` is lightweight and suitable for testing and simple use cases
+The `SimpleExeccutionContext` is lightweight and suitable for testing and simple use cases
 
 ```kotlin
 @Test
 fun `should call task directly`() {
     val task = CalcSquareTask()
-    val ctx = DefaultExecutionContext()
+    val ctx = SimpleExeccutionContext()
     val result = task.exec(ctx, 10)
     assertThat(result, equalTo(100))
 }
@@ -111,7 +111,7 @@ fun `should call task via the TaskFactory`() {
 
     // create by class
     val taskByClass = liveFactory.createInstance(ListDirectoryTask::class)
-    val ctx = DefaultExecutionContext()
+    val ctx = SimpleExeccutionContext()
     assert(taskByClass.exec(ctx, ".").contains("build.gradle"))
 
     // create by name

@@ -58,7 +58,6 @@ interface LoggingProducerContext {
         logger().accept(msg)
     }
 
-
     /**
      * Shortcut for writing to the stdout console
      */
@@ -72,11 +71,12 @@ interface LoggingProducerContext {
     fun printErrLn(line: String) {
         stderr().println(line)
     }
+
 }
 
 /**
  * The consumer of a logging context. This is on the client
- * side. There is a design assumption that 'channel' linking the
+ * side. There is a design assumption that the 'channel' linking the
  * the LoggingProducerContext to the LoggingConsumerContext will be as
  * timely as is reasonably possible.
  */
@@ -85,6 +85,50 @@ interface LoggingConsumerContext {
     fun acceptStdout(output: String)
     fun acceptStderr(error: String)
 }
+
+interface LoggingContext {
+    fun consumer(): LoggingConsumerContext
+    fun producer(): LoggingProducerContext
+
+    companion object {
+        fun inMemory(): InMemoryLoggingContext {
+            return InMemoryLoggingContext()
+        }
+
+        fun console(): ConsoleLoggingContext {
+            return ConsoleLoggingContext()
+        }
+
+        class InMemoryLoggingContext : LoggingContext {
+            private val consumer = InMemoryLoggingConsumerContext()
+            private val producer = InMemoryLoggingProducerContext(consumer)
+            override fun consumer(): LoggingConsumerContext = consumer
+
+            override fun producer(): LoggingProducerContext = producer
+
+            fun stdout(): String = consumer.stdout()
+
+            fun stderr(): String = consumer.stderr()
+
+            fun messages(): List<LogMessage> = consumer.messages()
+        }
+
+        class ConsoleLoggingContext : LoggingContext {
+            private val consumer = InMemoryLoggingConsumerContext()
+            private val producer = InMemoryLoggingProducerContext(consumer)
+            override fun consumer(): LoggingConsumerContext = consumer
+
+            override fun producer(): LoggingProducerContext = producer
+
+            fun stdout(): String = consumer.stdout()
+
+            fun stderr(): String = consumer.stderr()
+
+            fun messages(): List<LogMessage> = consumer.messages()
+        }
+    }
+}
+
 
 enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 
@@ -255,8 +299,8 @@ class InMemoryLoggingConsumerContext : LoggingConsumerContext {
 }
 
 class InMemoryLoggingProducerContext(private val consumer: LoggingConsumerContext) : LoggingProducerContext {
-    val stdout: PrintStream = PrintStream(CapturedOutputStream(consumer, true))
-    val stderr: PrintStream = PrintStream(CapturedOutputStream(consumer, false))
+    private val stdout: PrintStream = PrintStream(CapturedOutputStream(consumer, true))
+    private val stderr: PrintStream = PrintStream(CapturedOutputStream(consumer, false))
 
     override fun logger(): LogMessageSink =
         object : LogMessageSink {

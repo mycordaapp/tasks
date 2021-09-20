@@ -2,7 +2,7 @@ package  mycorda.app.tasks.inbuilt
 
 import mycorda.app.tasks.BlockingTask
 import mycorda.app.tasks.executionContext.ExecutionContext
-import mycorda.app.tasks.executionContext.TestContextManager
+import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import java.util.*
 
 
@@ -25,12 +25,10 @@ class EchoToConsoleTask : BlockingTask<String, Unit> {
 // basic test harness
 fun main(args: Array<String>) {
 
-    val manager = TestContextManager().initialise()
-    val ctx = manager.createExecutionContext()
-
+    val ctx = SimpleExecutionContext()
     EchoToConsoleTask().exec(ctx,"Hello World")
 
-    manager.printCaptureStdOut()
+    ctx.logger()
 
 //
 //    val data = "wibble"
