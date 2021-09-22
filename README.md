@@ -21,8 +21,8 @@ framework lets clients call tasks on remote servers using industry accepted stan
 
 As with everything in [myCorda dot App](https://mycorda.app), this library has minimal dependencies.
 
-* Kotlin 1.2
-* Java 1.8
+* Kotlin 1.4
+* Java 11
 * The object [Registry](https://github.com/mycordaapp/registry#readme)
 * The [Helpers](https://github.com/mycordaapp/helpers#readme) module 
 
