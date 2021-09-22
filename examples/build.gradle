@@ -1,15 +1,13 @@
 
 dependencies {
     implementation("com.github.jitpack:gradle-simple:1.0")
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.71"
-    //implementation "org.jetbrains.kotlin:kotlin-reflect:1.2.71"
-
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+    implementation 'com.github.mycordaapp:registry:0.0.2'
     implementation project(":tasks")
 
-    testCompile("com.natpryce:hamkrest:1.7.0.0")
-    testCompile("junit:junit:4.12")
+    testCompile("com.natpryce:hamkrest:$hamkrestVersion")
+    testCompile("org.junit.jupiter:junit-jupiter:$junitVersion")
 
-    implementation 'com.github.mycordaapp:registry:0.0.2'
 
     //testRuntime('org.jetbrains.spek:spek-junit-platform-engine:1.1.5') {
     //    exclude group: 'org.junit.platform'

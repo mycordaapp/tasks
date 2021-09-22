@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.71"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 
         // for Spec - http://spekframework.org/docs/latest/
         classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
@@ -15,7 +15,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id "org.jetbrains.kotlin.jvm" version "1.2.71"
+    id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
     id("org.jetbrains.dokka") version "1.5.30"
 }
 
@@ -35,10 +35,10 @@ allprojects {
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
         kotlinOptions {
-            languageVersion = "1.2"
-            apiVersion = "1.2"
-            jvmTarget = "1.8"
-            javaParameters = true
+            //languageVersion = "1.2"
+            //apiVersion = "1.2"
+            jvmTarget = "11"
+            //javaParameters = true
         }
     }
 
@@ -51,8 +51,8 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'org.jetbrains.dokka'
 
-    sourceCompatibility = 1.8 // java 8
-    targetCompatibility = 1.8
+    //sourceCompatibility = 1.8 // java 8
+    //targetCompatibility = 1.8
 
     task sourcesJar(type: Jar, dependsOn: classes) {
         classifier = 'sources'
