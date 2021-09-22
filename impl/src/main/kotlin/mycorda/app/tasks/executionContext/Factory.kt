@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService
 
 /**
  * A properly wired up context
+ * TODO - now that ExecutionContex has been simplified, is this useful?
  */
 class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFactory {
     private val pm = registry.get(ProcessManager::class.java)
@@ -22,12 +23,11 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
     override fun get(
         executionId: UUID,
         taskId: UUID?,
-        stepId: UUID?,
         scoped: Registry,
         logMessageSink: LogMessageSink?
     ): ExecutionContext {
         return Ctx(
-            executionId, taskId,    pm, executor, scoped,
+            executionId, taskId, pm, executor,
             stdout.printStream, provisioningState, null, loggingContext
         )
     }
@@ -37,7 +37,6 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
         private val taskId: UUID?,
         private val processManager: ProcessManager,
         private val executorService: ExecutorService,
-        private var scoped: Registry,
         private var stdout: PrintStream,
         private val provisioningState: ProvisioningState,
         private val instanceQualifier: String?,

@@ -103,7 +103,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = taskId,
             executor = working.executorService(),
             pm = working.processManager(),
-            //scoped = working.scoped(),
             provisioningState = working.provisioningState(),
             instanceQualifier = working.instanceQualifier()
         )
@@ -116,10 +115,8 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            //scoped = working.scoped(),
             provisioningState = provisioningState,
             instanceQualifier = working.instanceQualifier()
-
         )
         return working
     }
@@ -130,7 +127,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            //scoped = working.scoped(),
             provisioningState = working.provisioningState(),
             instanceQualifier = instanceQualifier
         )
@@ -140,7 +136,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 }
 
 /**
- * A simple service, only suitable for basic unit test
+ * A simple service, suitable for unit test
  */
 class SimpleExecutionContext(
     private val loggingProducerContext: LoggingProducerContext = ConsoleLoggingProducerContext(),
@@ -195,8 +191,6 @@ class SimpleExecutionContext(
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
         return DefaultExecutionContextModifier(this).withInstanceQualifier(instanceQualifier)
     }
-
-
 }
 
 
@@ -210,7 +204,6 @@ interface ExecutionContextFactory {
     fun get(
         executionId: UUID = UUID.randomUUID(),
         taskId: UUID? = null,
-        stepId: UUID? = null,
         scoped: Registry = Registry(),
         logMessageSink: LogMessageSink? = null
 
