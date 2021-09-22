@@ -1,6 +1,6 @@
 # The "Tasks" framework
 
-[![Build Status](https://travis-ci.com/mycordaapp/tasks.svg?branch=master)](https://travis-ci.com/mycordaapp/tasks)
+[![Build Status](https://travis-ci.com/mycordaapp/tasks.svg?branch=master)](https://app.travis-ci.com/github/mycordaapp/tasks)
 [![Licence Status](https://img.shields.io/github/license/mycordaapp/tasks)](https://github.com/mycordaapp/tasks/blob/master/licence.txt)
 
 
