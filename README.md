@@ -3,7 +3,6 @@
 [![Build Status](https://travis-ci.com/mycordaapp/tasks.svg?branch=master)](https://app.travis-ci.com/github/mycordaapp/tasks)
 [![Licence Status](https://img.shields.io/github/license/mycordaapp/tasks)](https://github.com/mycordaapp/tasks/blob/master/licence.txt)
 
-
 ## What it does
 
 The "Tasks" framework simply provides a common way of encapsulating calls into the plethora of tools and APIs that we
