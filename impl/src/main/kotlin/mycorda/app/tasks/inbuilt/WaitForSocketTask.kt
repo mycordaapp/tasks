@@ -1,7 +1,6 @@
 package  mycorda.app.tasks.inbuilt
 
 
-import mycorda.app.registry.Registry
 import mycorda.app.tasks.AsyncTask
 import mycorda.app.tasks.AsyncResultChannelSinkLocator
 import mycorda.app.tasks.SocketAddress

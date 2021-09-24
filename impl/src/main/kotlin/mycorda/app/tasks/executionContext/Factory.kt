@@ -89,10 +89,8 @@ class DefaultExecutionContextFactory(registry: Registry) : ExecutionContextFacto
             return loggingProducerContext.logger()
         }
 
-
         override fun provisioningState(): ProvisioningState {
             return provisioningState
         }
-
     }
 }
