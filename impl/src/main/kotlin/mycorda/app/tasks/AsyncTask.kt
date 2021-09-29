@@ -80,7 +80,7 @@ interface AsyncTask<I, O> : Task {
         // use for timings in threads, esp test cases.  Keep to
         // the minimum for underlying system clock on the OS
         // for now just defaulting to 5 ms
-        fun platformTick(): Long = 5
+        fun platformTick(): Long = 20
         fun sleepForTicks(ticks: Int) = Thread.sleep(platformTick() * ticks)
     }
 }
