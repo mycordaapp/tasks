@@ -1,7 +1,7 @@
 # The "Tasks" framework
 
 [![Travis Build Status](https://travis-ci.com/mycordaapp/tasks.svg?branch=master)](https://app.travis-ci.com/github/mycordaapp/tasks) [travis]
-[![Circle CI](https://circleci.com/gh/mycordaapp/tasks.svg?style=svg)](https://circleci.com/gh/mycordaapp/tasks) [circleci]
+[![Circle CI](https://circleci.com/gh/mycordaapp/tasks.svg?style=shield)](https://circleci.com/gh/mycordaapp/tasks) [circleci]
 [![Licence Status](https://img.shields.io/github/license/mycordaapp/tasks)](https://github.com/mycordaapp/tasks/blob/master/licence.txt)
 
 ## What it does
