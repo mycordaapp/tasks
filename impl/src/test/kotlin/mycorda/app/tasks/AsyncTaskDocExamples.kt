@@ -68,12 +68,13 @@ class AsyncTaskDocExamples {
 
         // 5. call the client
         val clientContext = SimpleClientContext()
-        taskClient.execAsync<Int, Int>(
+        taskClient.execAsync(
             clientContext,
             "mycorda.app.tasks.demo.CalcSquareAsyncTask",
             locator,
             channelId,
-            10
+            10,
+            Int::class
         )
 
         // 6. the first log message is already available, but the second isn't

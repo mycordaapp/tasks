@@ -4,10 +4,10 @@ import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.InMemoryLoggingConsumerContext
 import mycorda.app.tasks.logging.InMemoryLoggingProducerContext
 import mycorda.app.tasks.logging.LoggingConsumerContext
+import kotlin.reflect.KClass
 
 /**
  * Marker interface for any type of security (authentication & authorisation) protocol
- *
  */
 interface SecurityPrinciple
 
@@ -47,18 +47,20 @@ interface ClientContext {
 }
 
 interface TaskClient {
-    fun <I, O> execBlocking(
+    fun <I, O : Any> execBlocking(
         ctx: ClientContext,
         taskName: String,
-        input: I
+        input: I,
+        outputClazz: KClass<O>  // need access to the output clazz for serialization
     ): O
 
-    fun <I, O> execAsync(
+    fun <I, O : Any> execAsync(
         ctx: ClientContext,
         taskName: String,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
-        input: I
+        input: I,
+        outputClazz: KClass<O>  // need access to the output clazz for serialization
     )
 }
 
@@ -86,7 +88,7 @@ class SimpleClientContext : ClientContext {
  */
 class SimpleTaskClient(private val registry: Registry) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
-    override fun <I, O> execBlocking(ctx: ClientContext, taskName: String, input: I): O {
+    override fun <I, O : Any> execBlocking(ctx: ClientContext, taskName: String, input: I, outputClazz: KClass<O>): O {
         @Suppress("UNCHECKED_CAST")
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
@@ -97,12 +99,13 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         return task.exec(executionContext, input)
     }
 
-    override fun <I, O> execAsync(
+    override fun <I, O : Any> execAsync(
         ctx: ClientContext,
         taskName: String,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
-        input: I
+        input: I,
+        outputClazz: KClass<O>
     ) {
         @Suppress("UNCHECKED_CAST")
         val task = taskFactory.createInstance(taskName) as AsyncTask<I, O>

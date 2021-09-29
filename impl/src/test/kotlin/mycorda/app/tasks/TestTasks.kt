@@ -6,29 +6,28 @@ import mycorda.app.tasks.logging.LogMessage
 import java.io.File
 import java.net.URL
 
+class StringList(data: List<String>) : ArrayList<String>(data)
+interface ListDirectoryTask : BlockingTask<String, StringList>
 
-
-interface ListDirectoryTask : BlockingTask<String, List<String>>
-
-class ListDirectoryTaskImpl : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
-    override fun exec(ctx: ExecutionContext, input: String): List<String> {
-        return File(input).listFiles().map { it.name }
+class ListDirectoryTaskImpl : ListDirectoryTask, BaseBlockingTask<String, StringList>() {
+    override fun exec(ctx: ExecutionContext, input: String): StringList {
+        val data = File(input).listFiles().map { it.name }
+        return StringList(data)
     }
 }
 
-class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
-    override fun exec(ctx: ExecutionContext, input: String): List<String> {
+class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, StringList>() {
+    override fun exec(ctx: ExecutionContext, input: String): StringList {
         val out = ctx.stdout()
         out.println("ListDirectoryTask:")
         out.println("   params: $input")
         ctx.log(LogMessage.info("listing directory '$input'"))
-        return listOf("fake.txt")
+        return StringList(listOf("fake.txt"))
     }
 }
 
 
 class RegistryTask(private val registry: Registry) : BaseBlockingTask<Unit?, String>() {
-
     override fun exec(ctx: ExecutionContext, input: Unit?): String {
         return registry.get(String::class.java)
     }

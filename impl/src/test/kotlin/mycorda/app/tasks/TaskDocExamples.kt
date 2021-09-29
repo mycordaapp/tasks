@@ -60,9 +60,9 @@ class TaskDocExamples {
 
         // 3. call the client
         val clientContext = SimpleClientContext()
-        val result = taskClient.execBlocking<String, List<String>>(
+        val result = taskClient.execBlocking(
             clientContext,
-            "mycorda.app.tasks.ListDirectoryTask", "."
+            "mycorda.app.tasks.ListDirectoryTask", ".", StringList::class
         )
 
         // 4. assert results
