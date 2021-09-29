@@ -81,8 +81,6 @@ interface AsyncTask<I, O> : Task {
         // the minimum for underlying system clock on the OS
         // for now just defaulting to 5 ms
         fun platformTick(): Long {
-            // System.out.println("Using System Property: " + os);
-            // System.out.println("Using System Property: " + os);
             val os = System.getProperty("os.name")
             println(os)
             return if (os == "Mac OS X") 5 else 10
