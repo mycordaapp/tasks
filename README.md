@@ -14,8 +14,9 @@ This framework is most certainly **NOT** intended as replacement for existing de
 be a simple wrapper over the underlying toolset. The key insight is that all tasks expose a similar API and can be
 thought of as Lego style building block.
 
-There are also higher level services that build on these tasks, for example the task [Remoting](http://todo.com)
-framework lets clients call tasks on remote servers using industry accepted standards for data transfer and security.
+There are also higher level services that build on these tasks, for example the
+task [Http Remoting](https://github.com/mycordaapp/tasks-http#readme)
+toolkit lets clients call tasks on remote servers using http(s) standards for data transfer and security.
 
 ## Dependencies
 
@@ -24,11 +25,9 @@ As with everything in [myCorda dot App](https://mycorda.app), this library has m
 * Kotlin 1.4
 * Java 11
 * The object [Registry](https://github.com/mycordaapp/registry#readme)
-* The [Helpers](https://github.com/mycordaapp/helpers#readme) module 
+* The [Helpers](https://github.com/mycordaapp/helpers#readme) module
 
-## Next Steps 
+## Next Steps
 
 More on building and using Tasks is [here](./docs/tasks.md)
-
-To build a HelloWorld see here (toto)
 

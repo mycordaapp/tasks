@@ -86,6 +86,8 @@ A `Task` can be created and executed in three ways
 
 ### Executing a Blocking Task directly
 
+<img src="./images/exec-task-directly.png" width="400px"/>
+
 The `SimpleExeccutionContext` is lightweight and suitable for testing and simple use cases
 
 ```kotlin
