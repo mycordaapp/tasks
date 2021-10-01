@@ -76,17 +76,17 @@ via the `ExeccutionContext`.
 
 A `Task` can be created and executed in three ways
 
-* by instantiating an instance of the Task and calling the `exec` method directly.
-* by using the `TaskFactory`. Usually this is just part of the implementation of the `TaskClient` below
-* by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it:
+1. by instantiating an instance of the Task and calling the `exec` method directly.
+1. by using the `TaskFactory`. Usually this is just part of the implementation of the `TaskClient` below
+1. by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it:
     - allows for remoting (calling `Tasks` on a remote agent)
     - controls setup of the `ExecutionContext`
 
 `TaskDocExamples.kt` has full source code for the examples below.
 
-### Executing a Blocking Task directly
+### 1. Executing a Task directly
 
-<img src="./images/exec-task-directly.png" width="400px" style="border:1px solid grey"/>
+<img src="./images/exec-task-directly.png" width="400px" style="border:1px solid black"/>
 
 The `SimpleExeccutionContext` is lightweight and suitable for testing and simple use cases
 
@@ -100,10 +100,9 @@ fun `should call task directly`() {
 }
 ```
 
-### Lookup a Task via the `TaskFactory`
+### 2. Lookup a Task via the `TaskFactory`
 
-<img src="./images/lookup-task-via-taskfactory.png" width="400px" style="border:1px solid grey"/>
-
+<img src="./images/lookup-task-via-taskfactory.png" width="500px" style="border:1px solid black"/>
 
 This is usually part of the server side. It allows for dynamic registration of tasks
 
@@ -132,10 +131,10 @@ fun `should call task via the TaskFactory`() {
 }
 ```
 
-### Executing a Blocking Task via the `TaskClient`
+### 3. Executing a Task via the `TaskClient`
 
 This is the typical case as it reflects the usual client server model, with tasks invoked locally but running on another
-agent of some form on another server. Note that for simplicity, in this example we create the SimpleTaskClient which
+agent of some form on another server. Note that for simplicity, in this example we create the `SimpleTaskClient` which
 uses in memory communication.
 
 ```kotlin
@@ -230,11 +229,10 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
 }
 
 ```
+
 Breaking this code down:
 
-
-
-and the basic test case is 
+and the basic test case is
 
 ```kotlin
  fun `should call task directly`() {
