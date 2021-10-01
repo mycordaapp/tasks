@@ -133,6 +133,9 @@ fun `should call task via the TaskFactory`() {
 
 ### 3. Executing a Task via the `TaskClient`
 
+<img src="./images/exec-task-via-client.png" width="800px" style="border:1px solid black"/>
+
+
 This is the typical case as it reflects the usual client server model, with tasks invoked locally but running on another
 agent of some form on another server. Note that for simplicity, in this example we create the `SimpleTaskClient` which
 uses in memory communication.
