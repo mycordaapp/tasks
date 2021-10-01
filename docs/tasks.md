@@ -86,7 +86,7 @@ A `Task` can be created and executed in three ways
 
 ### Executing a Blocking Task directly
 
-<img src="./images/exec-task-directly.png" width="400px"/>
+<img src="./images/exec-task-directly.png" width="400px" style="border:1px solid grey"/>
 
 The `SimpleExeccutionContext` is lightweight and suitable for testing and simple use cases
 
@@ -100,7 +100,10 @@ fun `should call task directly`() {
 }
 ```
 
-### Executing a Blocking Task via the `TaskFactory`
+### Lookup a Task via the `TaskFactory`
+
+<img src="./images/lookup-task-via-taskfactory.png" width="400px" style="border:1px solid grey"/>
+
 
 This is usually part of the server side. It allows for dynamic registration of tasks
 
