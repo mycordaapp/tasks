@@ -1,10 +1,22 @@
 package mycorda.app.tasks.demo.echo
 
+import mycorda.app.helpers.random
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.ExecutionContext
 import java.math.BigDecimal
 import java.util.*
+
+
+data class DemoModel(
+    val aString: String = String.random(80),
+    val anInt: Int = Random().nextInt(),
+    val aLong: Long = Random().nextLong(),
+    val aDouble: Double = Random().nextDouble(),
+    val aFloat: Float = Random().nextFloat(),
+    val aBoolean: Boolean = Random().nextBoolean(),
+    val nested: DemoModel? = null
+)
 
 /**
  * Tasks that simply echo the result back. Good for basic testing
@@ -61,6 +73,12 @@ class EchoUUIDTask : BaseBlockingTask<UUID, UUID>() {
 
 class EchoStringListTask : BaseBlockingTask<StringList, StringList>() {
     override fun exec(ctx: ExecutionContext, input: StringList): StringList {
+        return input
+    }
+}
+
+class EchoDemoModelTask : BaseBlockingTask<DemoModel, DemoModel>() {
+    override fun exec(ctx: ExecutionContext, input: DemoModel): DemoModel {
         return input
     }
 }
