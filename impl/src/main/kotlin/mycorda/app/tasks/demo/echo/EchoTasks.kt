@@ -1,5 +1,6 @@
 package mycorda.app.tasks.demo.echo
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import mycorda.app.helpers.random
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
@@ -8,12 +9,15 @@ import java.math.BigDecimal
 import java.util.*
 
 data class DemoModel(
-    val aString: String = String.random(80),
+    // cannot have s single lowerCase character due to legacy Java code
+    // see https://github.com/FasterXML/jackson-module-kotlin/issues/92
+
+    @JsonProperty("aString") val aString: String = String.random(80),
     val anInt: Int = Random().nextInt(),
-    val aLong: Long = Random().nextLong(),
-    val aDouble: Double = Random().nextDouble(),
-    val aFloat: Float = Random().nextFloat(),
-    val aBoolean: Boolean = Random().nextBoolean(),
+    @JsonProperty("aLong") val aLong: Long = Random().nextLong(),
+    @JsonProperty("aDouble") val aDouble: Double = Random().nextDouble(),
+    @JsonProperty("aFloat") val aFloat: Float = Random().nextFloat(),
+    @JsonProperty("aBoolean") val aBoolean: Boolean = Random().nextBoolean(),
     val nested: DemoModel? = null
 )
 

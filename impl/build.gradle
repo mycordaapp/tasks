@@ -3,6 +3,10 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
 
+    // Jackson for JSON and YAML
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+
 
     implementation "com.github.mycordaapp:helpers:$helpersVersion"
     implementation "com.github.mycordaapp:registry:$registryVersion"
@@ -12,9 +16,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testImplementation('org.junit.platform:junit-platform-runner:1.0.0')
 
-    // spek v2 - legacy - to be removed once all tests are updated to Junit
-    //testCompile("org.spekframework.spek2:spek-dsl-jvm:2.0.0")
-    //testCompile("org.spekframework.spek2:spek-runner-junit5:2.0.0")
 }
 
 test {
