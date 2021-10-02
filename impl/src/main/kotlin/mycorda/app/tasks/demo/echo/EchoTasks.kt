@@ -7,6 +7,14 @@ import mycorda.app.tasks.executionContext.ExecutionContext
 import java.math.BigDecimal
 import java.util.*
 
+enum class Colour {
+    Red, Green, Blue;
+
+    companion object {
+        fun random(): Colour = Colour.values()[Random().nextInt(2)]
+    }
+}
+
 data class DemoModel(
     val string: String = String.random(80),
     val int: Int = Random().nextInt(),
@@ -14,6 +22,7 @@ data class DemoModel(
     val double: Double = Random().nextDouble(),
     val float: Float = Random().nextFloat(),
     val boolean: Boolean = Random().nextBoolean(),
+    val colour: Colour = Colour.random(),
     val nested: DemoModel? = null
 )
 
@@ -78,6 +87,12 @@ class EchoStringListTask : BaseBlockingTask<StringList, StringList>() {
 
 class EchoDemoModelTask : BaseBlockingTask<DemoModel, DemoModel>() {
     override fun exec(ctx: ExecutionContext, input: DemoModel): DemoModel {
+        return input
+    }
+}
+
+class EchoEnumTask : BaseBlockingTask<Colour, Colour>() {
+    override fun exec(ctx: ExecutionContext, input: Colour): Colour {
         return input
     }
 }
