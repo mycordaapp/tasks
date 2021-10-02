@@ -7,7 +7,6 @@ import mycorda.app.tasks.executionContext.ExecutionContext
 import java.math.BigDecimal
 import java.util.*
 
-
 data class DemoModel(
     val aString: String = String.random(80),
     val anInt: Int = Random().nextInt(),

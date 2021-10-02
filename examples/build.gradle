@@ -2,7 +2,6 @@
 dependencies {
     implementation("com.github.jitpack:gradle-simple:1.0")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-    implementation 'com.github.mycordaapp:registry:0.0.2'
     implementation project(":tasks")
 
     testCompile("com.natpryce:hamkrest:$hamkrestVersion")
@@ -17,10 +16,5 @@ dependencies {
     testCompile('org.junit.platform:junit-platform-runner:1.0.0')
 
     testCompile('org.junit.platform:junit-platform-runner:1.0.0')
-
-    // spek v2
-    testCompile("org.spekframework.spek2:spek-dsl-jvm:2.0.0")
-    testCompile("org.spekframework.spek2:spek-runner-junit5:2.0.0")
-
 }
 
