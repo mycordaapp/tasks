@@ -4,6 +4,7 @@ import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.InMemoryLoggingConsumerContext
 import mycorda.app.tasks.logging.InMemoryLoggingProducerContext
 import mycorda.app.tasks.logging.LoggingConsumerContext
+import mycorda.app.tasks.serialisation.JsonSerialiser
 import kotlin.reflect.KClass
 
 /**
@@ -47,14 +48,14 @@ interface ClientContext {
 }
 
 interface TaskClient {
-    fun <I, O : Any> execBlocking(
+    fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
         taskName: String,
         input: I,
         outputClazz: KClass<O>  // need access to the output clazz for serialization
     ): O
 
-    fun <I, O : Any> execAsync(
+    fun <I : Any, O : Any> execAsync(
         ctx: ClientContext,
         taskName: String,
         channelLocator: AsyncResultChannelSinkLocator,
@@ -88,7 +89,13 @@ class SimpleClientContext : ClientContext {
  */
 class SimpleTaskClient(private val registry: Registry) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
-    override fun <I, O : Any> execBlocking(ctx: ClientContext, taskName: String, input: I, outputClazz: KClass<O>): O {
+    private val serialiser = registry.geteOrElse(JsonSerialiser::class.java, JsonSerialiser())
+    override fun <I : Any, O : Any> execBlocking(
+        ctx: ClientContext,
+        taskName: String,
+        input: I,
+        outputClazz: KClass<O>
+    ): O {
         @Suppress("UNCHECKED_CAST")
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
@@ -96,10 +103,22 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val loggingProducerContext = InMemoryLoggingProducerContext(ctx.loggingConsumer())
         val executionContext = SimpleExecutionContext(loggingProducerContext)
 
-        return task.exec(executionContext, input)
+        // note, force serialisation / de-serialisation to catch any problems early
+        val result = task.exec(executionContext, roundTripInput(input))
+        return (roundTripOutput(result))
     }
 
-    override fun <I, O : Any> execAsync(
+    private fun <I : Any> roundTripInput(input: I): I {
+        @Suppress("UNCHECKED_CAST")
+        return serialiser.deserialiseData(serialiser.serialiseData(input), input::class) as I
+    }
+
+    private fun <O : Any> roundTripOutput(output: O): O {
+        @Suppress("UNCHECKED_CAST")
+        return serialiser.deserialiseData(serialiser.serialiseData(output), output::class) as O
+    }
+
+    override fun <I : Any, O : Any> execAsync(
         ctx: ClientContext,
         taskName: String,
         channelLocator: AsyncResultChannelSinkLocator,

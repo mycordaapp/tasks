@@ -14,16 +14,16 @@ class JsonSerialiser {
         mapper.registerModule(module)
     }
 
-    fun serializeBlockingTaskRequest(model: BlockingTaskRequest): String {
+    fun serialiseBlockingTaskRequest(model: BlockingTaskRequest): String {
         return mapper.writeValueAsString(model)
     }
 
-    fun deserializeBlockingTaskRequest(json: String): BlockingTaskRequest {
+    fun deserialiseBlockingTaskRequest(json: String): BlockingTaskRequest {
         return mapper.readValue(json, BlockingTaskRequest::class.java)
     }
 
 
-    fun deserializeData(data: String, clazz: KClass<out Any>): Any? {
+    fun deserialiseData(data: String, clazz: KClass<out Any>): Any? {
         if (TaskReflections.isUnit(clazz)) {
             if (data.isNotBlank()) throw RuntimeException("doDeserialize found data '$data' when Unit / Nothing is expected")
             return Unit
@@ -51,7 +51,7 @@ class JsonSerialiser {
         }
     }
 
-    fun serializeData(data: Any, prettyPrint: Boolean = false): String {
+    fun serialiseData(data: Any, prettyPrint: Boolean = false): String {
         val clazz = data::class
 
         if (data is Unit) return ""
