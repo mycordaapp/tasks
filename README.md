@@ -24,6 +24,7 @@ As with everything in [myCorda dot App](https://mycorda.app), this library has m
 
 * Kotlin 1.4
 * Java 11
+* [Jackson](https://github.com/FasterXML/jackson) for JSON & YAML serialisation
 * The object [Registry](https://github.com/mycordaapp/registry#readme)
 * The [Helpers](https://github.com/mycordaapp/helpers#readme) module
 
