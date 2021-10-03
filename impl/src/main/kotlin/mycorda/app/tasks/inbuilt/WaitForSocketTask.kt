@@ -63,7 +63,7 @@ class WaitForSocketTaskFake : WaitForSocketTask {
 
 
 // basic test harness
-fun main(args: Array<String>) {
+fun main() {
 
     val ctx = SimpleExecutionContext()
     //val address = SocketAddress("localhost", 12345)

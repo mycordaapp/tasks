@@ -124,7 +124,7 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
 }
 
 
-fun main(args: Array<String>) {
+fun main() {
     val result = DeterminePrivateIpAddressTaskImpl().exec(input = NotRequired.instance())
     println(result)
 }

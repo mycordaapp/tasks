@@ -23,18 +23,11 @@ class EchoToConsoleTask : BlockingTask<String, Unit> {
 
 
 // basic test harness
-fun main(args: Array<String>) {
+fun main() {
 
     val ctx = SimpleExecutionContext()
     EchoToConsoleTask().exec(ctx,"Hello World")
 
     ctx.logger()
 
-//
-//    val data = "wibble"
-//
-//    val enc = data.encrypt()
-//    println(enc)
-//    val dec = enc.decrypt()
-//    println(dec)
 }

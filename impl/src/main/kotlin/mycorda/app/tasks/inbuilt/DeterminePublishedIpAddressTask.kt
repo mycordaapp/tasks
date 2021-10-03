@@ -124,7 +124,7 @@ class DeterminePublishedIpAddressTaskImpl : DeterminePublishedIpAddressTask {
 }
 
 
-fun main(args: Array<String>) {
+fun main() {
     //System.getenv().put("CORDA_FORCE_PUBLISHED_IP","123.123.123.123")
     val result = DeterminePublishedIpAddressTaskImpl().exec(input = NotRequired.instance())
     println(result)
