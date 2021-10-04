@@ -1,12 +1,12 @@
-package mycorda.app.tasks
+package mycorda.app.tasks.test
 
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogMessage
 import java.io.File
 import java.net.URL
 
-class StringList(data: List<String>) : ArrayList<String>(data)
 interface ListDirectoryTask : BlockingTask<String, StringList>
 
 class ListDirectoryTaskImpl : ListDirectoryTask, BaseBlockingTask<String, StringList>() {

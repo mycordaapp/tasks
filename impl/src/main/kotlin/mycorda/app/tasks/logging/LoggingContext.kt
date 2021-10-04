@@ -277,8 +277,16 @@ class DefaultStderrHolder : StderrHolder {
     override fun err(): PrintStream = System.err
 }
 
+/**
+ * A standard interface for readers of the logging
+ */
+interface LoggingReaderContext {
+    fun stdout(): String
+    fun stderr(): String
+    fun messages(): List<LogMessage>
+}
 
-class InMemoryLoggingConsumerContext : LoggingConsumerContext {
+class InMemoryLoggingConsumerContext : LoggingConsumerContext, LoggingReaderContext {
     private val stdout = StringBuilder()
     private val stderr = StringBuilder()
     private val logMessages = ArrayList<LogMessage>()
@@ -295,11 +303,11 @@ class InMemoryLoggingConsumerContext : LoggingConsumerContext {
         stderr.append(error).append("\n")
     }
 
-    fun stdout(): String = stdout.toString()
+    override fun stdout(): String = stdout.toString()
 
-    fun stderr(): String = stderr.toString()
+    override fun stderr(): String = stderr.toString()
 
-    fun messages(): List<LogMessage> = ArrayList(logMessages)
+    override fun messages(): List<LogMessage> = ArrayList(logMessages)
 }
 
 class InMemoryLoggingProducerContext(private val consumer: LoggingConsumerContext) : LoggingProducerContext {

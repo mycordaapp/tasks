@@ -4,6 +4,8 @@ import mycorda.app.helpers.random
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.ExecutionContext
+import mycorda.app.tasks.logging.LogLevel
+import mycorda.app.tasks.logging.LogMessage
 import java.math.BigDecimal
 import java.util.*
 
@@ -94,6 +96,31 @@ class EchoDemoModelTask : BaseBlockingTask<DemoModel, DemoModel>() {
 class EchoEnumTask : BaseBlockingTask<Colour, Colour>() {
     override fun exec(ctx: ExecutionContext, input: Colour): Colour {
         return input
+    }
+}
+
+class EchoToStdOutTask : BaseBlockingTask<String, Unit>() {
+    override fun exec(ctx: ExecutionContext, input: String): Unit {
+        ctx.stdout().print(input)
+    }
+}
+
+class EchoToStdErrTask : BaseBlockingTask<String, Unit>() {
+    override fun exec(ctx: ExecutionContext, input: String): Unit {
+        ctx.stderr().print(input)
+    }
+}
+
+class EchoToLogTask : BaseBlockingTask<String, Unit>() {
+    override fun exec(ctx: ExecutionContext, input: String) {
+        ctx.log(
+            LogMessage(
+                executionId = ctx.executionId(),
+                taskId = this.taskId(),
+                level = LogLevel.INFO,
+                body = input
+            )
+        )
     }
 }
 

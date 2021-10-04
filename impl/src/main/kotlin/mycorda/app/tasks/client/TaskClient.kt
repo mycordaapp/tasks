@@ -3,9 +3,7 @@ package mycorda.app.tasks.client
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
-import mycorda.app.tasks.logging.InMemoryLoggingConsumerContext
-import mycorda.app.tasks.logging.InMemoryLoggingProducerContext
-import mycorda.app.tasks.logging.LoggingConsumerContext
+import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.serialisation.JsonSerialiser
 import kotlin.reflect.KClass
 
@@ -105,9 +103,20 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val loggingProducerContext = InMemoryLoggingProducerContext(ctx.loggingConsumer())
         val executionContext = SimpleExecutionContext(loggingProducerContext)
 
-        // note, force serialisation / de-serialisation to catch any problems early
-        val result = task.exec(executionContext, roundTripInput(input))
-        return (roundTripOutput(result))
+        try {
+            // note, force serialisation / de-serialisation locally to catch any problems early
+            val result = task.exec(executionContext, roundTripInput(input))
+            return (roundTripOutput(result))
+        } catch (e: Exception) {
+            val message = LogMessage(
+                executionId = executionContext.executionId(),
+                level = LogLevel.WARN,
+                body = "Task generated exception of: ${e.message}",
+                taskId = task.taskId()
+            )
+            ctx.loggingConsumer().acceptLog(message)
+            throw e
+        }
     }
 
     private fun <I : Any> roundTripInput(input: I): I {

@@ -8,7 +8,7 @@ import mycorda.app.tasks.client.SimpleTaskClient
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.LogLevel
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
 Code to match examples in 'tasks.md' file

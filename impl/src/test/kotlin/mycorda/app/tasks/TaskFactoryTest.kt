@@ -7,7 +7,7 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.executionContext.ExecutionContext
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.util.*
 
 class TaskFactoryTest {

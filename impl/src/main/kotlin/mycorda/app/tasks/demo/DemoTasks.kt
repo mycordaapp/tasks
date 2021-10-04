@@ -6,6 +6,7 @@ import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogMessage
 import java.io.File
+import java.lang.RuntimeException
 import java.util.*
 
 /*
@@ -35,6 +36,17 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
                 input, output
             )
         )
+    }
+}
+
+
+class ExceptionGeneratingBlockingTask : BaseBlockingTask<String, String>() {
+    override fun exec(ctx: ExecutionContext, input: String): String {
+        if (!input.contains("ignore", true)) {
+            throw RuntimeException(input)
+        } else {
+            return input
+        }
     }
 }
 

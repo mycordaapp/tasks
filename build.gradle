@@ -54,6 +54,11 @@ subprojects {
         from javadoc.destinationDir
     }
 
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        reports { junitXml.setEnabled(true) }
+    }
+
     artifacts {
         archives sourcesJar
         archives javadocJar

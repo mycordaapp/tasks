@@ -8,7 +8,10 @@ import mycorda.app.tasks.client.SimpleTaskClient
 import mycorda.app.tasks.demo.CalcSquareTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.LogLevel
-import org.junit.Test
+import mycorda.app.tasks.test.ListDirectoryTask
+import mycorda.app.tasks.test.ListDirectoryTaskFake
+import mycorda.app.tasks.test.ListDirectoryTaskImpl
+import org.junit.jupiter.api.Test
 
 /**
 Code to match examples in 'tasks.md' file
@@ -37,7 +40,7 @@ class TaskDocExamples {
         // create by name
         @Suppress("UNCHECKED_CAST")
         val taskByName =
-            liveFactory.createInstance("mycorda.app.tasks.ListDirectoryTask") as BlockingTask<String, List<String>>
+            liveFactory.createInstance("mycorda.app.tasks.test.ListDirectoryTask") as BlockingTask<String, List<String>>
         assert(taskByName.exec(ctx, ".").contains("build.gradle"))
 
         // register and create a fake task
@@ -62,7 +65,7 @@ class TaskDocExamples {
         val clientContext = SimpleClientContext()
         val result = taskClient.execBlocking(
             clientContext,
-            "mycorda.app.tasks.ListDirectoryTask", ".", StringList::class
+            "mycorda.app.tasks.test.ListDirectoryTask", ".", StringList::class
         )
 
         // 4. assert results
