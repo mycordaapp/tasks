@@ -1,3 +1,5 @@
+package mycorda.app.tasks.client
+
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.SimpleExecutionContext

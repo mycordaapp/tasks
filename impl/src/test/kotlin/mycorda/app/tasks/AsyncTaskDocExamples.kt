@@ -1,10 +1,10 @@
 package mycorda.app.tasks
 
-import SimpleClientContext
-import SimpleTaskClient
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.client.SimpleClientContext
+import mycorda.app.tasks.client.SimpleTaskClient
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.LogLevel

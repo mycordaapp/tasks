@@ -1,7 +1,7 @@
 package mycorda.app.tasks.logging
 
-import ClientContext
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.client.ClientContext
 import java.io.OutputStream
 import java.io.PrintStream
 import java.util.*
