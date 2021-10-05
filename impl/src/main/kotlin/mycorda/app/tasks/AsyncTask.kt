@@ -82,8 +82,8 @@ interface AsyncTask<I, O> : Task {
         // for now just defaulting to 5 ms
         fun platformTick(): Long {
             val os = System.getProperty("os.name")
-            println(os)
-            return if (os == "Mac OS X") 5 else 10
+            println("The OS is $os")
+            return if (os == "Mac OS X") 5 else 15
         }
 
         fun sleepForTicks(ticks: Int) = Thread.sleep(platformTick() * ticks)
