@@ -103,13 +103,4 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         assertThat(readerContext.messages(), isEmpty)
     }
 
-    @Test
-    fun `should check os`() {
-
-        assertThat(System.getProperty("os.name"), equalTo("mac"))
-
-
-    }
-
-
 }
