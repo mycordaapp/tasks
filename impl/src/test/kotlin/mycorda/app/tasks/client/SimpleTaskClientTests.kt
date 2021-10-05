@@ -37,7 +37,6 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         factory.register(EchoToStdOutTask::class)
         factory.register(EchoToStdErrTask::class)
         factory.register(EchoToLogTask::class)
-
         factory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
         factory.register(ExceptionGeneratingBlockingTask::class)
         registry.store(factory)
@@ -102,6 +101,14 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         assertThat(readerContext.stdout(), isEmptyString)
         assertThat(readerContext.stderr(), equalTo("Goodbye, cruel world\n"))
         assertThat(readerContext.messages(), isEmpty)
+    }
+
+    @Test
+    fun `should check os`() {
+
+        assertThat(System.getProperty("os.name"), equalTo("mac"))
+
+
     }
 
 

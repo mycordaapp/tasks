@@ -74,13 +74,16 @@ via the `ExeccutionContext`.
 
 ## Executing a Task
 
-A `Task` can be created and executed in three ways
+A `Task` can be created and executed in three ways:
 
 1. by instantiating an instance of the Task and calling the `exec` method directly.
 1. by using the `TaskFactory`. Usually this is just part of the implementation of the `TaskClient` below
 1. by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it:
     - allows for remoting (calling `Tasks` on a remote agent)
-    - controls setup of the `ExecutionContext`
+    - hides setup of the `ExecutionContext` from the caller
+    - passes the security principles required for any authentication and downstream system access within the tasks. _note
+      that currently this requirement is not well understood, however certain patterns are likely to occur - this is
+      detailed later on_
 
 `TaskDocExamples.kt` has full source code for the examples below.
 
