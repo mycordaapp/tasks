@@ -7,6 +7,7 @@ import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.tasks.logging.LogMessage
 import mycorda.app.types.StringList
+import mycorda.app.types.UniqueId
 import java.math.BigDecimal
 import java.util.*
 

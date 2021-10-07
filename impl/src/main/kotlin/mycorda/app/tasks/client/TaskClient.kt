@@ -5,6 +5,7 @@ import mycorda.app.rss.JsonSerialiser
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.*
+import mycorda.app.types.UniqueId
 import kotlin.reflect.KClass
 
 /**

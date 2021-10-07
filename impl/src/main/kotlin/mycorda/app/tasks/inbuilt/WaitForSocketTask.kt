@@ -4,9 +4,9 @@ package  mycorda.app.tasks.inbuilt
 import mycorda.app.tasks.AsyncTask
 import mycorda.app.tasks.AsyncResultChannelSinkLocator
 import mycorda.app.tasks.SocketAddress
-import mycorda.app.tasks.UniqueId
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
+import mycorda.app.types.UniqueId
 import java.util.*
 
 /**

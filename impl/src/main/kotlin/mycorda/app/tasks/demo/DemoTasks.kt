@@ -5,6 +5,7 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogMessage
+import mycorda.app.types.UniqueId
 import java.io.File
 import java.lang.RuntimeException
 import java.util.*

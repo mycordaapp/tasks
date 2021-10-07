@@ -1,5 +1,7 @@
 package mycorda.app.tasks
 
+import mycorda.app.types.UniqueId
+
 /**
  * Send a request to a task. This works for both Blocking and Async Tasks
  */

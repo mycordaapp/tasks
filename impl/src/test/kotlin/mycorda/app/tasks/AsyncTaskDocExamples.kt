@@ -8,6 +8,7 @@ import mycorda.app.tasks.client.SimpleTaskClient
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.LogLevel
+import mycorda.app.types.UniqueId
 import org.junit.jupiter.api.Test
 
 /**

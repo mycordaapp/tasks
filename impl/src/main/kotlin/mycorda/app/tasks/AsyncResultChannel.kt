@@ -1,5 +1,6 @@
 package mycorda.app.tasks
 
+import mycorda.app.types.UniqueId
 import java.util.*
 import java.util.concurrent.Future
 import java.util.function.Consumer
