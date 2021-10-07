@@ -12,4 +12,3 @@ fun List<LogMessage>.doesNotHaveMessage(level: LogLevel, body: String): Boolean 
     return this.none { (it.level == level) && it.body == body }
 }
 
-//fun Set<SecurityPrinciple>.hasType(type : KClass<SecurityPrinciple>) : Boolean = true
