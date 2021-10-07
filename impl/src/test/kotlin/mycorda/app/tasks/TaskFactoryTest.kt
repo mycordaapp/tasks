@@ -7,6 +7,7 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.executionContext.ExecutionContext
+import mycorda.app.types.NotRequired
 import mycorda.app.types.UniqueId
 import org.junit.jupiter.api.Test
 import java.util.*

@@ -2,9 +2,9 @@ package mycorda.app.tasks.inbuilt
 
 
 import mycorda.app.tasks.BlockingTask
-import mycorda.app.tasks.NotRequired
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogMessage
+import mycorda.app.types.NotRequired
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection

@@ -1,5 +1,6 @@
 package mycorda.app.tasks
 
+import mycorda.app.types.NotRequired
 import java.io.File
 import java.net.URL
 import java.util.*
