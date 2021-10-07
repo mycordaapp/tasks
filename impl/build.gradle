@@ -7,8 +7,8 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 
-
-    implementation "com.github.mycordaapp:helpers:$helpersVersion"
+    implementation "com.github.mycordaapp:really-simple-serialisation:$rssVersion"
+    implementation "com.github.mycordaapp:commons:$commonsVersion"
     implementation "com.github.mycordaapp:registry:$registryVersion"
 
 

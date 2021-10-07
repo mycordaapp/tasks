@@ -11,6 +11,7 @@ import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.tasks.test.ListDirectoryTask
 import mycorda.app.tasks.test.ListDirectoryTaskFake
 import mycorda.app.tasks.test.ListDirectoryTaskImpl
+import mycorda.app.types.StringList
 import org.junit.jupiter.api.Test
 
 /**

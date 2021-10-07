@@ -13,6 +13,7 @@ import mycorda.app.tasks.demo.echo.*
 import mycorda.app.tasks.logging.LoggingReaderContext
 import mycorda.app.tasks.test.ListDirectoryTask
 import mycorda.app.tasks.test.ListDirectoryTaskFake
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -101,6 +102,26 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         assertThat(readerContext.stdout(), isEmptyString)
         assertThat(readerContext.stderr(), equalTo("Goodbye, cruel world\n"))
         assertThat(readerContext.messages(), isEmpty)
+    }
+
+    @Test
+    fun `should pass on exception to client`() {
+        val clientContext = SimpleClientContext()
+
+        try {
+            SimpleTaskClient(registry).execBlocking(
+                clientContext,
+                "mycorda.app.tasks.demo.ExceptionGeneratingBlockingTask",
+                "Opps",
+                String::class
+            )
+            fail("should have thrown a RuntimeException")
+        } catch (re: RuntimeException) {
+            re.printStackTrace()
+            assertThat(re.message, equalTo("Opps"))
+        }
+
+
     }
 
 }
