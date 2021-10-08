@@ -1,12 +1,10 @@
 package mycorda.app.tasks.logging
 
-
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
-
 
 /**
  * Simply tie a PrintStream to some backing storage so we can read in back later.

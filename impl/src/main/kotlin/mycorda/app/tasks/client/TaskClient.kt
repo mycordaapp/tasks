@@ -146,7 +146,5 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val executionContext = SimpleExecutionContext(loggingProducerContext)
 
         task.exec(executionContext, channelLocator, channelId, input)
-
     }
-
 }
