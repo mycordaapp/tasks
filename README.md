@@ -17,6 +17,15 @@ There are also higher level services that build on these tasks, for example the
 task [Http Remoting](https://github.com/mycordaapp/tasks-http#readme)
 toolkit lets clients call tasks on remote servers using http(s) standards for data transfer and security.
 
+The design and modularity is heavily influenced by [HTT4kk](https://www.http4k.org/guide/concepts/rationale/). In
+particular
+
+* Minimal Dependencies (see below)
+* Very modular
+* Avoid "magic": No annotations, very minimal use of reflections
+* Fast startup/ shutdown 
+
+
 ## Dependencies
 
 As with everything in [myCorda dot App](https://mycorda.app), this library has minimal dependencies.

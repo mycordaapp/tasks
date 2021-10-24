@@ -5,7 +5,10 @@ import com.natpryce.hamkrest.equalTo
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.client.SimpleClientContext
 import mycorda.app.tasks.client.SimpleTaskClient
+import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.demo.CalcSquareTask
+import mycorda.app.tasks.demo.echo.EchoIntTask
+import mycorda.app.tasks.demo.echo.EchoStringTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.tasks.test.ListDirectoryTask
@@ -84,6 +87,34 @@ class TaskDocExamples {
             clientContext.inMemoryLoggingContext().messages()
                 .hasMessage(LogLevel.INFO, "listing directory '.'")
         )
+    }
+
+    @Test
+    fun `should register groups of tasks using TaskRegistrations`() {
+        // 1. setup some groups using SimpleTaskRegistrations - this emulates
+        //    the TaskRegistrations exposed by one or more Jar files
+        class CalculatorTasks : SimpleTaskRegistrations(
+            listOf(TaskRegistration(CalcSquareAsyncTask::class), TaskRegistration(CalcSquareTask::class))
+        )
+
+        val calculatorTasksClazzName = CalculatorTasks::class.java.name
+
+        class EchoTasks : SimpleTaskRegistrations(
+            listOf(TaskRegistration(EchoStringTask::class), TaskRegistration(EchoIntTask::class))
+        )
+
+
+        // 2. register the groups
+        val taskFactory = TaskFactory()
+        // by clazzName - this emulates the scenario in which registrations are controlled by external configs
+        taskFactory.register(TaskRegistrations.fromClazzName(calculatorTasksClazzName))
+        // by instantiating an instance - this emulate the scenario of hard coded registrations
+        taskFactory.register(EchoTasks())
+
+        // 3. check the tasks can be created
+        val ctx = SimpleExecutionContext()
+        assertThat(taskFactory.createInstance(CalcSquareTask::class).exec(ctx, 10), equalTo(100))
+        assertThat(taskFactory.createInstance(EchoStringTask::class).exec(ctx, "foo"), equalTo("foo"))
     }
 
 }

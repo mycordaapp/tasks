@@ -276,14 +276,43 @@ and the basic test case is
 
 ## Modularising the 'TaskFactory'
 
-As described above in most cases tasks will be created via a TaskFactory. However, there can only be a single
+As described above, in most cases tasks will be created via a TaskFactory. However, there can only be a single
 TaskFactory, and it must be wired up at runtime. This is a problem once modularity is considered. As an example there
 might be a jar file containing tasks to manage K8s on AWS, another for K8s Azure and a third for a Corda 5 virtual node.
 An agent would need to pull in multiple jars and ensure that for each the appropriate task are registered with the
-TaskFactory. And if the jars also provide `fake` implementations on the tasks for use in tests, there needs to be a way 
-of deciding if the real tasks or the fakes are to be used. 
+TaskFactory. And if the jars also provide `fake` implementations on the tasks for use in tests, there needs to be a way
+of deciding if the real tasks or the fakes are to be used.
 
-The basic building block for managing this problem is a 
+The basic building block for managing this problem is `TaskRegistrations`, just a type safe list of task registrations.
+Any jar module should include at least implementation (it as design decision as to just how granular the breakdown is).
+
+There is an example below: 
+
+```kotlin
+    // 1. setup some groups using SimpleTaskRegistrations - this emulates
+    //    the TaskRegistrations exposed by one or more Jar files
+    class CalculatorTasks : SimpleTaskRegistrations(
+        listOf(TaskRegistration(CalcSquareAsyncTask::class), TaskRegistration(CalcSquareTask::class))
+    )
+    val calculatorTasksClazzName = CalculatorTasks::class.java.name
+
+    class EchoTasks : SimpleTaskRegistrations(
+        listOf(TaskRegistration(EchoStringTask::class), TaskRegistration(EchoIntTask::class))
+    )
+
+
+    // 2. register the groups
+    val taskFactory = TaskFactory()
+    // by clazzName - this emulates the scenario in which registrations are controlled by external configs
+    taskFactory.register(TaskRegistrations.fromClazzName(calculatorTasksClazzName))
+    // by instantiating an instance - this emulate the scenario of hard coded registrations
+    taskFactory.register(EchoTasks())
+
+    // 3. check the tasks can be created
+    val ctx = SimpleExecutionContext()
+    assertThat(taskFactory.createInstance(CalcSquareTask::class).exec(ctx, 10), equalTo(100))
+    assertThat(taskFactory.createInstance(EchoStringTask::class).exec(ctx, "foo"), equalTo("foo"))
+```
 
 ## Combining Tasks
 
