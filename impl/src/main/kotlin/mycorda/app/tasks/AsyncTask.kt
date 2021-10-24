@@ -87,7 +87,7 @@ interface AsyncTask<I, O> : Task {
             // tune as required
             return when (os) {
                 "Mac OS X" -> 5
-                "Linux" -> 12
+                "Linux" -> 15
                 else -> 20
             }
         }
