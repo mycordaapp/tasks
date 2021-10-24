@@ -178,6 +178,7 @@ class EchoTasks : SimpleTaskRegistrations(
         TaskRegistration(EchoIntTask::class),
         TaskRegistration(EchoIntAsyncTask::class),
         TaskRegistration(EchoLongTask::class),
+        TaskRegistration(EchoBigDecimalTask::class),
         TaskRegistration(EchoFloatTask::class),
         TaskRegistration(EchoDoubleTask::class),
         TaskRegistration(EchoStringTask::class),
