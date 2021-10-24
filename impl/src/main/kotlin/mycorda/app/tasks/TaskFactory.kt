@@ -12,7 +12,21 @@ class TaskFactory(private val registry: Registry = Registry()) {
     private val lookup = HashMap<String, KClass<out Task>>()
 
     /**
-     * Register the class, taking the class  name as the registered name
+     * Register using a list of  TaskRegistrations
+     */
+    fun register(taskRegistrations: TaskRegistrations) {
+        taskRegistrations.forEach { register(it) }
+    }
+
+    /**
+     * Register using a TaskRegistration
+     */
+    fun register(taskRegistration: TaskRegistration) {
+        register(taskRegistration.task, taskRegistration.asTask)
+    }
+
+    /**
+     * Register the class, taking the class name as the registered name
      * - task = the implementingClass
      * - asTask = the interface (if different)
      */
@@ -25,11 +39,9 @@ class TaskFactory(private val registry: Registry = Registry()) {
         lookup[name] = task
     }
 
-
     fun list(): List<String> {
         return lookup.keys.sorted()
     }
-
 
     /**
      * Create an instance of a Task by fully qualified name. This

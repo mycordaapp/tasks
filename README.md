@@ -9,9 +9,9 @@ The "Tasks" framework simply provides a common way of encapsulating calls into t
 typically need to build out the backends to deploy and manage complex applications. The original use case is
 encapsulating the many dev ops tools needed to deploy and manage the Corda DLT and its related components.
 
-This framework is most certainly **NOT** intended as replacement for existing devops tooling. Each task should ideally
-be a simple wrapper over the underlying toolset. The key insight is that all tasks expose a similar API and can be
-thought of as Lego style building block.
+This framework is most certainly **NOT** intended as replacement for existing devops tooling. In these cases each task
+should ideally be a simple wrapper over the underlying toolset. The key insight is that all tasks expose a similar API
+and can be thought of as Lego style building block.
 
 There are also higher level services that build on these tasks, for example the
 task [Http Remoting](https://github.com/mycordaapp/tasks-http#readme)

@@ -128,3 +128,16 @@ class StatusChangeTask<I, O>(private val before: O, private val after: O, privat
 
 }
 
+class TaskRegistrationsExample : SimpleTaskRegistrations(
+    listOf(
+        TaskRegistration(MultiplyTask::class),
+        TaskRegistration(HelloWorldTask::class, SimpleTask::class)
+    )
+)
+
+class TaskRegistrationsWithBadConstructor(notUsed : String) : SimpleTaskRegistrations(
+    listOf(
+        TaskRegistration(MultiplyTask::class),
+        TaskRegistration(HelloWorldTask::class, SimpleTask::class)
+    )
+)

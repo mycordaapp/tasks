@@ -81,9 +81,9 @@ A `Task` can be created and executed in three ways:
 1. by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it:
     - allows for remoting (calling `Tasks` on a remote agent)
     - hides setup of the `ExecutionContext` from the caller
-    - passes the security principles required for any authentication and downstream system access within the tasks. _note
-      that currently this requirement is not well understood, however certain patterns are likely to occur - this is
-      detailed later on_
+    - passes the security principles required for any authentication and downstream system access within the tasks. _
+      note that currently this requirement is not well understood, however certain patterns are likely to occur - this
+      is detailed later on_
 
 `TaskDocExamples.kt` has full source code for the examples below.
 
@@ -274,7 +274,20 @@ and the basic test case is
 
 ```
 
-### #2 - Combining Tasks
+## Modularising the 'TaskFactory'
+
+As described above in most cases tasks will be created via a TaskFactory. However, there can only be a single
+TaskFactory, and it must be wired up at runtime. This is a problem once modularity is considered. As an example there
+might be a jar file containing tasks to manage K8s on AWS, another for K8s Azure and a third for a Corda 5 virtual node.
+An agent would need to pull in multiple jars and ensure that for each the appropriate task are registered with the
+TaskFactory. And if the jars also provide `fake` implementations on the tasks for use in tests, there needs to be a way 
+of deciding if the real tasks or the fakes are to be used. 
+
+The basic building block for managing this problem is a 
+
+## Combining Tasks
+
+**Work in progress**
 
 The second principle is that is easy to call and combine tasks, even if the implementation is running on another server.
 To support this there is prebuilt support for common problems including:
@@ -284,7 +297,9 @@ To support this there is prebuilt support for common problems including:
 * 'executors' to encapsulate common patterns like logging, exceptions handling and retries
 * building and securing servers running tasks
 
-### #3 - Provisioners and Templates
+## Provisioners and Templates
+
+**Work in progress**
 
 The third principle is of Provisioners and Templates. Typically users will want to perform higher actions, for example
 deploy a Corda Node to AWS with their apps pre-installed, without having to understand all the Tasks needed to
@@ -299,36 +314,12 @@ node (setting X500 name, overriding default settings, installing corDapps, joini
 run Corda, staring Corda, ... )
 are the same.
 
-### #4 - Testing is built in
+### - Testing is built in
+
+**Work in progress**
 
 The final principle is testability. Mock/Fake implementation of Tasks must be provided for use in the test suites.
 
 *todo - expand this principle*
 
-## Implementation
-
-### Creating new Tasks
-
-See [Create Instance](../aws-tasks/src/main/kotlin/net/corda/ccl/aws/task/CreateInstanceTask.kt) for an example.
-
-All tasks share a
-common [Execution Context](../commons/src/main/kotlin/net/corda/ccl/commons/executionContext/Context.kt).
-
-Wiring everything up for an execution context can be simplified with the  `ContextManager` class - here is
-an [example](../corda-tasks/src/main/kotlin/net/corda/ccl/tasks/cenm/identitymanager/ReceivePKITask.kt)
-
-The input and output are always a single value. This may be a simple scalar, but in more complicated cases a class will
-be required. Sometimes there is already a suitable domain class to use, but if not the standard pattern is to create
-additional Kotlin data classes with the suffix `Params` and `Result`
-in the same source file as the Task. For example:
-
-```kotlin
-data class ComplexCalculationParams(val p1: Int, val p2: Int, val p3: Int)
-class ComplexCalculationTask : BlockingTask<ComplexCalculationParams, Int> {
-    // implementation goes here 
-}
-```
-
-Note that as custom serializers are not supported, be careful when reusing existing domain model - they may rely upon
-external serializers. 
  

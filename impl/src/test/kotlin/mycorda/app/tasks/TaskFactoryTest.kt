@@ -17,12 +17,37 @@ class TaskFactoryTest {
     private val notRequired = NotRequired.instance()
 
     @Test
-    fun `should store by class name`() {
+    fun `should register by class name`() {
         val factory = TaskFactory()
         factory.register(MultiplyTask::class)
 
         val t = factory.createInstance(MultiplyTask::class.qualifiedName!!)
         assertThat(t::class.qualifiedName, equalTo(MultiplyTask::class.qualifiedName))
+    }
+
+    @Test
+    fun `should register by TaskRegistration`() {
+        val factory = TaskFactory()
+        factory.register(TaskRegistration(MultiplyTask::class))
+
+        val t = factory.createInstance(MultiplyTask::class.qualifiedName!!)
+        assertThat(t::class.qualifiedName, equalTo(MultiplyTask::class.qualifiedName))
+    }
+
+    @Test
+    fun `should register by list of TaskRegistrations`() {
+        val factory = TaskFactory()
+        val registrations = listOf(
+            TaskRegistration(MultiplyTask::class),
+            TaskRegistration(HelloWorldTask::class, SimpleTask::class)
+        )
+        factory.register(SimpleTaskRegistrations(registrations))
+
+        val multiplyTask = factory.createInstance(MultiplyTask::class.qualifiedName!!)
+        assertThat(multiplyTask::class.qualifiedName, equalTo(MultiplyTask::class.qualifiedName))
+
+        val simpleTask = factory.createInstance(SimpleTask::class.qualifiedName!!)
+        assertThat(simpleTask::class.qualifiedName, equalTo(HelloWorldTask::class.qualifiedName))
     }
 
     @Test
