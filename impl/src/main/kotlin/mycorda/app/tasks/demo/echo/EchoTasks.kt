@@ -3,6 +3,7 @@ package mycorda.app.tasks.demo.echo
 import mycorda.app.helpers.random
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
+import mycorda.app.tasks.demo.*
 import mycorda.app.tasks.executionContext.ExecutionContext
 import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.tasks.logging.LogMessage
@@ -170,4 +171,25 @@ class EchoStringAsyncTask(registry: Registry) : BaseEchoAsyncTask<String, String
         submitResultWithDelay(ctx, channelLocator, result)
     }
 }
+
+// list of all echo tasks
+class EchoTasks : SimpleTaskRegistrations(
+    listOf(
+        TaskRegistration(EchoIntTask::class),
+        TaskRegistration(EchoIntAsyncTask::class),
+        TaskRegistration(EchoLongTask::class),
+        TaskRegistration(EchoFloatTask::class),
+        TaskRegistration(EchoDoubleTask::class),
+        TaskRegistration(EchoStringTask::class),
+        TaskRegistration(EchoStringAsyncTask::class),
+        TaskRegistration(EchoBooleanTask::class),
+        TaskRegistration(EchoEnumTask::class),
+        TaskRegistration(EchoDemoModelTask::class),
+        TaskRegistration(EchoUUIDTask::class),
+        TaskRegistration(EchoStringListTask::class),
+        TaskRegistration(EchoToStdOutTask::class),
+        TaskRegistration(EchoToStdErrTask::class),
+        TaskRegistration(EchoToLogTask::class)
+    )
+)
 

@@ -274,7 +274,7 @@ and the basic test case is
 
 ```
 
-## Modularising the 'TaskFactory'
+## Modularising the `TaskFactory`
 
 As described above, in most cases tasks will be created via a TaskFactory. However, there can only be a single
 TaskFactory, and it must be wired up at runtime. This is a problem once modularity is considered. As an example there
@@ -284,7 +284,7 @@ TaskFactory. And if the jars also provide `fake` implementations on the tasks fo
 of deciding if the real tasks or the fakes are to be used.
 
 The basic building block for managing this problem is `TaskRegistrations`, just a type safe list of task registrations.
-Any jar module should include at least implementation (it as design decision as to just how granular the breakdown is).
+Any jar module should include at least implementation (it is a design decision as to just how granular the breakdown is).
 
 There is an example below: 
 

@@ -128,6 +128,16 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
     override fun taskId(): UUID = taskId
 }
 
-
+// list of all demo tasks
+class DemoTasks : SimpleTaskRegistrations(
+    listOf(
+        TaskRegistration(CalcSquareTask::class),
+        TaskRegistration(CalcSquareAsyncTask::class),
+        TaskRegistration(ExceptionGeneratingBlockingTask::class),
+        TaskRegistration(FileTask::class),
+        TaskRegistration(UnitTask::class),
+        TaskRegistration(PrintStreamTask::class)
+    )
+)
 
 
