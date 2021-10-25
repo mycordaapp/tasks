@@ -101,8 +101,8 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
         // hook in logging producer / consumer pair
-        //InMemoryLoggingProducerContext(ctx.loggingConsumer())
-        val executionContext = SimpleExecutionContext(ctx.loggingConsumer())
+        val producerContext = InMemoryLoggingProducerContext(ctx.loggingConsumer())
+        val executionContext = SimpleExecutionContext(producerContext)
 
         try {
             // note, force serialisation / de-serialisation locally to catch any problems early
@@ -143,7 +143,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
 
         // hook in logging producer / consumer pair
         val loggingProducerContext = InMemoryLoggingProducerContext(ctx.loggingConsumer())
-        val executionContext = SimpleExecutionContext(ctx.loggingConsumer())
+        val executionContext = SimpleExecutionContext(loggingProducerContext)
 
         task.exec(executionContext, channelLocator, channelId, input)
     }

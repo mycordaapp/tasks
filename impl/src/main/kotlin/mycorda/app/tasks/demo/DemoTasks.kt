@@ -19,7 +19,7 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
     override fun exec(ctx: ExecutionContext, input: Int): Int {
         // this is normally the first line - it ensures the task is stored in the context
         val ctxWithTask = ctx.withTaskId(this)
-        ctxWithTask.acceptLog(LogMessage.info("Calculating square of $input"))
+        ctxWithTask.log(LogMessage.info("Calculating square of $input"))
         return input.times(input)
     }
 
@@ -78,7 +78,7 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
 class FileTask : BaseBlockingTask<File, Int>() {
     override fun exec(ctx: ExecutionContext, input: File): Int {
         val ctx2 = ctx.withTaskId(taskId())
-        ctx2.acceptLog(LogMessage.info("Loading file $input"))
+        ctx2.log(LogMessage.info("Loading file $input"))
         return input.readBytes().size
     }
 }
@@ -86,13 +86,13 @@ class FileTask : BaseBlockingTask<File, Int>() {
 class UnitTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, input: String) {
         val ctx2 = ctx.withTaskId(taskId())
-        ctx2.acceptLog(LogMessage.info("Params are: $input"))
+        ctx2.log(LogMessage.info("Params are: $input"))
     }
 }
 
 class PrintStreamTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, input: String) {
-        ctx.acceptStdout(input)
+        ctx.stdout().print(input)
     }
 }
 
@@ -118,8 +118,8 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
             Thread.sleep(AsyncTask.platformTick())
 
             // 4. Write the result and also echo to logging channels
-            ctx.logIt("Completed calculation")
-            ctx.acceptStdout(result.toString())
+            ctx.log(LogMessage.info("Completed calculation"))
+            ctx.stdout().print(result)
             resultChannel.accept(result)
         }
     }
