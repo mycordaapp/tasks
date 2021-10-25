@@ -58,19 +58,19 @@ interface LoggingProducerContext {
         logger().accept(msg)
     }
 
-    /**
-     * Shortcut for writing to the stdout console
-     */
-    fun println(line: String) {
-        stdout().println(line)
-    }
-
-    /**
-     * Shortcut for writing to the stderr console
-     */
-    fun printErrLn(line: String) {
-        stderr().println(line)
-    }
+//    /**
+//     * Shortcut for writing to the stdout console
+//     */
+//    fun println(line: String) {
+//        stdout().println(line)
+//    }
+//
+//    /**
+//     * Shortcut for writing to the stderr console
+//     */
+//    fun printErrLn(line: String) {
+//        stderr().println(line)
+//    }
 
 }
 
@@ -368,23 +368,6 @@ class CapturedOutputStream(
 }
 
 
-/**
- * Allows injection of sinks for stdout, stderr and logMessages via the Registry \
- * Generally is better to use InMemoryLoggingProducerContext & InMemoryLoggingConsumerContext
- *
- * By default all logging is directed to stdout and strerr
- */
-class InjectableLoggingProducerContext(registry: Registry = Registry()) : LoggingProducerContext {
-    private val sink = registry.geteOrElse(LogMessageSink::class.java, ConsoleLogMessageSink(registry))
-    private val out = registry.geteOrElse(StdoutHolder::class.java, DefaultStdoutHolder())
-    private val err = registry.geteOrElse(StderrHolder::class.java, DefaultStderrHolder())
-
-    override fun logger(): LogMessageSink = sink
-
-    override fun stdout(): PrintStream = out.out()
-
-    override fun stderr(): PrintStream = err.err()
-}
 
 
 /**
@@ -402,42 +385,3 @@ class ConsoleLoggingProducerContext : LoggingProducerContext {
     override fun stderr(): PrintStream = err.err()
 }
 
-
-/**
- * Stores in memory. Mainly for unit testing. All configuration is via
- * the registry. If not provided, the following defaults are used:
- *
- *  - level is LogLevel.INFO
- *  - format is LogFormat.Simple
- *  - formatter is DefaultStringLogFormatter
- */
-@Deprecated(message = "Use InMemoryLoggingProducerContext/InMemoryLoggingConsumerContext")
-class InMemoryLogMessageSink(
-    registry: Registry = Registry()
-) : LogMessageSink {
-    private val format = registry.geteOrElse(LogFormat::class.java, LogFormat.Simple)
-    private val level = registry.geteOrElse(LogLevel::class.java, LogLevel.INFO)
-    private val formatter = registry.geteOrElse(StringLogFormatter::class.java, DefaultStringLogFormatter())
-    private val messages = ArrayList<LogMessage>()
-    override fun accept(msg: LogMessage) {
-        if (msg.level >= level) {
-            messages.add(msg)
-        }
-    }
-
-    fun clear() {
-        println("clearing out the log message buffer")
-        messages.clear()
-    }
-
-    fun messages(): List<LogMessage> {
-        return messages
-    }
-
-    /**
-     * Dump out all messages in the format provided
-     */
-    override fun toString(): String {
-        return messages.joinToString(separator = "\n") { formatter.toString(it, format) }
-    }
-}

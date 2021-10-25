@@ -58,14 +58,14 @@ class LoggingContextTests {
         assertThat(logConsumerContext.messages(), equalTo(listOf(info, warn)))
     }
 
-    @Test
-    fun `create logging context with default wiring`() {
-        // note, these go stdout and allow INFO and above
-        val loggingContext = InjectableLoggingProducerContext()
-        loggingContext.log(debug)
-        loggingContext.log(info)
-        loggingContext.log(warn)
-        loggingContext.log(error)
-    }
+//    @Test
+//    fun `create logging context with default wiring`() {
+//        // note, these go stdout and allow INFO and above
+//        val loggingContext = InjectableLoggingProducerContext()
+//        loggingContext.log(debug)
+//        loggingContext.log(info)
+//        loggingContext.log(warn)
+//        loggingContext.log(error)
+//    }
 
 }
