@@ -240,6 +240,7 @@ data class LogMessage(
 /**
  * We always write to a sink.
  */
+@Deprecated(message = "should be using LogMessageSink")
 interface LogMessageSink : Consumer<LogMessage>
 
 /**
@@ -255,6 +256,21 @@ class ConsoleLogMessageSink(registry: Registry = Registry()) :
     private val format = registry.geteOrElse(LogFormat::class.java, LogFormat.Simple)
     override fun accept(msg: LogMessage) {
         println(formatter.toString(msg, format))
+    }
+}
+
+class ConsoleLoggingConsumerContext() :
+    LoggingConsumerContext {
+    override fun acceptLog(msg: LogMessage) {
+        println(msg)
+    }
+
+    override fun acceptStdout(output: String) {
+        print(output)
+    }
+
+    override fun acceptStderr(error: String) {
+        System.err.print(error)
     }
 }
 

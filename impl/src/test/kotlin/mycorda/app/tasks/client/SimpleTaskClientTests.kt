@@ -7,12 +7,9 @@ import com.natpryce.hamkrest.isEmptyString
 import com.natpryce.hamkrest.throws
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
-import mycorda.app.tasks.demo.CalcSquareTask
-import mycorda.app.tasks.demo.ExceptionGeneratingBlockingTask
+import mycorda.app.tasks.demo.DemoTasks
 import mycorda.app.tasks.demo.echo.*
 import mycorda.app.tasks.logging.LoggingReaderContext
-import mycorda.app.tasks.test.ListDirectoryTask
-import mycorda.app.tasks.test.ListDirectoryTaskFake
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -23,23 +20,7 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
     private val registry = Registry()
 
     init {
-        val factory = TaskFactory()
-        factory.register(CalcSquareTask::class)
-        factory.register(EchoIntTask::class)
-        factory.register(EchoLongTask::class)
-        factory.register(EchoDoubleTask::class)
-        factory.register(EchoFloatTask::class)
-        factory.register(EchoBigDecimalTask::class)
-        factory.register(EchoBooleanTask::class)
-        factory.register(EchoStringTask::class)
-        factory.register(EchoUUIDTask::class)
-        factory.register(EchoEnumTask::class)
-        factory.register(EchoDemoModelTask::class)
-        factory.register(EchoToStdOutTask::class)
-        factory.register(EchoToStdErrTask::class)
-        factory.register(EchoToLogTask::class)
-        factory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
-        factory.register(ExceptionGeneratingBlockingTask::class)
+        val factory = TaskFactory().register(DemoTasks()).register(EchoTasks())
         registry.store(factory)
     }
 

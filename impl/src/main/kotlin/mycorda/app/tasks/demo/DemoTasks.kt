@@ -1,6 +1,5 @@
 package mycorda.app.tasks.demo
 
-
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.ExecutionContext
@@ -20,7 +19,7 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
     override fun exec(ctx: ExecutionContext, input: Int): Int {
         // this is normally the first line - it ensures the task is stored in the context
         val ctxWithTask = ctx.withTaskId(this)
-        ctxWithTask.log("Calculating square of $input")
+        ctxWithTask.acceptLog(LogMessage.info("Calculating square of $input"))
         return input.times(input)
     }
 
@@ -79,7 +78,7 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
 class FileTask : BaseBlockingTask<File, Int>() {
     override fun exec(ctx: ExecutionContext, input: File): Int {
         val ctx2 = ctx.withTaskId(taskId())
-        ctx2.log(LogMessage.info("Loading file $input"))
+        ctx2.acceptLog(LogMessage.info("Loading file $input"))
         return input.readBytes().size
     }
 }
@@ -87,13 +86,13 @@ class FileTask : BaseBlockingTask<File, Int>() {
 class UnitTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, input: String) {
         val ctx2 = ctx.withTaskId(taskId())
-        ctx2.log(LogMessage.info("Params are: $input"))
+        ctx2.acceptLog(LogMessage.info("Params are: $input"))
     }
 }
 
 class PrintStreamTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, input: String) {
-        ctx.stdout().println(input)
+        ctx.acceptStdout(input)
     }
 }
 
@@ -106,7 +105,7 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
         channelId: UniqueId,
         input: Int
     ) {
-        ctx.log("Starting calculation")
+        ctx.logIt("Starting calculation")
 
         // 1. Find the channel
         val resultChannel = resultChannelFactory.create(channelLocator)
@@ -119,8 +118,8 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
             Thread.sleep(AsyncTask.platformTick())
 
             // 4. Write the result and also echo to logging channels
-            ctx.log("Completed calculation")
-            ctx.stdout().println(result)
+            ctx.logIt("Completed calculation")
+            ctx.acceptStdout(result.toString())
             resultChannel.accept(result)
         }
     }

@@ -15,7 +15,7 @@ import java.util.concurrent.Executors
  * information that are deferred until execution time, as they may
  * change on each run
  */
-interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
+interface ExecutionContext : LoggingConsumerContext, ExecutionContextModifier {
 
     /**
      *  One single place for running and checking the status of processes.
@@ -66,15 +66,23 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      * A short cut for logging that pulls in all the information
      * on the ExecutionContext
      */
-    fun log(body: String, level: LogLevel = LogLevel.INFO) {
+    @Deprecated(message = "this is just confusing - better to have an explicit builder for LogMessage")
+    fun logIt(body: String, level: LogLevel = LogLevel.INFO) {
         val msg = LogMessage(
             executionId = this.executionId(),
             taskId = this.taskId(),
             body = body,
             level = level
         )
-        log(msg)
+        acceptLog(msg)
     }
+
+    // convenience methods - gives standard PrintStream style
+    // access to the LoggingConsumerContext
+    fun stdout(): PrintStream
+    fun stderr(): PrintStream
+
+
 }
 
 /**
@@ -98,7 +106,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     private var working = original
     override fun withTaskId(taskId: UUID): ExecutionContext {
         working = SimpleExecutionContext(
-            loggingProducerContext = working,
+            loggingConsumerContext = working,
             executionId = working.executionId(),
             taskId = taskId,
             executor = working.executorService(),
@@ -139,7 +147,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
  * A simple service, suitable for unit test
  */
 class SimpleExecutionContext(
-    private val loggingProducerContext: LoggingProducerContext = ConsoleLoggingProducerContext(),
+    private val loggingConsumerContext: LoggingConsumerContext = ConsoleLoggingConsumerContext(),
     private val executionId: UUID = UUID.randomUUID(),
     private val taskId: UUID? = null,
     private val instanceQualifier: String? = null,
@@ -148,16 +156,12 @@ class SimpleExecutionContext(
     private val provisioningState: ProvisioningState = DefaultProvisioningState()
 ) : ExecutionContext, ExecutionContextModifier {
 
+    private val stdout = CapturedOutputStream(loggingConsumerContext, true)
+    private val stderr = CapturedOutputStream(loggingConsumerContext, false)
+
     override fun provisioningState(): ProvisioningState {
         return provisioningState
     }
-
-    override fun stdout(): PrintStream = loggingProducerContext.stdout()
-
-    override fun stderr(): PrintStream = loggingProducerContext.stderr()
-
-    override fun logger(): LogMessageSink = loggingProducerContext.logger()
-
 
     override fun processManager(): ProcessManager {
         return pm
@@ -175,9 +179,24 @@ class SimpleExecutionContext(
         return taskId
     }
 
-
     override fun instanceQualifier(): String? {
         return instanceQualifier
+    }
+
+    override fun stdout(): PrintStream = PrintStream(stdout)
+
+    override fun stderr(): PrintStream = PrintStream(stderr)
+
+    override fun acceptLog(msg: LogMessage) {
+        loggingConsumerContext.acceptLog(msg)
+    }
+
+    override fun acceptStdout(output: String) {
+        loggingConsumerContext.acceptStdout(output)
+    }
+
+    override fun acceptStderr(error: String) {
+        loggingConsumerContext.acceptStderr(error)
     }
 
     override fun withTaskId(taskId: UUID): ExecutionContext {

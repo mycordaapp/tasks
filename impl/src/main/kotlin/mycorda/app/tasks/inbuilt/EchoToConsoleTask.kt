@@ -28,6 +28,6 @@ fun main() {
     val ctx = SimpleExecutionContext()
     EchoToConsoleTask().exec(ctx,"Hello World")
 
-    ctx.logger()
+    //ctx.logger()
 
 }

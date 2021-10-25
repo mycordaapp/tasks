@@ -38,21 +38,21 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
         // AWS
         val aws = doRequest("http://169.254.169.254/latest/meta-data/local-ipv4")
         if (aws.success) {
-            ctx.log(LogMessage.info("Found private ip address of ${aws.result} using AWS endpoint"))
+            ctx.acceptLog(LogMessage.info("Found private ip address of ${aws.result} using AWS endpoint"))
             return aws.result
         }
 
         // Ask the OS
         val linux = doCommand(listOf("hostname", "-I"))
         if (linux.success) {
-            ctx.log(LogMessage.info( "Found private ip address of ${linux.result} using 'hostname -I'"))
+            ctx.acceptLog(LogMessage.info( "Found private ip address of ${linux.result} using 'hostname -I'"))
             return linux.result
         }
 
         // Ask the JVM
         val localhost = InetAddress.getLocalHost()
         val localIP = localhost.hostAddress.trim()
-        ctx.log(LogMessage.info( "Found private ip address of $localIP from JVM"))
+        ctx.acceptLog(LogMessage.info( "Found private ip address of $localIP from JVM"))
         return localIP
     }
 

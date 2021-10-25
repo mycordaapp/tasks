@@ -37,21 +37,21 @@ class DeterminePublishedIpAddressTaskImpl : DeterminePublishedIpAddressTask {
         // AWS - as reported by meta data
         val aws = doRequest("http://169.254.169.254/latest/meta-data/public-ipv4")
         if (aws.success) {
-            ctx.log(LogMessage.info("Found public ip address of ${aws.result} using AWS endpoint"))
+            ctx.acceptLog(LogMessage.info("Found public ip address of ${aws.result} using AWS endpoint"))
             return aws.result
         }
 
         // Use checkip
         val checkIp = doRequest("http://checkip.amazonaws.com")
         if (checkIp.success) {
-            ctx.log(LogMessage.info("Found public ip address of ${checkIp.result} using 'checkip.amazonaws.com'"))
+            ctx.acceptLog(LogMessage.info("Found public ip address of ${checkIp.result} using 'checkip.amazonaws.com'"))
             return checkIp.result
         }
 
         // Ask the JVM and assume tge local address is the public address
         val localhost = InetAddress.getLocalHost()
         val localIP = localhost.hostAddress.trim()
-        ctx.log(LogMessage.info("Assuming local address of $localIP from JVM"))
+        ctx.acceptLog(LogMessage.info("Assuming local address of $localIP from JVM"))
         return localIP
     }
 

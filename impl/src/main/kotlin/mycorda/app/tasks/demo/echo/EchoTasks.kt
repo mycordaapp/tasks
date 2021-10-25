@@ -116,8 +116,7 @@ class EchoToStdErrTask : BaseBlockingTask<String, Unit>() {
 
 class EchoToLogTask : BaseBlockingTask<String, Unit>() {
     override fun exec(ctx: ExecutionContext, input: String) {
-        ctx.log(
-            LogMessage(
+        ctx.acceptLog(LogMessage(
                 executionId = ctx.executionId(),
                 taskId = this.taskId(),
                 level = LogLevel.INFO,

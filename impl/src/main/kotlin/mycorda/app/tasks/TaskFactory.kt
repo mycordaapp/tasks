@@ -14,15 +14,17 @@ class TaskFactory(private val registry: Registry = Registry()) {
     /**
      * Register using a list of  TaskRegistrations
      */
-    fun register(taskRegistrations: TaskRegistrations) {
+    fun register(taskRegistrations: TaskRegistrations): TaskFactory {
         taskRegistrations.forEach { register(it) }
+        return this
     }
 
     /**
      * Register using a TaskRegistration
      */
-    fun register(taskRegistration: TaskRegistration) {
+    fun register(taskRegistration: TaskRegistration): TaskFactory {
         register(taskRegistration.task, taskRegistration.asTask)
+        return this
     }
 
     /**
@@ -33,10 +35,11 @@ class TaskFactory(private val registry: Registry = Registry()) {
     fun register(
         task: KClass<out Task>,
         asTask: KClass<out Task> = task
-    ) {
+    ): TaskFactory {
         val name = asTask.qualifiedName!!
         if (lookup.containsKey(name)) throw TaskException("`$name` is already registered")
         lookup[name] = task
+        return this
     }
 
     fun list(): List<String> {
