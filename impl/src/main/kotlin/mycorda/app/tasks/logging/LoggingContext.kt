@@ -240,7 +240,6 @@ data class LogMessage(
 /**
  * We always write to a sink.
  */
-@Deprecated(message = "should be using LogMessageSink")
 interface LogMessageSink : Consumer<LogMessage>
 
 /**
@@ -272,25 +271,6 @@ class ConsoleLoggingConsumerContext() :
     override fun acceptStderr(error: String) {
         System.err.print(error)
     }
-}
-
-/**
- * Wrapper classes to work easily with the Registry
- */
-interface StdoutHolder {
-    fun out(): PrintStream
-}
-
-interface StderrHolder {
-    fun err(): PrintStream
-}
-
-class DefaultStdoutHolder : StdoutHolder {
-    override fun out(): PrintStream = System.out
-}
-
-class DefaultStderrHolder : StderrHolder {
-    override fun err(): PrintStream = System.err
 }
 
 /**
@@ -368,20 +348,16 @@ class CapturedOutputStream(
 }
 
 
-
-
 /**
  * Everything is directed to stdout & stderr
  */
 class ConsoleLoggingProducerContext : LoggingProducerContext {
     private val sink = ConsoleLogMessageSink()
-    private val out = DefaultStdoutHolder()
-    private val err = DefaultStderrHolder()
 
     override fun logger(): LogMessageSink = sink
 
-    override fun stdout(): PrintStream = out.out()
+    override fun stdout(): PrintStream = System.out
 
-    override fun stderr(): PrintStream = err.err()
+    override fun stderr(): PrintStream = System.err
 }
 
