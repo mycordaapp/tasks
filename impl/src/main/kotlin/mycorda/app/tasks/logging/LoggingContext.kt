@@ -101,7 +101,7 @@ interface LoggingContext {
 
         class InMemoryLoggingContext : LoggingContext {
             private val consumer = InMemoryLoggingConsumerContext()
-            private val producer = InMemoryLoggingProducerContext(consumer)
+            private val producer = LoggingProducerToConsumer(consumer)
             override fun consumer(): LoggingConsumerContext = consumer
 
             override fun producer(): LoggingProducerContext = producer
@@ -306,7 +306,12 @@ class InMemoryLoggingConsumerContext : LoggingConsumerContext, LoggingReaderCont
     override fun messages(): List<LogMessage> = ArrayList(logMessages)
 }
 
-class InMemoryLoggingProducerContext(private val consumer: LoggingConsumerContext) : LoggingProducerContext {
+/**
+ * Link a logging producer to a consumer
+ * This is the common pattern for implementing a LoggingProducerContext - simply connect it to
+ * consumer
+ */
+class LoggingProducerToConsumer(private val consumer: LoggingConsumerContext) : LoggingProducerContext {
     private val stdout: PrintStream = PrintStream(CapturedOutputStream(consumer, true))
     private val stderr: PrintStream = PrintStream(CapturedOutputStream(consumer, false))
 

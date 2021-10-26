@@ -101,7 +101,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
         // hook in logging producer / consumer pair
-        val producerContext = InMemoryLoggingProducerContext(ctx.loggingConsumer())
+        val producerContext = LoggingProducerToConsumer(ctx.loggingConsumer())
         val executionContext = SimpleExecutionContext(producerContext)
 
         try {
@@ -142,7 +142,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val task = taskFactory.createInstance(taskName) as AsyncTask<I, O>
 
         // hook in logging producer / consumer pair
-        val loggingProducerContext = InMemoryLoggingProducerContext(ctx.loggingConsumer())
+        val loggingProducerContext = LoggingProducerToConsumer(ctx.loggingConsumer())
         val executionContext = SimpleExecutionContext(loggingProducerContext)
 
         task.exec(executionContext, channelLocator, channelId, input)

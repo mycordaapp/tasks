@@ -42,7 +42,7 @@ class LoggingContextTests {
     fun `should connect InMemoryLoggingConsumerContext to InMemoryLoggingProducerContext`() {
         // simulate both side in memory
         val logConsumerContext = InMemoryLoggingConsumerContext()
-        val logProducerContext = InMemoryLoggingProducerContext(logConsumerContext)
+        val logProducerContext = LoggingProducerToConsumer(logConsumerContext)
 
         // test stdout
         logProducerContext.stdout().println("Hello World")
