@@ -13,6 +13,9 @@ This framework is most certainly **NOT** intended as replacement for existing de
 should ideally be a simple wrapper over the underlying toolset. The key insight is that all tasks expose a similar API
 and can be thought of as Lego style building block.
 
+This library also implements a standard framework (the LoggingContext) to manage [logging](docs/logging.md)
+. Its likely this will be broken out into its own library in the future.
+
 There are also higher level services that build on these tasks, for example the
 task [Http Remoting](https://github.com/mycordaapp/tasks-http#readme)
 toolkit lets clients call tasks on remote servers using http(s) standards for data transfer and security.
@@ -23,8 +26,7 @@ particular
 * Minimal Dependencies (see below)
 * Very modular
 * Avoid "magic": No annotations, very minimal use of reflections
-* Fast startup/ shutdown 
-
+* Fast startup/ shutdown
 
 ## Dependencies
 
