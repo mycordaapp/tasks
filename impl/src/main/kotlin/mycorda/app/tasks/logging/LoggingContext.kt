@@ -93,7 +93,7 @@ interface LoggingConsumerContext {
 data class LoggingChannelLocator(val locator: String) {
     companion object {
         fun inMemory() = LoggingChannelLocator("INMEMORY:${String.random()}")
-        val CONSOLE = LoggingChannelLocator("CONSOLE")
+        fun console() = LoggingChannelLocator("CONSOLE:")
     }
 }
 
@@ -138,54 +138,6 @@ class DefaultLoggingChannelFactory : LoggingChannelFactory {
         return inMemoryContextLookup[id]!!
     }
 }
-
-interface LoggingContext {
-    fun consumer(): LoggingConsumerContext
-    fun producer(): LoggingProducerContext
-
-    companion object {
-        fun inMemory(): InMemoryLoggingContext {
-            return InMemoryLoggingContext()
-        }
-
-        fun console(): ConsoleLoggingContext {
-            return ConsoleLoggingContext()
-        }
-
-        class InMemoryLoggingContext : LoggingContext {
-            private val consumer = InMemoryLoggingConsumerContext()
-            private val producer = LoggingProducerToConsumer(consumer)
-            override fun consumer(): LoggingConsumerContext = consumer
-
-            override fun producer(): LoggingProducerContext = producer
-
-            fun stdout(): String = consumer.stdout()
-
-            fun stderr(): String = consumer.stderr()
-
-            fun messages(): List<LogMessage> = consumer.messages()
-        }
-
-        class NoOpConsumer : LoggingConsumerContext {
-            override fun acceptLog(msg: LogMessage) {}
-
-            override fun acceptStdout(output: String) {}
-
-
-            override fun acceptStderr(error: String) {}
-
-
-        }
-
-        class ConsoleLoggingContext : LoggingContext {
-            private val consumer = NoOpConsumer()
-            private val producer = ConsoleLoggingProducerContext()
-            override fun consumer(): LoggingConsumerContext = consumer
-            override fun producer(): LoggingProducerContext = producer
-        }
-    }
-}
-
 
 enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 

@@ -105,7 +105,7 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
         channelId: UniqueId,
         input: Int
     ) {
-        ctx.logIt("Starting calculation")
+        ctx.log(LogMessage.info("Starting calculation"))
 
         // 1. Find the channel
         val resultChannel = resultChannelFactory.create(channelLocator)
