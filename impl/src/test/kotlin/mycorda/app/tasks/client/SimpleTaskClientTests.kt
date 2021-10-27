@@ -9,8 +9,8 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.demo.DemoTasks
 import mycorda.app.tasks.demo.echo.*
-import mycorda.app.tasks.logging.DefaultLogChannelLocatorFactory
-import mycorda.app.tasks.logging.LogChannelLocator
+import mycorda.app.tasks.logging.DefaultLoggingChannelFactory
+import mycorda.app.tasks.logging.LoggingChannelLocator
 import mycorda.app.tasks.logging.LoggingReaderContext
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
@@ -21,9 +21,11 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
 
     private val registry = Registry()
     private val taskFactory = TaskFactory().register(DemoTasks()).register(EchoTasks())
+    private val logChannelFactory = DefaultLoggingChannelFactory()
+
 
     init {
-        registry.store(taskFactory)
+        registry.store(taskFactory).store(logChannelFactory)
     }
 
     @Test
@@ -57,16 +59,16 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
 
     @Test
     fun `should return stdout to client`() {
-        val logChannelFactory = DefaultLogChannelLocatorFactory()
-        val clientContext = SimpleClientContext()
-        SimpleTaskClient(Registry().store(logChannelFactory).store(taskFactory)).execBlocking(
+        val locator = LoggingChannelLocator.local()
+        val clientContext = SimpleClientContext(loggingChannelLocator = locator)
+        SimpleTaskClient(registry).execBlocking(
             clientContext,
             "mycorda.app.tasks.demo.echo.EchoToStdOutTask",
             "Hello, world\n",
             Unit::class
         )
 
-        val readerContext: LoggingReaderContext = logChannelFactory.channelQuery(LogChannelLocator.LOCAL)
+        val readerContext: LoggingReaderContext = logChannelFactory.channelQuery(locator)
         assertThat(readerContext.stdout(), equalTo("Hello, world\n"))
         assertThat(readerContext.stderr(), isEmptyString)
         assertThat(readerContext.messages(), isEmpty)
@@ -74,16 +76,16 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
 
     @Test
     fun `should return stderr to client`() {
-        val logChannelFactory = DefaultLogChannelLocatorFactory()
-        val clientContext = SimpleClientContext()
-        SimpleTaskClient(Registry().store(logChannelFactory).store(taskFactory)).execBlocking(
+        val locator = LoggingChannelLocator.local()
+        val clientContext = SimpleClientContext(locator)
+        SimpleTaskClient(registry).execBlocking(
             clientContext,
             "mycorda.app.tasks.demo.echo.EchoToStdErrTask",
             "Goodbye, cruel world\n",
             Unit::class
         )
 
-        val readerContext: LoggingReaderContext = logChannelFactory.channelQuery(LogChannelLocator.LOCAL)
+        val readerContext: LoggingReaderContext = logChannelFactory.channelQuery(locator)
         assertThat(readerContext.stdout(), isEmptyString)
         assertThat(readerContext.stderr(), equalTo("Goodbye, cruel world\n"))
         assertThat(readerContext.messages(), isEmpty)

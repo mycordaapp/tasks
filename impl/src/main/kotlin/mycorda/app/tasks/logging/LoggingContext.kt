@@ -1,5 +1,6 @@
 package mycorda.app.tasks.logging
 
+import mycorda.app.helpers.random
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.client.ClientContext
@@ -8,6 +9,7 @@ import java.io.PrintStream
 import java.util.*
 import java.util.function.Consumer
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /**
  * A common logging message and supporting classes plus access to stdout and stderr. The basis concept
@@ -73,62 +75,69 @@ interface LoggingConsumerContext {
 }
 
 /**
- * As the AsyncTask can be long running and may live between restarts,
- * then there needs to a way for the server side to know how to
- * recreate the AsyncResultChannelSource that was specified
- * when the original request was made.
+ * Logging information can be sent back to the client  As the tasks can be long running
+ * and may live between restarts, then there needs to a way for the server side to know how to
+ * recreate the LoggingConsumerContext associated with the channel when the original request was made.
  *
  * There are some assumptions and conventions here:
  *   - the first part of the string specifies the type of channel,
  *     for example "LOCAL:", "REST:", "AWSSMS:"
- *   - the second part of the string encodes all other connection information
- *   - the server side will store the locator linked to the originating
- *     request
- *   - an implementation of AsyncResultChannelSourceFactory will
+ *   - the second part of the string contains a unique channel id
+ *   - we don't pass security credentials here, the factory must know how to establish a secure
+ *     connection
+ *   - an implementation of LogChannelFactory will
  *     know how to create a suitable concrete implementations of AsyncResultChannelSource
  *     from the Locator
  *
  */
-data class LogChannelLocator(val locator: String) {
+data class LoggingChannelLocator(val locator: String) {
     companion object {
-        val LOCAL = LogChannelLocator("LOCAL")
-        val CONSOLE = LogChannelLocator("CONSOLE")
+        fun local() = LoggingChannelLocator("LOCAL:${String.random()}")
+        val CONSOLE = LoggingChannelLocator("CONSOLE")
     }
 }
 
 /**
  * Given a AsyncResultChannelSourceLocator, return the actual channel
  */
-interface LogChannelLocatorFactory {
-    fun create(locator: LogChannelLocator): LoggingConsumerContext
+interface LoggingChannelFactory {
+    fun create(locator: LoggingChannelLocator): LoggingConsumerContext
 }
 
 /**
  * This needs some thought. Can we limit it to just the "LOCAL" channel?
  */
-class DefaultLogChannelLocatorFactory : LogChannelLocatorFactory {
+class DefaultLoggingChannelFactory : LoggingChannelFactory {
+    private val inMemoryContextLookup = HashMap<String, InMemoryLoggingConsumerContext>()
     private val inMemoryContext = InMemoryLoggingConsumerContext()
     private val consoleContext = ConsoleLoggingConsumerContext()
 
-    override fun create(locator: LogChannelLocator): LoggingConsumerContext {
-        if (locator.locator == "LOCAL") {
-            return inMemoryContext
-        }
-        else if (locator.locator == "CONSOLE") {
+    override fun create(locator: LoggingChannelLocator): LoggingConsumerContext {
+        if (locator.locator.startsWith("LOCAL:")) {
+            return lookupInMemoryConsumer(locator.locator)
+
+        } else if (locator.locator == "CONSOLE:") {
             return consoleContext
         } else {
             throw RuntimeException("Don't know about $locator")
         }
     }
 
-    fun channelQuery(locator: LogChannelLocator): LoggingReaderContext {
-        if (locator.locator == "LOCAL") {
-            return inMemoryContext
+    fun channelQuery(locator: LoggingChannelLocator): LoggingReaderContext {
+        if (locator.locator.startsWith("LOCAL:")) {
+            return lookupInMemoryConsumer(locator.locator)
         } else {
             throw RuntimeException("Don't know about $locator")
         }
     }
 
+    private fun lookupInMemoryConsumer(locator: String): InMemoryLoggingConsumerContext {
+        val id = locator.split(":")[1]
+        if (!inMemoryContextLookup.containsKey(id)) {
+            inMemoryContextLookup[id] = InMemoryLoggingConsumerContext()
+        }
+        return inMemoryContextLookup[id]!!
+    }
 }
 
 interface LoggingContext {

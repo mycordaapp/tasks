@@ -7,8 +7,8 @@ import mycorda.app.tasks.client.SimpleClientContext
 import mycorda.app.tasks.client.SimpleTaskClient
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
-import mycorda.app.tasks.logging.DefaultLogChannelLocatorFactory
-import mycorda.app.tasks.logging.LogChannelLocator
+import mycorda.app.tasks.logging.DefaultLoggingChannelFactory
+import mycorda.app.tasks.logging.LoggingChannelLocator
 import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.types.UniqueId
 import org.junit.jupiter.api.Test
@@ -63,7 +63,7 @@ class AsyncTaskDocExamples {
         registry.store(taskFactory)
 
         // 2b. register LogChannelFactory (server side)
-        val logChannelFactory = DefaultLogChannelLocatorFactory()
+        val logChannelFactory = DefaultLoggingChannelFactory()
         registry.store(logChannelFactory)
 
         // 3. get a task client (client side)
@@ -85,7 +85,7 @@ class AsyncTaskDocExamples {
         )
 
         // 6. the first log message is already available, but the second isn't
-        val logQuery = logChannelFactory.channelQuery(LogChannelLocator.LOCAL)
+        val logQuery = logChannelFactory.channelQuery(LoggingChannelLocator.local())
         assert(
             logQuery.messages().hasMessage(LogLevel.INFO, "Starting calculation")
         )

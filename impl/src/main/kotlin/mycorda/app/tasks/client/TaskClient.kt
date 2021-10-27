@@ -40,7 +40,7 @@ interface ClientContext {
     /**
      * How to be sent back log messages
      */
-    fun logChannelLocator(): LogChannelLocator
+    fun logChannelLocator(): LoggingChannelLocator
 
     /**
      * Web Request style custom headers. Should be used with care (is this a good idea?)
@@ -69,12 +69,12 @@ interface TaskClient {
 /**
  * Enough for unit test and to communicate with tasks running locally
  */
-class SimpleClientContext(private val logChannelLocator: LogChannelLocator = LogChannelLocator.LOCAL) : ClientContext {
+class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocator = LoggingChannelLocator.local()) : ClientContext {
     private val principle = NotAuthenticatedSecurityPrinciple()
     private val logging = InMemoryLoggingConsumerContext()
 
     override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
-    override fun logChannelLocator(): LogChannelLocator = logChannelLocator
+    override fun logChannelLocator(): LoggingChannelLocator = loggingChannelLocator
     override fun customHeaders(): Map<String, String> = emptyMap()
 
 }
@@ -87,7 +87,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
     private val serialiser = registry.geteOrElse(JsonSerialiser::class.java, JsonSerialiser())
     private val logChannelLocatorFactory =
-        registry.geteOrElse(LogChannelLocatorFactory::class.java, DefaultLogChannelLocatorFactory())
+        registry.geteOrElse(LoggingChannelFactory::class.java, DefaultLoggingChannelFactory())
 
     override fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,

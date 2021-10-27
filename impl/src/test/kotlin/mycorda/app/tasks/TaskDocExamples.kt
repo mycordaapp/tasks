@@ -10,8 +10,8 @@ import mycorda.app.tasks.demo.CalcSquareTask
 import mycorda.app.tasks.demo.echo.EchoIntTask
 import mycorda.app.tasks.demo.echo.EchoStringTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
-import mycorda.app.tasks.logging.DefaultLogChannelLocatorFactory
-import mycorda.app.tasks.logging.LogChannelLocator
+import mycorda.app.tasks.logging.DefaultLoggingChannelFactory
+import mycorda.app.tasks.logging.LoggingChannelLocator
 import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.tasks.test.ListDirectoryTask
 import mycorda.app.tasks.test.ListDirectoryTaskFake
@@ -65,7 +65,7 @@ class TaskDocExamples {
         val registry = Registry().store(taskFactory)
 
         // 2. register LogChannelFactory
-        val logChannelFactory = DefaultLogChannelLocatorFactory()
+        val logChannelFactory = DefaultLoggingChannelFactory()
         registry.store(logChannelFactory)
 
         // 3. get a task client (client side)
@@ -82,7 +82,7 @@ class TaskDocExamples {
         assert(result.contains("fake.txt"))
 
         // 6. assert logging output
-        val logQuery = logChannelFactory.channelQuery(LogChannelLocator.LOCAL)
+        val logQuery = logChannelFactory.channelQuery(LoggingChannelLocator.local())
         assertThat(
             logQuery.stdout(),
             equalTo(
