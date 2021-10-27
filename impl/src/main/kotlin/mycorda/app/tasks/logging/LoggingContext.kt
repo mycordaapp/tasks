@@ -92,7 +92,7 @@ interface LoggingConsumerContext {
  */
 data class LoggingChannelLocator(val locator: String) {
     companion object {
-        fun local() = LoggingChannelLocator("LOCAL:${String.random()}")
+        fun inMemory() = LoggingChannelLocator("INMEMORY:${String.random()}")
         val CONSOLE = LoggingChannelLocator("CONSOLE")
     }
 }
@@ -109,11 +109,10 @@ interface LoggingChannelFactory {
  */
 class DefaultLoggingChannelFactory : LoggingChannelFactory {
     private val inMemoryContextLookup = HashMap<String, InMemoryLoggingConsumerContext>()
-    private val inMemoryContext = InMemoryLoggingConsumerContext()
     private val consoleContext = ConsoleLoggingConsumerContext()
 
     override fun create(locator: LoggingChannelLocator): LoggingConsumerContext {
-        if (locator.locator.startsWith("LOCAL:")) {
+        if (locator.locator.startsWith("INMEMORY:")) {
             return lookupInMemoryConsumer(locator.locator)
 
         } else if (locator.locator == "CONSOLE:") {
@@ -124,7 +123,7 @@ class DefaultLoggingChannelFactory : LoggingChannelFactory {
     }
 
     fun channelQuery(locator: LoggingChannelLocator): LoggingReaderContext {
-        if (locator.locator.startsWith("LOCAL:")) {
+        if (locator.locator.startsWith("INMEMORY:")) {
             return lookupInMemoryConsumer(locator.locator)
         } else {
             throw RuntimeException("Don't know about $locator")

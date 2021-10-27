@@ -74,7 +74,8 @@ class AsyncTaskDocExamples {
         val channelId = UniqueId.random()
 
         // 5. call the client
-        val clientContext = SimpleClientContext()
+        val logChannelLocator = LoggingChannelLocator.inMemory()
+        val clientContext = SimpleClientContext(loggingChannelLocator = logChannelLocator)
         taskClient.execAsync(
             clientContext,
             "mycorda.app.tasks.demo.CalcSquareAsyncTask",
@@ -85,7 +86,7 @@ class AsyncTaskDocExamples {
         )
 
         // 6. the first log message is already available, but the second isn't
-        val logQuery = logChannelFactory.channelQuery(LoggingChannelLocator.local())
+        val logQuery = logChannelFactory.channelQuery(logChannelLocator)
         assert(
             logQuery.messages().hasMessage(LogLevel.INFO, "Starting calculation")
         )

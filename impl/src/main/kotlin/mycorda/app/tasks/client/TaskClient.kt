@@ -69,10 +69,8 @@ interface TaskClient {
 /**
  * Enough for unit test and to communicate with tasks running locally
  */
-class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocator = LoggingChannelLocator.local()) : ClientContext {
+class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocator = LoggingChannelLocator.inMemory()) : ClientContext {
     private val principle = NotAuthenticatedSecurityPrinciple()
-    private val logging = InMemoryLoggingConsumerContext()
-
     override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
     override fun logChannelLocator(): LoggingChannelLocator = loggingChannelLocator
     override fun customHeaders(): Map<String, String> = emptyMap()

@@ -59,7 +59,7 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
 
     @Test
     fun `should return stdout to client`() {
-        val locator = LoggingChannelLocator.local()
+        val locator = LoggingChannelLocator.inMemory()
         val clientContext = SimpleClientContext(loggingChannelLocator = locator)
         SimpleTaskClient(registry).execBlocking(
             clientContext,
@@ -76,7 +76,7 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
 
     @Test
     fun `should return stderr to client`() {
-        val locator = LoggingChannelLocator.local()
+        val locator = LoggingChannelLocator.inMemory()
         val clientContext = SimpleClientContext(locator)
         SimpleTaskClient(registry).execBlocking(
             clientContext,

@@ -72,7 +72,8 @@ class TaskDocExamples {
         val taskClient = SimpleTaskClient(registry)
 
         // 4. call the client
-        val clientContext = SimpleClientContext()
+        val inMemoryLogging = LoggingChannelLocator.inMemory()
+        val clientContext = SimpleClientContext(loggingChannelLocator = inMemoryLogging)
         val result = taskClient.execBlocking(
             clientContext,
             "mycorda.app.tasks.test.ListDirectoryTask", ".", StringList::class
@@ -82,7 +83,7 @@ class TaskDocExamples {
         assert(result.contains("fake.txt"))
 
         // 6. assert logging output
-        val logQuery = logChannelFactory.channelQuery(LoggingChannelLocator.local())
+        val logQuery = logChannelFactory.channelQuery(inMemoryLogging)
         assertThat(
             logQuery.stdout(),
             equalTo(
