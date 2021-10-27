@@ -31,7 +31,6 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         val clientContext = SimpleClientContext()
         val result = SimpleTaskClient(registry).execBlocking(
             clientContext,
-            LogChannelLocator.LOCAL,
             "mycorda.app.tasks.demo.echo.EchoStringTask",
             "Hello, world",
             String::class
@@ -47,7 +46,6 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         assertThat({
             SimpleTaskClient(registry).execBlocking(
                 clientContext,
-                LogChannelLocator.LOCAL,
                 "mycorda.app.tasks.demo.ExceptionGeneratingBlockingTask",
                 "opps",
                 String::class
@@ -63,7 +61,6 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         val clientContext = SimpleClientContext()
         SimpleTaskClient(Registry().store(logChannelFactory).store(taskFactory)).execBlocking(
             clientContext,
-            LogChannelLocator.LOCAL,
             "mycorda.app.tasks.demo.echo.EchoToStdOutTask",
             "Hello, world\n",
             Unit::class
@@ -81,7 +78,6 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         val clientContext = SimpleClientContext()
         SimpleTaskClient(Registry().store(logChannelFactory).store(taskFactory)).execBlocking(
             clientContext,
-            LogChannelLocator.LOCAL,
             "mycorda.app.tasks.demo.echo.EchoToStdErrTask",
             "Goodbye, cruel world\n",
             Unit::class
@@ -100,7 +96,6 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         try {
             SimpleTaskClient(registry).execBlocking(
                 clientContext,
-                LogChannelLocator.LOCAL,
                 "mycorda.app.tasks.demo.ExceptionGeneratingBlockingTask",
                 "Opps",
                 String::class
@@ -110,8 +105,6 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
             re.printStackTrace()
             assertThat(re.message, equalTo("Opps"))
         }
-
-
     }
 
 }

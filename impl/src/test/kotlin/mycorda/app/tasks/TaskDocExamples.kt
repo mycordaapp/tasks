@@ -75,7 +75,6 @@ class TaskDocExamples {
         val clientContext = SimpleClientContext()
         val result = taskClient.execBlocking(
             clientContext,
-            LogChannelLocator.LOCAL,
             "mycorda.app.tasks.test.ListDirectoryTask", ".", StringList::class
         )
 

@@ -38,10 +38,9 @@ interface ClientContext {
     fun securityPrinciples(): Set<SecurityPrinciple>
 
     /**
-     * Be able to consume the logging output
+     * How to be sent back log messages
      */
-    @Deprecated(message = "should be using a locator")
-    fun loggingConsumer(): LoggingConsumerContext
+    fun logChannelLocator(): LogChannelLocator
 
     /**
      * Web Request style custom headers. Should be used with care (is this a good idea?)
@@ -52,7 +51,6 @@ interface ClientContext {
 interface TaskClient {
     fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
-        logChannelLocator: LogChannelLocator,
         taskName: String,
         input: I,
         outputClazz: KClass<O>  // need access to the output clazz for serialization
@@ -71,19 +69,14 @@ interface TaskClient {
 /**
  * Enough for unit test and to communicate with tasks running locally
  */
-class SimpleClientContext : ClientContext {
+class SimpleClientContext(private val logChannelLocator: LogChannelLocator = LogChannelLocator.LOCAL) : ClientContext {
     private val principle = NotAuthenticatedSecurityPrinciple()
     private val logging = InMemoryLoggingConsumerContext()
 
     override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
-
-    override fun loggingConsumer(): LoggingConsumerContext = logging
-
+    override fun logChannelLocator(): LogChannelLocator = logChannelLocator
     override fun customHeaders(): Map<String, String> = emptyMap()
 
-    // shortcut to
-    fun notAuthenticatedSecurityPrinciple(): NotAuthenticatedSecurityPrinciple = principle
-    fun inMemoryLoggingContext(): InMemoryLoggingConsumerContext = logging
 }
 
 
@@ -98,7 +91,6 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
 
     override fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
-        logChannelLocator: LogChannelLocator,
         taskName: String,
         input: I,
         outputClazz: KClass<O>
@@ -107,7 +99,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
         // hook in logging producer / consumer pair
-        val loggingConsumerContext = logChannelLocatorFactory.create(logChannelLocator)
+        val loggingConsumerContext = logChannelLocatorFactory.create(ctx.logChannelLocator())
         val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
         val executionContext = SimpleExecutionContext(producerContext)
 
@@ -122,7 +114,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
                 body = "Task generated exception of: ${e.message}",
                 taskId = task.taskId()
             )
-            ctx.loggingConsumer().acceptLog(message)
+            loggingConsumerContext.acceptLog(message)
             throw e
         }
     }
@@ -149,8 +141,9 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val task = taskFactory.createInstance(taskName) as AsyncTask<I, O>
 
         // hook in logging producer / consumer pair
-        val loggingProducerContext = LoggingProducerToConsumer(ctx.loggingConsumer())
-        val executionContext = SimpleExecutionContext(loggingProducerContext)
+        val loggingConsumerContext = logChannelLocatorFactory.create(ctx.logChannelLocator())
+        val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
+        val executionContext = SimpleExecutionContext(producerContext)
 
         task.exec(executionContext, channelLocator, channelId, input)
     }

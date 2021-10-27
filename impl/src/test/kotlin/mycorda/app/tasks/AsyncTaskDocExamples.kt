@@ -7,6 +7,8 @@ import mycorda.app.tasks.client.SimpleClientContext
 import mycorda.app.tasks.client.SimpleTaskClient
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
+import mycorda.app.tasks.logging.DefaultLogChannelLocatorFactory
+import mycorda.app.tasks.logging.LogChannelLocator
 import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.types.UniqueId
 import org.junit.jupiter.api.Test
@@ -55,13 +57,17 @@ class AsyncTaskDocExamples {
         val resultSinkFactory = DefaultAsyncResultChannelSinkFactory()
         registry.store(resultSinkFactory)
 
-        // 2. register a real task in the TaskFactory (server side)
+        // 2a. register a real task in the TaskFactory (server side)
         val taskFactory = TaskFactory(registry)
         taskFactory.register(CalcSquareAsyncTask::class)
         registry.store(taskFactory)
 
+        // 2b. register LogChannelFactory (server side)
+        val logChannelFactory = DefaultLogChannelLocatorFactory()
+        registry.store(logChannelFactory)
+
         // 3. get a task client (client side)
-        val taskClient = SimpleTaskClient(Registry().store(taskFactory))
+        val taskClient = SimpleTaskClient(registry)
 
         // 4. setup a channel for the results
         val locator = AsyncResultChannelSinkLocator.LOCAL
@@ -79,11 +85,12 @@ class AsyncTaskDocExamples {
         )
 
         // 6. the first log message is already available, but the second isn't
+        val logQuery = logChannelFactory.channelQuery(LogChannelLocator.LOCAL)
         assert(
-            clientContext.inMemoryLoggingContext().messages().hasMessage(LogLevel.INFO, "Starting calculation")
+            logQuery.messages().hasMessage(LogLevel.INFO, "Starting calculation")
         )
         assert(
-            clientContext.inMemoryLoggingContext().messages().doesNotHaveMessage(LogLevel.INFO, "Completed calculation")
+            logQuery.messages().doesNotHaveMessage(LogLevel.INFO, "Completed calculation")
         )
 
         // 7. run a query over the result channel. In this case
