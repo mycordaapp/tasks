@@ -92,7 +92,7 @@ interface LoggingConsumerContext {
  */
 data class LoggingChannelLocator(val locator: String) {
     companion object {
-        fun inMemory() = LoggingChannelLocator("INMEMORY;${String.random()}")
+        fun inMemory(channelId: String = String.random(length = 6)) = LoggingChannelLocator("INMEMORY;${channelId}")
         fun console() = LoggingChannelLocator("CONSOLE;")
     }
 }
