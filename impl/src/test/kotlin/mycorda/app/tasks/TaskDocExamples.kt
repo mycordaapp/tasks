@@ -10,6 +10,8 @@ import mycorda.app.tasks.demo.CalcSquareTask
 import mycorda.app.tasks.demo.echo.EchoIntTask
 import mycorda.app.tasks.demo.echo.EchoStringTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
+import mycorda.app.tasks.logging.DefaultLogChannelLocatorFactory
+import mycorda.app.tasks.logging.LogChannelLocator
 import mycorda.app.tasks.logging.LogLevel
 import mycorda.app.tasks.test.ListDirectoryTask
 import mycorda.app.tasks.test.ListDirectoryTaskFake
@@ -62,29 +64,35 @@ class TaskDocExamples {
         taskFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
         val registry = Registry().store(taskFactory)
 
-        // 2. get a task client (client side)
+        // 2. register LogChannelFactory
+        val logChannelFactory = DefaultLogChannelLocatorFactory()
+        registry.store(logChannelFactory)
+
+        // 3. get a task client (client side)
         val taskClient = SimpleTaskClient(registry)
 
-        // 3. call the client
+        // 4. call the client
         val clientContext = SimpleClientContext()
         val result = taskClient.execBlocking(
             clientContext,
+            LogChannelLocator.LOCAL,
             "mycorda.app.tasks.test.ListDirectoryTask", ".", StringList::class
         )
 
-        // 4. assert results
+        // 5. assert results
         assert(result.contains("fake.txt"))
 
-        // 5. assert logging output
+        // 6. assert logging output
+        val logQuery = logChannelFactory.channelQuery(LogChannelLocator.LOCAL)
         assertThat(
-            clientContext.inMemoryLoggingContext().stdout(),
+            logQuery.stdout(),
             equalTo(
                 "ListDirectoryTask:\n" +
                         "   params: .\n"
             )
         )
         assert(
-            clientContext.inMemoryLoggingContext().messages()
+            logQuery.messages()
                 .hasMessage(LogLevel.INFO, "listing directory '.'")
         )
     }

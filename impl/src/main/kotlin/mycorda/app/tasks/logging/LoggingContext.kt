@@ -1,6 +1,7 @@
 package mycorda.app.tasks.logging
 
 import mycorda.app.registry.Registry
+import mycorda.app.tasks.*
 import mycorda.app.tasks.client.ClientContext
 import java.io.OutputStream
 import java.io.PrintStream
@@ -57,21 +58,6 @@ interface LoggingProducerContext {
     fun log(clientContext: ClientContext, msg: LogMessage) {
         logger().accept(msg)
     }
-
-//    /**
-//     * Shortcut for writing to the stdout console
-//     */
-//    fun println(line: String) {
-//        stdout().println(line)
-//    }
-//
-//    /**
-//     * Shortcut for writing to the stderr console
-//     */
-//    fun printErrLn(line: String) {
-//        stderr().println(line)
-//    }
-
 }
 
 /**
@@ -84,6 +70,65 @@ interface LoggingConsumerContext {
     fun acceptLog(msg: LogMessage)
     fun acceptStdout(output: String)
     fun acceptStderr(error: String)
+}
+
+/**
+ * As the AsyncTask can be long running and may live between restarts,
+ * then there needs to a way for the server side to know how to
+ * recreate the AsyncResultChannelSource that was specified
+ * when the original request was made.
+ *
+ * There are some assumptions and conventions here:
+ *   - the first part of the string specifies the type of channel,
+ *     for example "LOCAL:", "REST:", "AWSSMS:"
+ *   - the second part of the string encodes all other connection information
+ *   - the server side will store the locator linked to the originating
+ *     request
+ *   - an implementation of AsyncResultChannelSourceFactory will
+ *     know how to create a suitable concrete implementations of AsyncResultChannelSource
+ *     from the Locator
+ *
+ */
+data class LogChannelLocator(val locator: String) {
+    companion object {
+        val LOCAL = LogChannelLocator("LOCAL")
+        val CONSOLE = LogChannelLocator("CONSOLE")
+    }
+}
+
+/**
+ * Given a AsyncResultChannelSourceLocator, return the actual channel
+ */
+interface LogChannelLocatorFactory {
+    fun create(locator: LogChannelLocator): LoggingConsumerContext
+}
+
+/**
+ * This needs some thought. Can we limit it to just the "LOCAL" channel?
+ */
+class DefaultLogChannelLocatorFactory : LogChannelLocatorFactory {
+    private val inMemoryContext = InMemoryLoggingConsumerContext()
+    private val consoleContext = ConsoleLoggingConsumerContext()
+
+    override fun create(locator: LogChannelLocator): LoggingConsumerContext {
+        if (locator.locator == "LOCAL") {
+            return inMemoryContext
+        }
+        else if (locator.locator == "CONSOLE") {
+            return consoleContext
+        } else {
+            throw RuntimeException("Don't know about $locator")
+        }
+    }
+
+    fun channelQuery(locator: LogChannelLocator): LoggingReaderContext {
+        if (locator.locator == "LOCAL") {
+            return inMemoryContext
+        } else {
+            throw RuntimeException("Don't know about $locator")
+        }
+    }
+
 }
 
 interface LoggingContext {

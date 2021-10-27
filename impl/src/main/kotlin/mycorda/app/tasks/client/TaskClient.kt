@@ -40,6 +40,7 @@ interface ClientContext {
     /**
      * Be able to consume the logging output
      */
+    @Deprecated(message = "should be using a locator")
     fun loggingConsumer(): LoggingConsumerContext
 
     /**
@@ -51,6 +52,7 @@ interface ClientContext {
 interface TaskClient {
     fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
+        logChannelLocator: LogChannelLocator,
         taskName: String,
         input: I,
         outputClazz: KClass<O>  // need access to the output clazz for serialization
@@ -91,8 +93,12 @@ class SimpleClientContext : ClientContext {
 class SimpleTaskClient(private val registry: Registry) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
     private val serialiser = registry.geteOrElse(JsonSerialiser::class.java, JsonSerialiser())
+    private val logChannelLocatorFactory =
+        registry.geteOrElse(LogChannelLocatorFactory::class.java, DefaultLogChannelLocatorFactory())
+
     override fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
+        logChannelLocator: LogChannelLocator,
         taskName: String,
         input: I,
         outputClazz: KClass<O>
@@ -101,7 +107,8 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
         // hook in logging producer / consumer pair
-        val producerContext = LoggingProducerToConsumer(ctx.loggingConsumer())
+        val loggingConsumerContext = logChannelLocatorFactory.create(logChannelLocator)
+        val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
         val executionContext = SimpleExecutionContext(producerContext)
 
         try {
