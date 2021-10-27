@@ -155,9 +155,6 @@ class SimpleExecutionContext(
     private val provisioningState: ProvisioningState = DefaultProvisioningState()
 ) : ExecutionContext, ExecutionContextModifier {
 
-    //private val stdout = CapturedOutputStream(loggingProducerContext, true)
-    //private val stderr = CapturedOutputStream(loggingProducerContext, false)
-
     override fun provisioningState(): ProvisioningState {
         return provisioningState
     }
@@ -182,25 +179,13 @@ class SimpleExecutionContext(
         return instanceQualifier
     }
 
-    override fun logger(): LogMessageSink {
+    override fun logger(): LogMessageConsumer {
         return loggingProducerContext.logger()
     }
 
     override fun stdout() = loggingProducerContext.stdout()
 
     override fun stderr() = loggingProducerContext.stderr()
-
-//    override fun acceptLog(msg: LogMessage) {
-//        loggingProducerContext.acceptLog(msg)
-//    }
-//
-//    override fun acceptStdout(output: String) {
-//        loggingProducerContext.acceptStdout(output)
-//    }
-//
-//    override fun acceptStderr(error: String) {
-//        loggingProducerContext.acceptStderr(error)
-//    }
 
     override fun withTaskId(taskId: UUID): ExecutionContext {
         return DefaultExecutionContextModifier(this).withTaskId(taskId)
@@ -227,13 +212,7 @@ interface ExecutionContextFactory {
         executionId: UUID = UUID.randomUUID(),
         taskId: UUID? = null,
         scoped: Registry = Registry(),
-        logMessageSink: LogMessageSink? = null
+        logMessageConsumer: LogMessageConsumer? = null
 
     ): ExecutionContext
 }
-
-/**
- * Wrap standard printStream print stream. Primarily for use in the Registry, which
- * isn't designed to store generic classes like PrintStream
- */
-data class StdOut(val printStream: PrintStream = System.out)

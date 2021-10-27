@@ -33,7 +33,7 @@ interface LoggingProducerContext {
     /**
      * Abstract generating a log message
      */
-    fun logger(): LogMessageSink
+    fun logger(): LogMessageConsumer
 
     /**
      * Abstract writing to the console
@@ -240,7 +240,7 @@ data class LogMessage(
 /**
  * We always write to a sink.
  */
-interface LogMessageSink : Consumer<LogMessage>
+interface LogMessageConsumer : Consumer<LogMessage>
 
 /**
  * The very basic default sink that simply writes to the console. All configuration is
@@ -249,8 +249,8 @@ interface LogMessageSink : Consumer<LogMessage>
  *  - format is LogFormat.Simple
  *  - formatter is DefaultStringLogFormatter
  */
-class ConsoleLogMessageSink(registry: Registry = Registry()) :
-    LogMessageSink {
+class ConsoleLogMessageConsumer(registry: Registry = Registry()) :
+    LogMessageConsumer {
     private val formatter = registry.geteOrElse(StringLogFormatter::class.java, DefaultStringLogFormatter())
     private val format = registry.geteOrElse(LogFormat::class.java, LogFormat.Simple)
     override fun accept(msg: LogMessage) {
@@ -307,7 +307,7 @@ class InMemoryLoggingConsumerContext : LoggingConsumerContext, LoggingReaderCont
 }
 
 /**
- * Link a logging producer to a consumer
+ * Link a logging producer to a consumer.
  * This is the common pattern for implementing a LoggingProducerContext - simply connect it to
  * consumer
  */
@@ -315,8 +315,8 @@ class LoggingProducerToConsumer(private val consumer: LoggingConsumerContext) : 
     private val stdout: PrintStream = PrintStream(CapturedOutputStream(consumer, true))
     private val stderr: PrintStream = PrintStream(CapturedOutputStream(consumer, false))
 
-    override fun logger(): LogMessageSink =
-        object : LogMessageSink {
+    override fun logger(): LogMessageConsumer =
+        object : LogMessageConsumer {
             override fun accept(m: LogMessage) {
                 consumer.acceptLog(m)
             }
@@ -357,9 +357,9 @@ class CapturedOutputStream(
  * Everything is directed to stdout & stderr
  */
 class ConsoleLoggingProducerContext : LoggingProducerContext {
-    private val sink = ConsoleLogMessageSink()
+    private val sink = ConsoleLogMessageConsumer()
 
-    override fun logger(): LogMessageSink = sink
+    override fun logger(): LogMessageConsumer = sink
 
     override fun stdout(): PrintStream = System.out
 
