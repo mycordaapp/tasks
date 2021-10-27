@@ -65,7 +65,7 @@ class TaskDocExamples {
         val registry = Registry().store(taskFactory)
 
         // 2. register LogChannelFactory
-        val logChannelFactory = DefaultLoggingChannelFactory()
+        val logChannelFactory = DefaultLoggingChannelFactory(registry)
         registry.store(logChannelFactory)
 
         // 3. get a task client (client side)
@@ -83,7 +83,7 @@ class TaskDocExamples {
         assert(result.contains("fake.txt"))
 
         // 6. assert logging output
-        val logQuery = logChannelFactory.channelQuery(inMemoryLogging)
+        val logQuery = logChannelFactory.query(inMemoryLogging)
         assertThat(
             logQuery.stdout(),
             equalTo(

@@ -69,7 +69,8 @@ interface TaskClient {
 /**
  * Enough for unit test and to communicate with tasks running locally
  */
-class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocator = LoggingChannelLocator.inMemory()) : ClientContext {
+class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocator = LoggingChannelLocator.inMemory()) :
+    ClientContext {
     private val principle = NotAuthenticatedSecurityPrinciple()
     override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
     override fun logChannelLocator(): LoggingChannelLocator = loggingChannelLocator
@@ -77,15 +78,14 @@ class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocat
 
 }
 
-
 /**
  * Enough for unit tests and tasks running locally
  */
-class SimpleTaskClient(private val registry: Registry) : TaskClient {
+class SimpleTaskClient(registry: Registry) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
     private val serialiser = registry.geteOrElse(JsonSerialiser::class.java, JsonSerialiser())
     private val logChannelLocatorFactory =
-        registry.geteOrElse(LoggingChannelFactory::class.java, DefaultLoggingChannelFactory())
+        registry.geteOrElse(LoggingChannelFactory::class.java, DefaultLoggingChannelFactory(registry))
 
     override fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
@@ -97,7 +97,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
         // hook in logging producer / consumer pair
-        val loggingConsumerContext = logChannelLocatorFactory.create(ctx.logChannelLocator())
+        val loggingConsumerContext = logChannelLocatorFactory.consumer(ctx.logChannelLocator())
         val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
         val executionContext = SimpleExecutionContext(producerContext)
 
@@ -139,7 +139,7 @@ class SimpleTaskClient(private val registry: Registry) : TaskClient {
         val task = taskFactory.createInstance(taskName) as AsyncTask<I, O>
 
         // hook in logging producer / consumer pair
-        val loggingConsumerContext = logChannelLocatorFactory.create(ctx.logChannelLocator())
+        val loggingConsumerContext = logChannelLocatorFactory.consumer(ctx.logChannelLocator())
         val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
         val executionContext = SimpleExecutionContext(producerContext)
 

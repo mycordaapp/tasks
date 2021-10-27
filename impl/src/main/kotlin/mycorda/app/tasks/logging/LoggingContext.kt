@@ -92,8 +92,8 @@ interface LoggingConsumerContext {
  */
 data class LoggingChannelLocator(val locator: String) {
     companion object {
-        fun inMemory() = LoggingChannelLocator("INMEMORY:${String.random()}")
-        fun console() = LoggingChannelLocator("CONSOLE:")
+        fun inMemory() = LoggingChannelLocator("INMEMORY;${String.random()}")
+        fun console() = LoggingChannelLocator("CONSOLE;")
     }
 }
 
@@ -101,41 +101,60 @@ data class LoggingChannelLocator(val locator: String) {
  * Given a AsyncResultChannelSourceLocator, return the actual channel
  */
 interface LoggingChannelFactory {
-    fun create(locator: LoggingChannelLocator): LoggingConsumerContext
+    fun consumer(locator: LoggingChannelLocator): LoggingConsumerContext
+}
+
+interface LoggingReaderFactory {
+    fun query(locator: LoggingChannelLocator): LoggingReaderContext
+}
+
+class InMemoryLoggingRepo {
+    private val inMemoryLookup = HashMap<String, InMemoryLogging>()
+
+    fun consume(channelId: String): LoggingConsumerContext = lookupInMemoryConsumer(channelId)
+
+    fun query(channelId: String): LoggingReaderContext = lookupInMemoryConsumer(channelId)
+
+    fun lookup(channelId: String): InMemoryLogging = lookupInMemoryConsumer((channelId))
+
+
+    private fun lookupInMemoryConsumer(channelId: String): InMemoryLogging {
+        if (!inMemoryLookup.containsKey(channelId)) {
+            inMemoryLookup[channelId] = InMemoryLogging()
+        }
+        return inMemoryLookup[channelId]!!
+    }
 }
 
 /**
  * This needs some thought. Can we limit it to just the "LOCAL" channel?
  */
-class DefaultLoggingChannelFactory : LoggingChannelFactory {
-    private val inMemoryContextLookup = HashMap<String, InMemoryLoggingConsumerContext>()
+class DefaultLoggingChannelFactory(registry: Registry) : LoggingChannelFactory, LoggingReaderFactory {
+    private val inMemoryLoggingRepo = registry.geteOrElse(InMemoryLoggingRepo::class.java, InMemoryLoggingRepo())
     private val consoleContext = ConsoleLoggingConsumerContext()
 
-    override fun create(locator: LoggingChannelLocator): LoggingConsumerContext {
-        if (locator.locator.startsWith("INMEMORY:")) {
+    override fun consumer(locator: LoggingChannelLocator): LoggingConsumerContext {
+        if (locator.locator.startsWith("INMEMORY;")) {
             return lookupInMemoryConsumer(locator.locator)
 
-        } else if (locator.locator == "CONSOLE:") {
+        } else if (locator.locator == "CONSOLE;") {
             return consoleContext
         } else {
             throw RuntimeException("Don't know about $locator")
         }
     }
 
-    fun channelQuery(locator: LoggingChannelLocator): LoggingReaderContext {
-        if (locator.locator.startsWith("INMEMORY:")) {
+    override fun query(locator: LoggingChannelLocator): LoggingReaderContext {
+        if (locator.locator.startsWith("INMEMORY;")) {
             return lookupInMemoryConsumer(locator.locator)
         } else {
             throw RuntimeException("Don't know about $locator")
         }
     }
 
-    private fun lookupInMemoryConsumer(locator: String): InMemoryLoggingConsumerContext {
-        val id = locator.split(":")[1]
-        if (!inMemoryContextLookup.containsKey(id)) {
-            inMemoryContextLookup[id] = InMemoryLoggingConsumerContext()
-        }
-        return inMemoryContextLookup[id]!!
+    private fun lookupInMemoryConsumer(locator: String): InMemoryLogging {
+        val id = locator.split(";")[1]
+        return inMemoryLoggingRepo.lookup(id)
     }
 }
 
@@ -287,7 +306,7 @@ interface LoggingReaderContext {
     fun messages(): List<LogMessage>
 }
 
-class InMemoryLoggingConsumerContext : LoggingConsumerContext, LoggingReaderContext {
+class InMemoryLogging : LoggingConsumerContext, LoggingReaderContext {
     private val stdout = StringBuilder()
     private val stderr = StringBuilder()
     private val logMessages = ArrayList<LogMessage>()

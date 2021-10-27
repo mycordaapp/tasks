@@ -63,7 +63,7 @@ class AsyncTaskDocExamples {
         registry.store(taskFactory)
 
         // 2b. register LogChannelFactory (server side)
-        val logChannelFactory = DefaultLoggingChannelFactory()
+        val logChannelFactory = DefaultLoggingChannelFactory(registry)
         registry.store(logChannelFactory)
 
         // 3. get a task client (client side)
@@ -86,7 +86,7 @@ class AsyncTaskDocExamples {
         )
 
         // 6. the first log message is already available, but the second isn't
-        val logQuery = logChannelFactory.channelQuery(logChannelLocator)
+        val logQuery = logChannelFactory.query(logChannelLocator)
         assert(
             logQuery.messages().hasMessage(LogLevel.INFO, "Starting calculation")
         )

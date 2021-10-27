@@ -21,7 +21,7 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
 
     private val registry = Registry()
     private val taskFactory = TaskFactory().register(DemoTasks()).register(EchoTasks())
-    private val logChannelFactory = DefaultLoggingChannelFactory()
+    private val logChannelFactory = DefaultLoggingChannelFactory(registry)
 
 
     init {
@@ -68,7 +68,7 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
             Unit::class
         )
 
-        val readerContext: LoggingReaderContext = logChannelFactory.channelQuery(locator)
+        val readerContext: LoggingReaderContext = logChannelFactory.query(locator)
         assertThat(readerContext.stdout(), equalTo("Hello, world\n"))
         assertThat(readerContext.stderr(), isEmptyString)
         assertThat(readerContext.messages(), isEmpty)
@@ -85,7 +85,7 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
             Unit::class
         )
 
-        val readerContext: LoggingReaderContext = logChannelFactory.channelQuery(locator)
+        val readerContext: LoggingReaderContext = logChannelFactory.query(locator)
         assertThat(readerContext.stdout(), isEmptyString)
         assertThat(readerContext.stderr(), equalTo("Goodbye, cruel world\n"))
         assertThat(readerContext.messages(), isEmpty)

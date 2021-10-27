@@ -15,7 +15,7 @@ class LoggingContextTests {
 
     @Test
     fun `should capture print stream and stored as stdout`() {
-        val logConsumerContext = InMemoryLoggingConsumerContext()
+        val logConsumerContext = InMemoryLogging()
         val captured = CapturedOutputStream(logConsumerContext)
         val ps = PrintStream(captured)
 
@@ -29,7 +29,7 @@ class LoggingContextTests {
 
     @Test
     fun `should capture print stream and stored as stderr`() {
-        val logConsumerContext = InMemoryLoggingConsumerContext()
+        val logConsumerContext = InMemoryLogging()
         val captured = CapturedOutputStream(logConsumerContext, false)
         val ps = PrintStream(captured)
 
@@ -41,7 +41,7 @@ class LoggingContextTests {
     @Test
     fun `should connect InMemoryLoggingConsumerContext to InMemoryLoggingProducerContext`() {
         // simulate both side in memory
-        val logConsumerContext = InMemoryLoggingConsumerContext()
+        val logConsumerContext = InMemoryLogging()
         val logProducerContext = LoggingProducerToConsumer(logConsumerContext)
 
         // test stdout
