@@ -58,7 +58,6 @@ class TaskDocExamples {
 
     @Test
     fun `should call task via a task client`() {
-
         // 1. register a real task in the TaskFactory (server side)
         val taskFactory = TaskFactory()
         taskFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)

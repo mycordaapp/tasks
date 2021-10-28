@@ -138,10 +138,11 @@ fun `should call task via the TaskFactory`() {
 
 <img src="./images/exec-task-via-client.png" width="800px" style="border:1px solid black"/>
 
-
 This is the typical case as it reflects the usual client server model, with tasks invoked locally but running on another
 agent of some form on another server. Note that for simplicity, in this example we create the `SimpleTaskClient` which
 uses in memory communication.
+
+This example also include the use of a `Logging Channel` - see [Logging](./logging.md)
 
 ```kotlin
 @Test
@@ -151,29 +152,35 @@ fun `should call task via a task client`() {
     taskFactory.register(ListDirectoryTaskFake::class, ListDirectoryTask::class)
     val registry = Registry().store(taskFactory)
 
-    // 2. get a task client (client side)
+    // 2. register LogChannelFactory
+    val logChannelFactory = DefaultLoggingChannelFactory(registry)
+    registry.store(logChannelFactory)
+
+    // 3. get a task client (client side)
     val taskClient = SimpleTaskClient(registry)
 
-    // 3. call the client
-    val clientContext = SimpleClientContext()
-    val result = taskClient.execBlocking<String, List<String>>(
+    // 4. call the client
+    val inMemoryLogging = LoggingChannelLocator.inMemory()
+    val clientContext = SimpleClientContext(loggingChannelLocator = inMemoryLogging)
+    val result = taskClient.execBlocking(
         clientContext,
-        "mycorda.app.tasks.ListDirectoryTask", "."
+        "mycorda.app.tasks.test.ListDirectoryTask", ".", StringList::class
     )
 
-    // 4. assert results
+    // 5. assert results
     assert(result.contains("fake.txt"))
 
-    // 5. assert logging output
+    // 6. assert logging output
+    val logQuery = logChannelFactory.query(inMemoryLogging)
     assertThat(
-        clientContext.inMemoryLoggingConsumerContext().stdout(),
+        logQuery.stdout(),
         equalTo(
             "ListDirectoryTask:\n" +
                     "   params: .\n"
         )
     )
     assert(
-        clientContext.inMemoryLoggingConsumerContext().messages()
+        logQuery.messages()
             .hasMessage(LogLevel.INFO, "listing directory '.'")
     )
 }
@@ -236,12 +243,13 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
 
 ```
 
-Breaking this code down:
+_TODO - explain the above_
 
-and the basic test case is
+The basic test case is:
 
 ```kotlin
- fun `should call task directly`() {
+@Test 
+fun `should call task directly`() {
     // 1. Setup a result sink,
     val resultSinkFactory = DefaultAsyncResultChannelSinkFactory()
     val reg = Registry().store(resultSinkFactory)
@@ -258,7 +266,7 @@ and the basic test case is
     task.exec(ctx, locator, channelId, 10)
 
     // 5. run a query over the result channel. In this
-    //    CalcSquareAsyncTask is a demo and has returned a result immediately
+    //    CalcSquareAsyncTask is a demo and just has a simple sleep
     val query = resultSinkFactory.channelQuery(locator)
 
     // 6. assert expected results
@@ -271,7 +279,70 @@ and the basic test case is
     val result = query.result<Int>(channelId)
     assertThat(result, equalTo(Success<Int>(100) as AsyncResult<Int>))
 }
+```
 
+and if using the TaskClient
+
+```kotlin
+ @Test
+    fun `should call task via a task client`() {
+        // 1. Create a registry and store a AsyncResultChannelSinkFactory
+        val registry = Registry()
+        val resultSinkFactory = DefaultAsyncResultChannelSinkFactory()
+        registry.store(resultSinkFactory)
+
+        // 2a. register a real task in the TaskFactory (server side)
+        val taskFactory = TaskFactory(registry)
+        taskFactory.register(CalcSquareAsyncTask::class)
+        registry.store(taskFactory)
+
+        // 2b. register LogChannelFactory (server side)
+        val logChannelFactory = DefaultLoggingChannelFactory(registry)
+        registry.store(logChannelFactory)
+
+        // 3. get a task client (client side)
+        val taskClient = SimpleTaskClient(registry)
+
+        // 4. setup a channel for the results
+        val locator = AsyncResultChannelSinkLocator.LOCAL
+        val channelId = UniqueId.random()
+
+        // 5. call the client
+        val logChannelLocator = LoggingChannelLocator.inMemory()
+        val clientContext = SimpleClientContext(loggingChannelLocator = logChannelLocator)
+        taskClient.execAsync(
+            clientContext,
+            "mycorda.app.tasks.demo.CalcSquareAsyncTask",
+            locator,
+            channelId,
+            10,
+            Int::class
+        )
+
+        // 6. the first log message is already available, but the second isn't
+        val logQuery = logChannelFactory.query(logChannelLocator)
+        assert(
+            logQuery.messages().hasMessage(LogLevel.INFO, "Starting calculation")
+        )
+        assert(
+            logQuery.messages().doesNotHaveMessage(LogLevel.INFO, "Completed calculation")
+        )
+
+        // 7. run a query over the result channel. In this case
+        //    CalcSquareAsyncTask is a demo and just has a simple sleep
+        val query = resultSinkFactory.channelQuery(locator)
+
+        // 7. assert expected results
+        // not yet read
+        assertThat(query.hasResult(channelId), equalTo(false))
+        // wait long enough
+        Thread.sleep(AsyncTask.platformTick() * 2)
+        // now ready
+        assert(query.hasResult(channelId))
+        val result = query.result<Int>(channelId)
+        assertThat(result, equalTo(Success<Int>(100) as AsyncResult<Int>))
+    
+    }
 ```
 
 ## Modularising the `TaskFactory`
