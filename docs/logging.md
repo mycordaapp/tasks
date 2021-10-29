@@ -153,7 +153,7 @@ Everything straight to the console
 Captures all output to memory, readable via LoggingReaderContext. See below
 
 ```kotlin
-val inMemoryLogging = InMemoryLogging()
+val inMemoryLogging = InMemoryLogging() // implements LoggingConsumerContext & LoggingReaderContext
 val logProducer = LoggingProducerToConsumer(inMemoryLogging)
 
 // write something
@@ -163,6 +163,157 @@ logProducer.stdout().prinln("Hello World")
 println(inMemoryLogging.stdout())
 ```
 
+## Passing Logging between services
+
+As discussed above, the key motivation for this approach is to provide ways of easily getting log / console output back
+to the consumer, i.e. the client calling the task. There are a number of things to consider here.
+
+* this can be streaming (i.e. straight back to the client) or blocking (captured while running on the server, but only
+  sent back on completion). Obviously the second option is a poor choice for long-running processes, and as we have to
+  manage this type of process it's not a viable option.
+* the channel passing back this information MAY need to be secured. I say MAY as this will be partly driven the
+  deployment topology, and that is not fixed.
+* the design must deal with restarts (controlled and uncontrolled) and work in a HA environment. Both requirements imply
+  a stateless design.
+
+The design should be flexible enough to deal with any type of communication including messaging protocols. The example
+below is based on the code in the [Tasks Http](https://github.com/mycordaapp/tasks-http#readme) library, which
+implements a TaskClient running over http / websocket protocols.
+
+### Step 1: The `LoggingChannelLocator`
+
+The client needs to provide a locator, something that can be passed in the original request that server can use to
+create the necessary return connection with the logging information. The locator is simply a connection style string
+with a few basic rules. Below is a code snippet that should make the intention clear. In this case the client is
+providing a websockets callback.
+
+```kotlin
+// [design note]: in production code there probably need both the internal address 
+// and the advertised address when creating a client
+val client = HttpTaskClient("http://localhost:1234")
+
+// client side creates a unique id, in this case an airline style booking ref
+val loggingChannelId = String.random()
+
+// create the locator and attach to the ClientContext
+// [design note]: each client should assign itself a unique protocol identifier (the 'WS;' part)
+val loggingChannelLocator = LoggingChannelLocator("WS;${theClient.baseUrl()};$loggingChannelId")
+val ctx = SimpleClientContext(loggingChannelLocator = loggingChannelLocator)
+
+```
+
+### Step 2: Server Side
+
+The server must unpack the client request and use the locator to construct a `LoggingProducerContext` it can use locally
+
+```kotlin
+// unpack the originating request 
+val taskRequest = serializer.deserialiseBlockingTaskRequest(it.bodyString())
+
+// find the channel via the factory 
+val loggingConsumerContext = loggingChannelFactory.consumer(LoggingChannelLocator(taskRequest.loggingChannelLocator))
+
+// hook in the local producer - this is passed to the local ExecutionContext 
+val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
+```
+
+The magic happens in the factory, which understands the channels and will construct a suitable instance
+of `LoggingConsumerContext`.
+
+```kotlin
+class ServerLoggingFactory(registry: Registry) : LoggingChannelFactory {
+    private val defaultFactory = DefaultLoggingChannelFactory(registry)
+
+    override fun consumer(locator: LoggingChannelLocator): LoggingConsumerContext {
+        return try {
+            // this knows about the inbuilt local channels
+            defaultFactory.consumer(locator)
+        } catch (re: RuntimeException) {
+            if (locator.locator.startsWith("WS;")) {
+                buildLocalWSConsumer(locator.locator)
+            } else {
+                throw RuntimeException("some better exception handling please")
+            }
+        }
+    }
+
+    private fun buildLocalWSConsumer(locator: String): LoggingConsumerContext {
+        val url = locator.split(";")[1]
+        val id = locator.split(";")[2]
+        return WsCallbackLoggingConsumerContext(url, id)
+    }
+}
+```
+
+Finally, the local consumer must forward the logging request on
+
+```kotlin
+
+class WsCallbackLoggingConsumerContext(
+    private val baseUrl: String,
+    private val channelId: String
+) : LoggingConsumerContext {
+    private val serializer = JsonSerialiser()
+
+    override fun acceptLog(msg: LogMessage) {
+        val json = serializer.serialiseData(msg)
+        makeWSCall(Uri.of("${baseUrl}/logChannel/${channelId}/log"), json)
+    }
+
+    override fun acceptStderr(error: String) {
+        makeWSCall(Uri.of("${baseUrl}/logChannel/${channelId}/stderr"), error)
+    }
+
+    override fun acceptStdout(output: String) {
+        val uri = Uri.of("${baseUrl}/logChannel/${channelId}/stdout")
+        makeWSCall(uri, output)
+    }
+
+    private fun makeWSCall(uri: Uri, output: String) {
+        val blockingClient = WebsocketClient.blocking(uri)
+        blockingClient.send(WsMessage(output))
+        blockingClient.close()
+    }
+}
+```
+
+### Step 3: Client Side
+
+On the client there must be a process to receive the logging requests and store them somewhere. 
+The snippet below gives an example. In this case they are simply stored in memory, but of course 
+something permanent would be necessary for production quality code. 
+
+```kotlin
+val idLens = Path.of("id")
+private val handler = websockets(
+      "/logChannel/{id}/stdout" bind { ws: Websocket ->
+          val id = idLens(ws.upgradeRequest)
+          ws.onMessage {
+              val locator = LoggingChannelLocator.inMemory(id)
+              factory.consumer(locator).acceptStdout(it.bodyString())
+          }
+      },
+      "/logChannel/{id}/stderr" bind { ws: Websocket ->
+          val id = idLens(ws.upgradeRequest)
+          ws.onMessage {
+              val locator = LoggingChannelLocator.inMemory(id)
+              factory.consumer(locator).acceptStderr(it.bodyString())
+          }
+      },
+      "/logChannel/{id}/log" bind { ws: Websocket ->
+          val id = idLens(ws.upgradeRequest)
+          ws.onMessage {
+              val msg = serializer.deserialiseData(it.bodyString()).data as LogMessage
+              val locator = LoggingChannelLocator.inMemory(id)
+              factory.consumer(locator).acceptLog(msg)
+          }
+      }
+)
+```
+
+
+
+  
 
 
 
