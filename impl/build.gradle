@@ -8,14 +8,13 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 
     implementation "com.github.mycordaapp:really-simple-serialisation:$rssVersion"
+    implementation "com.github.mycordaapp:simple-event-store:$sesVersion"
     implementation "com.github.mycordaapp:commons:$commonsVersion"
     implementation "com.github.mycordaapp:registry:$registryVersion"
-
 
     testImplementation("com.natpryce:hamkrest:$hamkrestVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testImplementation('org.junit.platform:junit-platform-runner:1.0.0')
-
 }
 
 test {

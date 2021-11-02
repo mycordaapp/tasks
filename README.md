@@ -42,5 +42,5 @@ As with everything in [myCorda dot App](https://mycorda.app), this library has m
 ## Next Steps
 
 * more on building and using Tasks is [here](./docs/tasks.md)
-* details of the Logging Context are [here](./docs/logging.md))
+* details of the Logging Context are [here](./docs/logging.md)
 

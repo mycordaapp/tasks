@@ -45,7 +45,7 @@ services for processing. Downsides include
 * log aggregators are typically quite expensive to run locally, and hence they are less useful in day to day dev.
 * moving logs to another service is sometimes considered a security risk
 
-### 5. App Altering concerns
+### 5. App Alerting concerns
 
 Ideally all the key lifecycle events are driven via a clear API and managed by a deployment / management layer. I say
 ideally, as this usually a lot of effort. It also has the downside of a being in the fuzzy list of non-functional
