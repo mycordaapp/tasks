@@ -1,5 +1,6 @@
 package mycorda.app.tasks.demo.echo
 
+import mycorda.app.clock.PlatformTimer
 import mycorda.app.helpers.random
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
@@ -139,7 +140,7 @@ abstract class BaseEchoAsyncTask<I, O>(registry: Registry) : BaseAsyncTask<I, O>
             val resultChannel = resultChannelFactory.create(channelLocator)
 
             // 2. Simulate a delay
-            Thread.sleep(AsyncTask.platformTick())
+            Thread.sleep(PlatformTimer.clockTick())
 
             // 3. Write the result and also echo to logging channels
             resultChannel.accept(result)

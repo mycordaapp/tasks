@@ -1,5 +1,6 @@
 package mycorda.app.tasks.demo
 
+import mycorda.app.clock.PlatformTimer
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.*
 import mycorda.app.tasks.executionContext.ExecutionContext
@@ -115,7 +116,7 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
             val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
 
             // 3. Simulate a delay
-            Thread.sleep(AsyncTask.platformTick())
+            Thread.sleep(PlatformTimer.clockTick())
 
             // 4. Write the result and also echo to logging channels
             ctx.log(LogMessage.info("Completed calculation"))

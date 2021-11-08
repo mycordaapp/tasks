@@ -77,23 +77,6 @@ interface AsyncTask<I, O> : Task {
         input: I
     )
 
-    companion object {
-        // use for timings in threads, esp test cases.  Keep to
-        // the minimum for underlying system clock on the OS
-        // for now just defaulting to 20 ms
-        fun platformTick(): Long {
-            val os = System.getProperty("os.name")
-
-            // tune as required
-            return when (os) {
-                "Mac OS X" -> 5
-                "Linux" -> 15
-                else -> 20
-            }
-        }
-
-        fun sleepForTicks(ticks: Int) = Thread.sleep(platformTick() * ticks)
-    }
 }
 
 

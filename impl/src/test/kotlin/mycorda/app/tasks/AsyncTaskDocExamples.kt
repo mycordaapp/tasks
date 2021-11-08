@@ -2,10 +2,12 @@ package mycorda.app.tasks
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import mycorda.app.clock.PlatformTimer
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.client.SimpleClientContext
 import mycorda.app.tasks.client.SimpleTaskClient
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
+import mycorda.app.tasks.executionContext.PlatformContext
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
 import mycorda.app.tasks.logging.DefaultLoggingChannelFactory
 import mycorda.app.tasks.logging.LoggingChannelLocator
@@ -43,7 +45,7 @@ class AsyncTaskDocExamples {
         // not yet read
         assertThat(query.hasResult(channelId), equalTo(false))
         // wait long enough
-        Thread.sleep(AsyncTask.platformTick() * 2)
+        Thread.sleep(PlatformTimer.clockTick() * 2)
         // now ready
         assert(query.hasResult(channelId))
         val result = query.result<Int>(channelId)
@@ -102,7 +104,7 @@ class AsyncTaskDocExamples {
         // not yet read
         assertThat(query.hasResult(channelId), equalTo(false))
         // wait long enough
-        Thread.sleep(AsyncTask.platformTick() * 2)
+        Thread.sleep(PlatformTimer.clockTick() * 2)
         // now ready
         assert(query.hasResult(channelId))
         val result = query.result<Int>(channelId)

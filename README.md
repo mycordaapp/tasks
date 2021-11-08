@@ -20,8 +20,8 @@ There are also higher level services that build on these tasks, for example the
 task [Http Remoting](https://github.com/mycordaapp/tasks-http#readme)
 toolkit lets clients call tasks on remote servers using http(s) standards for data transfer and security.
 
-The design and modularity is heavily influenced by [HTT4kk](https://www.http4k.org/guide/concepts/rationale/). In
-particular
+The design and modularity is heavily influenced by [http4K](https://www.http4k.org/guide/concepts/rationale/). In
+particular:
 
 * Minimal Dependencies (see below)
 * Very modular
@@ -30,7 +30,7 @@ particular
 
 ## Dependencies
 
-As with everything in [myCorda dot App](https://mycorda.app), this library has minimal dependencies.
+As with everything in [myCorda dot App](https://mycorda.app), this library has minimal dependencies:
 
 * Kotlin 1.4
 * Java 11
@@ -43,4 +43,6 @@ As with everything in [myCorda dot App](https://mycorda.app), this library has m
 
 * more on building and using Tasks is [here](./docs/tasks.md)
 * details of the Logging Context are [here](./docs/logging.md)
+* design notes on the "task worker" concept are [here](./docs/task-worker.md)
+
 

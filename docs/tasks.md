@@ -233,7 +233,7 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
             val result = AsyncResultChannelMessage(channelId, Success(input * input), Int::class.java)
 
             // 3. Simulate a delay 
-            Thread.sleep(AsyncTask.platformTick())
+            Thread.sleep(PlatformTimer.clockTick())
 
             // 4. Write the result
             resultChannel.accept(result)
@@ -273,7 +273,7 @@ fun `should call task directly`() {
     // not yet read
     assertThat(query.hasResult(channelId), equalTo(false))
     // wait long enough
-    Thread.sleep(AsyncTask.platformTick() * 2)
+    Thread.sleep(PlatformTimer.clockTick() * 2)
     // now ready
     assert(query.hasResult(channelId))
     val result = query.result<Int>(channelId)
@@ -336,7 +336,7 @@ and if using the TaskClient
         // not yet read
         assertThat(query.hasResult(channelId), equalTo(false))
         // wait long enough
-        Thread.sleep(AsyncTask.platformTick() * 2)
+        Thread.sleep(PlatformTimer.clockTick() * 2)
         // now ready
         assert(query.hasResult(channelId))
         val result = query.result<Int>(channelId)

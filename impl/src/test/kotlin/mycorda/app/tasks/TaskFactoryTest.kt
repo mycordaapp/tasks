@@ -3,6 +3,7 @@ package mycorda.app.tasks
 import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assertThat
 import junit.framework.TestCase.fail
+import mycorda.app.clock.PlatformTimer
 import mycorda.app.registry.Registry
 import mycorda.app.tasks.demo.CalcSquareAsyncTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
@@ -175,7 +176,7 @@ class TaskFactoryTest {
         )
 
         val query = sinkFactory.channelQuery(locator)
-        AsyncTask.sleepForTicks(2)
+        PlatformTimer.sleepForTicks(2)
         assert(query.hasResult(channelId))
         assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
     }
@@ -206,7 +207,7 @@ class TaskFactoryTest {
         )
 
         val query = sinkFactory.channelQuery(locator)
-        AsyncTask.sleepForTicks(2)
+        PlatformTimer.sleepForTicks(2)
         assert(query.hasResult(channelId))
         assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
     }
