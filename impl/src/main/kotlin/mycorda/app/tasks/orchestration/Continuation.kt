@@ -3,6 +3,7 @@ package mycorda.app.tasks.orchestration
 import mycorda.app.chaos.Chaos
 import mycorda.app.chaos.FailNPercent
 import mycorda.app.chaos.Noop
+import mycorda.app.helpers.random
 import mycorda.app.registry.Registry
 import mycorda.app.xunitpatterns.spy.Spy
 import java.lang.Exception
@@ -11,14 +12,25 @@ import kotlin.reflect.KClass
 data class ContinuationContext(val attempts: Int = 0)
 
 
-
-
 interface Continuation {
     fun <T : Any> execBlock(
         key: String,
         clazz: KClass<out T>, // can I get rid of this?
         block: (ctx: ContinuationContext) -> T
     ): T
+}
+
+interface ContinuationFactory {
+    fun get(continuationKey: String): Continuation
+}
+
+class SimpleContinuationFactory(registry: Registry = Registry()) : ContinuationFactory {
+    private val registry = registry.clone() // make a clean copy as registry is mutable
+    private val lookup = HashMap<String, SimpleContinuation>()
+    override fun get(continuationKey: String): Continuation {
+        lookup.putIfAbsent(continuationKey, SimpleContinuation(registry))
+        return lookup[continuationKey]!!
+    }
 }
 
 data class Scheduled<T : Any>(
@@ -105,9 +117,16 @@ class RetryForEverExceptionStrategy(private val initialDelayMs: Long = 10) : Con
 }
 
 
-class ThreeStepClass(registry: Registry = Registry()) {
-    private val continuation = registry.geteOrElse(Continuation::class.java, SimpleContinuation())
-    private val chaos = registry.geteOrElse(Chaos::class.java, Chaos())
+class ThreeStepClass(
+    registry: Registry = Registry(),
+    continuationKey: String = String.random()
+) {
+    // setup continuation
+    private val factory = registry.geteOrElse(ContinuationFactory::class.java, SimpleContinuationFactory(registry))
+    private val continuation = factory.get(continuationKey)
+
+    // setup test support
+    private val chaos = registry.geteOrElse(Chaos::class.java, Chaos(emptyMap(), true))
     private val spy = registry.geteOrElse(Spy::class.java, Spy())
 
     fun exec(startNumber: Int): Int {
@@ -148,26 +167,32 @@ fun main() {
 
 private fun failStep2ThenRetryContinuation() {
     // 1 - setup
+    val key = String.random()
     val chaos = Chaos(
         mapOf(
             "step1" to listOf(Noop()),
             "step2" to listOf(FailNPercent(100)),
             "step3" to listOf(Noop()),
-        )
+        ),
+        true
     )
     val spy = Spy()
-    val continuation = SimpleContinuation()
+    val continuationFactory = SimpleContinuationFactory()
 
     // 2 - run continuation - should fail on step 2
     try {
-        ThreeStepClass(Registry().store(continuation).store(chaos).store(spy))
-            .exec(10)
+        ThreeStepClass(
+            registry = Registry().store(continuationFactory).store(chaos).store(spy),
+            continuationKey = key
+        ).exec(10)
     } catch (ex: Exception) {
     }
 
     // 3 - run continuation again - should skip step 1 and complete
-    val result = ThreeStepClass(Registry().store(continuation).store(spy))
-        .exec(10)
+    val result = ThreeStepClass(
+        registry = Registry().store(continuationFactory).store(spy),
+        continuationKey = key
+    ).exec(10)
     println(result)
 
     // 4 - spy to see that steps are executed as expected - step1 should be skipped
