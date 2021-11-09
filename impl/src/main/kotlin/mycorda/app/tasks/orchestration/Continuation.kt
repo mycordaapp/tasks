@@ -4,24 +4,19 @@ import mycorda.app.chaos.Chaos
 import mycorda.app.chaos.FailNPercent
 import mycorda.app.chaos.Noop
 import mycorda.app.registry.Registry
+import mycorda.app.xunitpatterns.spy.Spy
 import java.lang.Exception
 import kotlin.reflect.KClass
 
 data class ContinuationContext(val attempts: Int = 0)
 
 
-class Spy {
-    private val messages = ArrayList<String>()
-    fun snitch(message: String) = messages.add(message)
-    fun secrets(): List<String> = messages
-}
 
-//data class Block<T>(val block: (ctx: ContinuationContext) -> T, val clazz: Any)
 
 interface Continuation {
     fun <T : Any> execBlock(
         key: String,
-        clazz: KClass<out T>, // can I get rid of this
+        clazz: KClass<out T>, // can I get rid of this?
         block: (ctx: ContinuationContext) -> T
     ): T
 }
@@ -54,13 +49,13 @@ class SimpleContinuation(registry: Registry = Registry()) : Continuation {
             // step has not run successfully
             val ctx = ContinuationContext()
 
-            if (exceptionStrategy != null) {
-                try {
-                    block.invoke(ctx)
-                } catch (ex: Exception) {
-                    val retry = exceptionStrategy.handle(ctx, ex)
-                }
-            }
+//            if (exceptionStrategy != null) {
+//                try {
+//                    block.invoke(ctx)
+//                } catch (ex: Exception) {
+//                    val retry = exceptionStrategy.handle(ctx, ex)
+//                }
+//            }
             val result = block.invoke(ctx)
             lookup[key] = result
             return result
@@ -133,7 +128,7 @@ class ThreeStepClass(registry: Registry = Registry()) {
 
     // only to control and observer the test double - wouldn't expect this in real code
     private fun testDecoration(step: String) {
-        spy.snitch(step)
+        spy.spy(step)
         chaos.chaos(step)
     }
 }
