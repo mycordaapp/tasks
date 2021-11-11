@@ -273,7 +273,7 @@ fun `should call task directly`() {
     // not yet read
     assertThat(query.hasResult(channelId), equalTo(false))
     // wait long enough
-    Thread.sleep(PlatformTimer.clockTick() * 2)
+    Thread.sleep(PlatformTimer.clockTick() * 3)
     // now ready
     assert(query.hasResult(channelId))
     val result = query.result<Int>(channelId)
@@ -336,7 +336,7 @@ and if using the TaskClient
         // not yet read
         assertThat(query.hasResult(channelId), equalTo(false))
         // wait long enough
-        Thread.sleep(PlatformTimer.clockTick() * 2)
+        Thread.sleep(PlatformTimer.clockTick() * 3)
         // now ready
         assert(query.hasResult(channelId))
         val result = query.result<Int>(channelId)
