@@ -12,6 +12,8 @@ jobs:
       # specify the version you desire here
       - image: cimg/openjdk:11.0.0
 
+    resource_class: small
+
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
