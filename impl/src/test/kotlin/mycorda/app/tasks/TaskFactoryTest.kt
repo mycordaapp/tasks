@@ -176,7 +176,7 @@ class TaskFactoryTest {
         )
 
         val query = sinkFactory.channelQuery(locator)
-        PlatformTimer.sleepForTicks(3 + 10)
+        PlatformTimer.sleepForTicks(3)
         assert(query.hasResult(channelId))
         assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
     }
@@ -207,7 +207,7 @@ class TaskFactoryTest {
         )
 
         val query = sinkFactory.channelQuery(locator)
-        PlatformTimer.sleepForTicks(3 + 10)
+        PlatformTimer.sleepForTicks(3)
         assert(query.hasResult(channelId))
         assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
     }
