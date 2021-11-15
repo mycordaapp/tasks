@@ -130,7 +130,7 @@ class InMemoryLoggingRepo {
  * This needs some thought. Can we limit it to just the "LOCAL" channel?
  */
 class DefaultLoggingChannelFactory(registry: Registry) : LoggingChannelFactory, LoggingReaderFactory {
-    private val inMemoryLoggingRepo = registry.geteOrElse(InMemoryLoggingRepo::class.java, InMemoryLoggingRepo())
+    private val inMemoryLoggingRepo = registry.getOrElse(InMemoryLoggingRepo::class.java, InMemoryLoggingRepo())
     private val consoleContext = ConsoleLoggingConsumerContext()
 
     override fun consumer(locator: LoggingChannelLocator): LoggingConsumerContext {
@@ -275,8 +275,8 @@ interface LogMessageConsumer : Consumer<LogMessage>
  */
 class ConsoleLogMessageConsumer(registry: Registry = Registry()) :
     LogMessageConsumer {
-    private val formatter = registry.geteOrElse(StringLogFormatter::class.java, DefaultStringLogFormatter())
-    private val format = registry.geteOrElse(LogFormat::class.java, LogFormat.Simple)
+    private val formatter = registry.getOrElse(StringLogFormatter::class.java, DefaultStringLogFormatter())
+    private val format = registry.getOrElse(LogFormat::class.java, LogFormat.Simple)
     override fun accept(msg: LogMessage) {
         println(formatter.toString(msg, format))
     }

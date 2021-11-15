@@ -71,13 +71,12 @@ class TaskFactoryTest {
 
         // build CalculateTask with nothing in the registry
         val factory3 = TaskFactory(Registry())
-        factory3.register(CalculateTask::class)
         assertThat(
             { factory3.createInstance(CalculateTask::class.qualifiedName!!) },
             throws<TaskException>(
                 has(
                     Exception::message,
-                    present(equalTo("Problem instantiating `mycorda.app.tasks.CalculateTask`. Original error: `Class interface mycorda.app.tasks.Calculator in not in the registry`"))
+                    present(equalTo("Task: `mycorda.app.tasks.CalculateTask` is not registered"))
                 )
             )
         )

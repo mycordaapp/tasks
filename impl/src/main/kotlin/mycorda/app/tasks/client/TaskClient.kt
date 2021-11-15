@@ -83,9 +83,9 @@ class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocat
  */
 class SimpleTaskClient(registry: Registry) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
-    private val serialiser = registry.geteOrElse(JsonSerialiser::class.java, JsonSerialiser())
+    private val serialiser = registry.getOrElse(JsonSerialiser::class.java, JsonSerialiser())
     private val logChannelLocatorFactory =
-        registry.geteOrElse(LoggingChannelFactory::class.java, DefaultLoggingChannelFactory(registry))
+        registry.getOrElse(LoggingChannelFactory::class.java, DefaultLoggingChannelFactory(registry))
 
     override fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,

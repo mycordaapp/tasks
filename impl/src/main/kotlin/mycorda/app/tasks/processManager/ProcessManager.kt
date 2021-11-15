@@ -46,7 +46,7 @@ class Captured(
 data class ProcessRestartInfo(val newId: UUID, val oldId: UUID, val label: String)
 
 class ProcessManager(registry: Registry = Registry()) {
-    private val processManager: ProcessManagerInternal = registry.geteOrElse(
+    private val processManager: ProcessManagerInternal = registry.getOrElse(
         ProcessManagerInternal::class.java,
         ProcessManagerInternal()
     )
