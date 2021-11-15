@@ -1,4 +1,5 @@
 # Logging
+[home](../README.md)
 
 ## The Problem
 
