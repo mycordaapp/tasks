@@ -76,6 +76,5 @@ abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
 
 
 
-class TaskException(override val message: String, override val cause : Throwable? = null) : RuntimeException(message, cause)
 
 
