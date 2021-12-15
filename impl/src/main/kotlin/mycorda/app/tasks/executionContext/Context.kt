@@ -4,7 +4,6 @@ import mycorda.app.registry.Registry
 import mycorda.app.tasks.Task
 import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.processManager.ProcessManager
-import java.io.PrintStream
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -96,6 +95,10 @@ interface ExecutionContextModifier {
     fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext
 
     fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext
+
+    fun withLoggingProducerContext(context: LoggingProducerContext): ExecutionContext
+
+    fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext
 }
 
 /**
@@ -118,6 +121,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 
     override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
         working = SimpleExecutionContext(
+            loggingProducerContext = working,
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
@@ -130,12 +134,40 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
         working = SimpleExecutionContext(
+            loggingProducerContext = working,
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
             provisioningState = working.provisioningState(),
             instanceQualifier = instanceQualifier
+        )
+        return working
+    }
+
+    override fun withLoggingProducerContext(context: LoggingProducerContext): ExecutionContext {
+        working = SimpleExecutionContext(
+            loggingProducerContext = context,
+            executionId = working.executionId(),
+            taskId = working.taskId(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            provisioningState = working.provisioningState(),
+            instanceQualifier = working.instanceQualifier()
+        )
+        return working
+    }
+
+    override fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext {
+        val logProducerContext = LoggingProducerToConsumer(logging)
+        working = SimpleExecutionContext(
+            loggingProducerContext = logProducerContext,
+            executionId = working.executionId(),
+            taskId = working.taskId(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            provisioningState = working.provisioningState(),
+            instanceQualifier = working.instanceQualifier()
         )
         return working
     }
@@ -197,6 +229,14 @@ class SimpleExecutionContext(
 
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
         return DefaultExecutionContextModifier(this).withInstanceQualifier(instanceQualifier)
+    }
+
+    override fun withLoggingProducerContext(context: LoggingProducerContext): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withLoggingProducerContext(context)
+    }
+
+    override fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withInMemoryLogging(logging)
     }
 }
 

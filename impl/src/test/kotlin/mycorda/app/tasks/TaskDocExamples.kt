@@ -10,9 +10,7 @@ import mycorda.app.tasks.demo.CalcSquareTask
 import mycorda.app.tasks.demo.echo.EchoIntTask
 import mycorda.app.tasks.demo.echo.EchoStringTask
 import mycorda.app.tasks.executionContext.SimpleExecutionContext
-import mycorda.app.tasks.logging.DefaultLoggingChannelFactory
-import mycorda.app.tasks.logging.LoggingChannelLocator
-import mycorda.app.tasks.logging.LogLevel
+import mycorda.app.tasks.logging.*
 import mycorda.app.tasks.test.ListDirectoryTask
 import mycorda.app.tasks.test.ListDirectoryTaskFake
 import mycorda.app.tasks.test.ListDirectoryTaskImpl
@@ -30,6 +28,16 @@ class TaskDocExamples {
         val ctx = SimpleExecutionContext()
         val result = task.exec(ctx, 10)
         assertThat(result, equalTo(100))
+    }
+
+    @Test
+    fun `should call task directly with captured logging`() {
+        val task = CalcSquareTask()
+        val logging = InMemoryLogging()
+        val ctx = SimpleExecutionContext().withInMemoryLogging(logging)
+        val result = task.exec(ctx, 10)
+        assertThat(result, equalTo(100))
+        assertThat(logging.messages().single().body, equalTo("Calculating square of 10"))
     }
 
     @Test

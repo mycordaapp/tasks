@@ -1,4 +1,5 @@
 # Tasks
+
 [home](../README.md)
 
 ## Introduction
@@ -102,6 +103,23 @@ fun `should call task directly`() {
     val result = task.exec(ctx, 10)
     assertThat(result, equalTo(100))
 }
+```
+
+By default `SimpleExecutionContext` directs all logging to stdout. However, it is good to assert that the expected
+logging is created - this in the concept of [Logging as first class concern](./logging.md) and can be achieved by simply
+injecting an instance of `InMemoryLogging`.
+
+```kotlin
+ fun `should call task directly with captured logging`() {
+    val task = CalcSquareTask()
+    val logging = InMemoryLogging()
+    val ctx = SimpleExecutionContext().withInMemoryLogging(logging)
+    val result = task.exec(ctx, 10)
+    assertThat(result, equalTo(100))
+    assertThat(logging.messages().single().body, equalTo("Calculating square of 10"))
+}
+
+
 ```
 
 ### 2. Lookup a Task via the `TaskFactory`
@@ -249,7 +267,7 @@ _TODO - explain the above_
 The basic test case is:
 
 ```kotlin
-@Test 
+@Test
 fun `should call task directly`() {
     // 1. Setup a result sink,
     val resultSinkFactory = DefaultAsyncResultChannelSinkFactory()
@@ -286,64 +304,64 @@ and if using the TaskClient
 
 ```kotlin
  @Test
-    fun `should call task via a task client`() {
-        // 1. Create a registry and store a AsyncResultChannelSinkFactory
-        val registry = Registry()
-        val resultSinkFactory = DefaultAsyncResultChannelSinkFactory()
-        registry.store(resultSinkFactory)
+fun `should call task via a task client`() {
+    // 1. Create a registry and store a AsyncResultChannelSinkFactory
+    val registry = Registry()
+    val resultSinkFactory = DefaultAsyncResultChannelSinkFactory()
+    registry.store(resultSinkFactory)
 
-        // 2a. register a real task in the TaskFactory (server side)
-        val taskFactory = TaskFactory(registry)
-        taskFactory.register(CalcSquareAsyncTask::class)
-        registry.store(taskFactory)
+    // 2a. register a real task in the TaskFactory (server side)
+    val taskFactory = TaskFactory(registry)
+    taskFactory.register(CalcSquareAsyncTask::class)
+    registry.store(taskFactory)
 
-        // 2b. register LogChannelFactory (server side)
-        val logChannelFactory = DefaultLoggingChannelFactory(registry)
-        registry.store(logChannelFactory)
+    // 2b. register LogChannelFactory (server side)
+    val logChannelFactory = DefaultLoggingChannelFactory(registry)
+    registry.store(logChannelFactory)
 
-        // 3. get a task client (client side)
-        val taskClient = SimpleTaskClient(registry)
+    // 3. get a task client (client side)
+    val taskClient = SimpleTaskClient(registry)
 
-        // 4. setup a channel for the results
-        val locator = AsyncResultChannelSinkLocator.LOCAL
-        val channelId = UniqueId.random()
+    // 4. setup a channel for the results
+    val locator = AsyncResultChannelSinkLocator.LOCAL
+    val channelId = UniqueId.random()
 
-        // 5. call the client
-        val logChannelLocator = LoggingChannelLocator.inMemory()
-        val clientContext = SimpleClientContext(loggingChannelLocator = logChannelLocator)
-        taskClient.execAsync(
-            clientContext,
-            "mycorda.app.tasks.demo.CalcSquareAsyncTask",
-            locator,
-            channelId,
-            10,
-            Int::class
-        )
+    // 5. call the client
+    val logChannelLocator = LoggingChannelLocator.inMemory()
+    val clientContext = SimpleClientContext(loggingChannelLocator = logChannelLocator)
+    taskClient.execAsync(
+        clientContext,
+        "mycorda.app.tasks.demo.CalcSquareAsyncTask",
+        locator,
+        channelId,
+        10,
+        Int::class
+    )
 
-        // 6. the first log message is already available, but the second isn't
-        val logQuery = logChannelFactory.query(logChannelLocator)
-        assert(
-            logQuery.messages().hasMessage(LogLevel.INFO, "Starting calculation")
-        )
-        assert(
-            logQuery.messages().doesNotHaveMessage(LogLevel.INFO, "Completed calculation")
-        )
+    // 6. the first log message is already available, but the second isn't
+    val logQuery = logChannelFactory.query(logChannelLocator)
+    assert(
+        logQuery.messages().hasMessage(LogLevel.INFO, "Starting calculation")
+    )
+    assert(
+        logQuery.messages().doesNotHaveMessage(LogLevel.INFO, "Completed calculation")
+    )
 
-        // 7. run a query over the result channel. In this case
-        //    CalcSquareAsyncTask is a demo and just has a simple sleep
-        val query = resultSinkFactory.channelQuery(locator)
+    // 7. run a query over the result channel. In this case
+    //    CalcSquareAsyncTask is a demo and just has a simple sleep
+    val query = resultSinkFactory.channelQuery(locator)
 
-        // 7. assert expected results
-        // not yet read
-        assertThat(query.hasResult(channelId), equalTo(false))
-        // wait long enough
-        Thread.sleep(PlatformTimer.clockTick() * 3)
-        // now ready
-        assert(query.hasResult(channelId))
-        val result = query.result<Int>(channelId)
-        assertThat(result, equalTo(Success<Int>(100) as AsyncResult<Int>))
-    
-    }
+    // 7. assert expected results
+    // not yet read
+    assertThat(query.hasResult(channelId), equalTo(false))
+    // wait long enough
+    Thread.sleep(PlatformTimer.clockTick() * 3)
+    // now ready
+    assert(query.hasResult(channelId))
+    val result = query.result<Int>(channelId)
+    assertThat(result, equalTo(Success<Int>(100) as AsyncResult<Int>))
+
+}
 ```
 
 ## Modularising the `TaskFactory`
@@ -356,34 +374,36 @@ TaskFactory. And if the jars also provide `fake` implementations on the tasks fo
 of deciding if the real tasks or the fakes are to be used.
 
 The basic building block for managing this problem is `TaskRegistrations`, just a type safe list of task registrations.
-Any jar module should include at least implementation (it is a design decision as to just how granular the breakdown is).
+Any jar module should include at least implementation (it is a design decision as to just how granular the breakdown is)
+.
 
-There is an example below: 
+There is an example below:
 
 ```kotlin
     // 1. setup some groups using SimpleTaskRegistrations - this emulates
-    //    the TaskRegistrations exposed by one or more Jar files
-    class CalculatorTasks : SimpleTaskRegistrations(
-        listOf(TaskRegistration(CalcSquareAsyncTask::class), TaskRegistration(CalcSquareTask::class))
-    )
-    val calculatorTasksClazzName = CalculatorTasks::class.java.name
+//    the TaskRegistrations exposed by one or more Jar files
+class CalculatorTasks : SimpleTaskRegistrations(
+    listOf(TaskRegistration(CalcSquareAsyncTask::class), TaskRegistration(CalcSquareTask::class))
+)
 
-    class EchoTasks : SimpleTaskRegistrations(
-        listOf(TaskRegistration(EchoStringTask::class), TaskRegistration(EchoIntTask::class))
-    )
+val calculatorTasksClazzName = CalculatorTasks::class.java.name
+
+class EchoTasks : SimpleTaskRegistrations(
+    listOf(TaskRegistration(EchoStringTask::class), TaskRegistration(EchoIntTask::class))
+)
 
 
-    // 2. register the groups
-    val taskFactory = TaskFactory()
-    // by clazzName - this emulates the scenario in which registrations are controlled by external configs
-    taskFactory.register(TaskRegistrations.fromClazzName(calculatorTasksClazzName))
-    // by instantiating an instance - this emulate the scenario of hard coded registrations
-    taskFactory.register(EchoTasks())
+// 2. register the groups
+val taskFactory = TaskFactory()
+// by clazzName - this emulates the scenario in which registrations are controlled by external configs
+taskFactory.register(TaskRegistrations.fromClazzName(calculatorTasksClazzName))
+// by instantiating an instance - this emulate the scenario of hard coded registrations
+taskFactory.register(EchoTasks())
 
-    // 3. check the tasks can be created
-    val ctx = SimpleExecutionContext()
-    assertThat(taskFactory.createInstance(CalcSquareTask::class).exec(ctx, 10), equalTo(100))
-    assertThat(taskFactory.createInstance(EchoStringTask::class).exec(ctx, "foo"), equalTo("foo"))
+// 3. check the tasks can be created
+val ctx = SimpleExecutionContext()
+assertThat(taskFactory.createInstance(CalcSquareTask::class).exec(ctx, 10), equalTo(100))
+assertThat(taskFactory.createInstance(EchoStringTask::class).exec(ctx, "foo"), equalTo("foo"))
 ```
 
 ## Combining Tasks

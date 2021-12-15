@@ -7,6 +7,12 @@ In most cases a Task will be executed by a [Client](../impl/src/main/kotlin/myco
 running in another process, possibly even in another data centre. In this model the problem of getting logs and console
 output available to the operators of the client is not trivial. Let's walk through the common scenarios
 
+**TODO** _Talk about the concept of logging as a first class concern, i.e. asserting that the expected log output 
+is created should be a natural part of the development process._ 
+
+
+
+
 ### 1. Logs and console output stay on the server
 
 This is what most applications do by default. Ideally they capture all errors and report them back as sensible messages.
