@@ -42,11 +42,14 @@ As with everything in [myCorda dot App](https://mycorda.app), this library has m
 ## Adding as a dependency
 Maven jars are deployed using JitPack. See releases for version details.
 
+```groovy
 //add jitpack repo
 maven { url "https://jitpack.io" }
 
 // add dependency
 implementation "com.github.mycordaapp:tasks:<release>"
+```
+
 JitPack build status is at https://jitpack.io/com/github/mycordaapp/tasks/$releaseTag/build.log
 
 ## Next Steps
