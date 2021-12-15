@@ -83,9 +83,9 @@ A `Task` can be created and executed in three ways:
 1. by creating a `TaskClient` and calling the `exec` method on the client. This is the preferred pattern as it:
     - allows for remoting (calling `Tasks` on a remote agent)
     - hides setup of the `ExecutionContext` from the caller
-    - passes the security principles required for any authentication and downstream system access within the tasks. _
-      note that currently this requirement is not well understood, however certain patterns are likely to occur - this
-      is detailed later on_
+    - passes the security principles required for any authentication and downstream system access within the tasks.
+      _please note that currently this requirement is not well understood, however certain patterns are likely to occur
+      - this is detailed later on_
 
 `TaskDocExamples.kt` has full source code for the examples below.
 
