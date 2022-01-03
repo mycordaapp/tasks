@@ -55,7 +55,7 @@ class TestLocations(private val suffix: String = String.random(),
 
     override fun cacheDirectory(): String {
         return if (useGlobalCache) {
-            System.getProperty("user.home") + "/.corda-agent/cache"
+            System.getProperty("user.home") + "/.tasks/cache"
         } else {
             ".testing/$suffix/cache"
         }
@@ -90,7 +90,7 @@ class TestLocations(private val suffix: String = String.random(),
 
 
 // for use locally
-class LocalLocations(private val root: String = System.getProperty("user.home") + "/.corda-agent") : Locations {
+class LocalLocations(private val root: String = System.getProperty("user.home") + "/.tasks") : Locations {
 
     init {
         File(cacheDirectory()).mkdirs()
@@ -99,7 +99,7 @@ class LocalLocations(private val root: String = System.getProperty("user.home") 
     }
 
     override fun cacheDirectory(): String {
-        return "$root/downloads"
+        return "$root/cache"
     }
 
     override fun dataDirectory(): String {
@@ -126,7 +126,7 @@ class LocalLocations(private val root: String = System.getProperty("user.home") 
 }
 
 // on a (unix) server
-class UnixServerLocations(private val root: String = "/opt/corda") : Locations {
+class UnixServerLocations(private val root: String = "/opt/tasks") : Locations {
 
     init {
         File(cacheDirectory()).mkdirs()
