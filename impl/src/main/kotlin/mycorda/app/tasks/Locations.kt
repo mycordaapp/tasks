@@ -45,8 +45,11 @@ interface Locations {
 
 
 // for use in test cases
-class TestLocations(private val suffix: String = String.random(),
-                    private val useGlobalCache: Boolean = true) : Locations {
+class TestLocations(
+    private val baseDir: String = ".",
+    private val suffix: String = String.random(),
+    private val useGlobalCache: Boolean = true
+) : Locations {
     init {
         File(cacheDirectory()).mkdirs()
         File(dataDirectory()).mkdirs()
@@ -57,23 +60,23 @@ class TestLocations(private val suffix: String = String.random(),
         return if (useGlobalCache) {
             System.getProperty("user.home") + "/.tasks/cache"
         } else {
-            ".testing/$suffix/cache"
+            return "${root()}/cache"
         }
     }
 
     override fun dataDirectory(): String {
-        return ".testing/$suffix/data"
+        return "${root()}/data"
     }
 
     override fun tempDirectory(): String {
-        return ".testing/$suffix/tmp"
+        return "${root()}/tmp"
     }
 
     override fun serviceHomeDirectory(product: String, service: String, instance: String?): String {
         val location = if (instance == null || instance.isEmpty()) {
-            ".testing/$suffix/$product/$service"
+            "${root()}/$suffix/$product/$service"
         } else {
-            ".testing/$suffix/$product/$service-$instance"
+            "${root()}/$suffix/$product/$service-$instance"
         }
         File(location).mkdirs()
         return location
@@ -83,8 +86,13 @@ class TestLocations(private val suffix: String = String.random(),
         return suffix
     }
 
+
     fun homeDirectory(): String {
-        return File(".testing/$suffix").absolutePath
+        return File(root()).absolutePath
+    }
+
+    private fun root(): String {
+        return if (baseDir == ".") ".testing/$suffix" else "$baseDir/.testing/$suffix"
     }
 }
 
@@ -121,7 +129,7 @@ class LocalLocations(private val root: String = System.getProperty("user.home") 
     }
 
     fun homeDirectory(): String {
-        return root
+        return File(root).absolutePath
     }
 }
 
