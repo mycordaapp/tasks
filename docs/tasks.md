@@ -99,7 +99,7 @@ The `SimpleExeccutionContext` is lightweight and suitable for testing and simple
 @Test
 fun `should call task directly`() {
     val task = CalcSquareTask()
-    val ctx = SimpleExeccutionContext()
+    val ctx = SimpleExecutionContext()
     val result = task.exec(ctx, 10)
     assertThat(result, equalTo(100))
 }
@@ -137,7 +137,7 @@ fun `should call task via the TaskFactory`() {
 
     // create by class
     val taskByClass = liveFactory.createInstance(ListDirectoryTask::class)
-    val ctx = SimpleExeccutionContext()
+    val ctx = SimpleExecutionContext()
     assert(taskByClass.exec(ctx, ".").contains("build.gradle"))
 
     // create by name
